@@ -153,7 +153,7 @@ function VoiceNotePlayer({ url, isMe }: { url: string; isMe: boolean }) {
 
   return (
     <div className={`flex items-center gap-2.5 px-3 py-2.5 rounded-[18px] min-w-[220px] max-w-[270px] ${
-      isMe ? "rounded-br-[4px] bg-blue-600" : "rounded-bl-[4px] bg-white/15 backdrop-blur-sm border border-white/15"
+      isMe ? "rounded-br-[4px] bg-blue-600" : "rounded-bl-[4px] bg-white/10 backdrop-blur-md"
     }`}>
       <audio ref={audioRef} src={url} preload="metadata"
         onLoadedMetadata={() => { setDuration(audioRef.current?.duration || 0); setReady(true); }}
@@ -607,7 +607,7 @@ export default function MessagesPage() {
           >
             {/* Header */}
             <div className="flex-shrink-0 flex items-center gap-3 px-4 bg-white/10 dark:bg-black/20 backdrop-blur-xl border-b border-white/10"
-              style={{ ...chatAreaStyle, paddingTop: "max(0.75rem, env(safe-area-inset-top))", paddingBottom: "0.75rem" }}>
+              style={{ paddingTop: "max(0.75rem, env(safe-area-inset-top))", paddingBottom: "0.75rem" }}>
               <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.9 }}
                 onClick={closeChat}
                 className="w-9 h-9 rounded-xl flex items-center justify-center text-white hover:bg-white/10 transition-colors flex-shrink-0">

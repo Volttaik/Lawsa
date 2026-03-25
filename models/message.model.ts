@@ -40,6 +40,7 @@ export interface IConversation {
     lastMessage?: string;
     lastMessageTime?: Date;
     unreadCount?: Map<string, number>;
+    typingUsers?: Map<string, Date>;
     createdAt?: Date;
     updatedAt?: Date;
 }

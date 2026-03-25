@@ -2,7 +2,7 @@
 import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { UserPlus, UserCheck, Search, Loader2, Users, SearchX } from "lucide-react";
+import { UserPlus, UserCheck, Search, Loader2, Users, SearchX, Shield } from "lucide-react";
 import Link from "next/link";
 
 interface UserCard {
@@ -149,9 +149,21 @@ function ConnectPageContent() {
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-6">
-      <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">Connect</h1>
-        <p className="text-gray-500 dark:text-gray-400 text-sm">Discover and follow people in your community</p>
+      <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-6 flex items-start justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">Connect</h1>
+          <p className="text-gray-500 dark:text-gray-400 text-sm">Discover and follow people in your community</p>
+        </div>
+        <Link href="/dashboard/clans">
+          <motion.div
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-600 text-white text-sm font-semibold shadow-btn hover:bg-blue-700 transition-colors"
+          >
+            <Shield size={15} />
+            <span>Clans</span>
+          </motion.div>
+        </Link>
       </motion.div>
 
       <div className="relative mb-6">
