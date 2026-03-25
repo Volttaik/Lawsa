@@ -37,7 +37,12 @@ export async function middleware(request: NextRequest) {
     try {
       const secret = new TextEncoder().encode(process.env.JWT_SECRET || "lawsa-socials-secret-key-2024-very-secure");
       await jwtVerify(token, secret);
-      return NextResponse.redirect(new URL("/dashboard", request.url));
+      const dashboardUrl = new URL("/dashboard", request.url);
+      const postId = request.nextUrl.searchParams.get("post");
+      const profileId = request.nextUrl.searchParams.get("profile");
+      if (postId) dashboardUrl.searchParams.set("post", postId);
+      if (profileId) dashboardUrl.searchParams.set("profile", profileId);
+      return NextResponse.redirect(dashboardUrl);
     } catch {
       return NextResponse.next();
     }
