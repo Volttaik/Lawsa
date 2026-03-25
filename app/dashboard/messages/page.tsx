@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Send, Loader2, ArrowLeft, MessageCircle, Users,
   Image as ImageIcon, Film, Paperclip, X, Play, FileText,
-  Plus, Mic, StopCircle, Check, CheckCheck, Palette,
+  Plus, Mic, StopCircle, Check, CheckCheck, Palette, Upload,
 } from "lucide-react";
 
 interface Conversation {
@@ -34,17 +34,29 @@ interface ConnectedUser {
   profileImage?: string;
 }
 
-const CHAT_BACKGROUNDS = [
-  { id: "default", label: "Default", value: "" },
-  { id: "blue", label: "Ocean", value: "linear-gradient(135deg,#e0f2fe 0%,#bfdbfe 100%)" },
-  { id: "purple", label: "Dusk", value: "linear-gradient(135deg,#ede9fe 0%,#ddd6fe 100%)" },
-  { id: "rose", label: "Rose", value: "linear-gradient(135deg,#ffe4e6 0%,#fecdd3 100%)" },
-  { id: "green", label: "Forest", value: "linear-gradient(135deg,#d1fae5 0%,#a7f3d0 100%)" },
-  { id: "amber", label: "Sand", value: "linear-gradient(135deg,#fef3c7 0%,#fde68a 100%)" },
-  { id: "dark", label: "Night", value: "linear-gradient(135deg,#1e1b4b 0%,#312e81 100%)" },
-  { id: "pattern1", label: "Dots", value: "radial-gradient(circle,#dbeafe 1px,transparent 1px)", bgSize: "20px 20px", bgColor: "#f8fafc" },
-  { id: "pattern2", label: "Lines", value: "repeating-linear-gradient(45deg,#f1f5f9 0,#f1f5f9 1px,transparent 0,transparent 50%)", bgSize: "10px 10px", bgColor: "#ffffff" },
+interface ChatBg {
+  id: string;
+  label: string;
+  imgValue: string | null;
+  bgColor: string;
+  bgSize?: string;
+  isCustom?: boolean;
+}
+
+const CHAT_BACKGROUNDS: ChatBg[] = [
+  { id: "midnight",  label: "Midnight",  imgValue: "linear-gradient(145deg,#0f0c29 0%,#302b63 55%,#24243e 100%)", bgColor: "#0f0c29" },
+  { id: "galaxy",   label: "Galaxy",    imgValue: "linear-gradient(160deg,#0d1b2a 0%,#162032 45%,#0f3460 100%)",  bgColor: "#0d1b2a" },
+  { id: "noir",     label: "Noir",      imgValue: "linear-gradient(140deg,#111827 0%,#1f2937 100%)",               bgColor: "#111827" },
+  { id: "ocean",    label: "Ocean",     imgValue: "linear-gradient(155deg,#004e92 0%,#000428 100%)",               bgColor: "#004e92" },
+  { id: "sunset",   label: "Sunset",    imgValue: "linear-gradient(135deg,#f7971e 0%,#e84393 50%,#8b5cf6 100%)",  bgColor: "#f7971e" },
+  { id: "forest",   label: "Forest",    imgValue: "linear-gradient(145deg,#0a3d2b 0%,#1a6b47 55%,#2d9966 100%)", bgColor: "#0a3d2b" },
+  { id: "rose",     label: "Rose",      imgValue: "linear-gradient(145deg,#c0392b 0%,#e91e8c 55%,#f093fb 100%)", bgColor: "#c0392b" },
+  { id: "minimal",  label: "Minimal",   imgValue: "linear-gradient(160deg,#e8edf2 0%,#d1d9e0 100%)",              bgColor: "#e8edf2" },
+  { id: "dots",     label: "Dots",      imgValue: "radial-gradient(circle,#3b82f6 1.2px,transparent 1.2px)", bgColor: "#0f172a", bgSize: "18px 18px" },
+  { id: "custom",   label: "Custom",    imgValue: null, bgColor: "#0f0c29", isCustom: true },
 ];
+
+const DEFAULT_BG = CHAT_BACKGROUNDS[0]; // Midnight
 
 function Avatar({ src, name, size = 40 }: { src?: string; name: string; size?: number }) {
   if (src) return <img src={src} alt={name} className="rounded-full object-cover flex-shrink-0" style={{ width: size, height: size }} />;
@@ -69,20 +81,20 @@ function MessageSkeleton({ isMe }: { isMe: boolean }) {
 }
 
 function OnlineStatus({ isOnline, lastOnline }: { isOnline: boolean; lastOnline: string | null }) {
-  if (isOnline) return <span className="text-[10px] text-green-500 font-medium">Online</span>;
-  if (!lastOnline) return <span className="text-[10px] text-gray-400">Offline</span>;
+  if (isOnline) return <span className="text-[10px] text-green-400 font-medium">Online</span>;
+  if (!lastOnline) return <span className="text-[10px] text-gray-400 dark:text-gray-500">Offline</span>;
   const diff = Date.now() - new Date(lastOnline).getTime();
   const mins = Math.floor(diff / 60000);
   const hours = Math.floor(diff / 3600000);
   const days = Math.floor(diff / 86400000);
   const label = mins < 1 ? "Just now" : mins < 60 ? `${mins}m ago` : hours < 24 ? `${hours}h ago` : `${days}d ago`;
-  return <span className="text-[10px] text-gray-400">Last seen {label}</span>;
+  return <span className="text-[10px] text-gray-400 dark:text-gray-500">Last seen {label}</span>;
 }
 
 function ReadReceipt({ isMe, read }: { isMe: boolean; read?: boolean }) {
   if (!isMe) return null;
   return (
-    <span className={`flex-shrink-0 ${read ? "text-blue-500" : "text-gray-400"}`}>
+    <span className={`flex-shrink-0 ${read ? "text-blue-400" : "text-gray-400"}`}>
       {read ? <CheckCheck size={12} /> : <Check size={12} />}
     </span>
   );
@@ -91,13 +103,13 @@ function ReadReceipt({ isMe, read }: { isMe: boolean; read?: boolean }) {
 function TypingIndicator() {
   return (
     <div className="flex items-end gap-2">
-      <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 flex-shrink-0" />
-      <div className="bg-white dark:bg-gray-800 rounded-[18px] rounded-bl-[4px] px-4 py-3 shadow-sm flex items-center gap-1">
+      <div className="w-8 h-8 rounded-full bg-white/20 flex-shrink-0" />
+      <div className="bg-white/10 backdrop-blur-sm border border-white/10 rounded-[18px] rounded-bl-[4px] px-4 py-3 flex items-center gap-1">
         {[0, 0.15, 0.3].map((delay, i) => (
           <motion.div key={i}
             animate={{ y: [0, -4, 0] }}
             transition={{ duration: 0.6, delay, repeat: Infinity, ease: "easeInOut" }}
-            className="w-1.5 h-1.5 bg-gray-400 rounded-full"
+            className="w-1.5 h-1.5 bg-white/60 rounded-full"
           />
         ))}
       </div>
@@ -108,31 +120,23 @@ function TypingIndicator() {
 function FadeImg({ src, alt, className, style }: { src: string; alt: string; className?: string; style?: React.CSSProperties }) {
   const [loaded, setLoaded] = useState(false);
   return (
-    <img
-      src={src}
-      alt={alt}
-      className={`transition-all duration-400 ${loaded ? "opacity-100 blur-0" : "opacity-0 blur-sm"} ${className || ""}`}
-      style={style}
-      onLoad={() => setLoaded(true)}
-    />
+    <img src={src} alt={alt} className={`transition-all duration-500 ${loaded ? "opacity-100 blur-0" : "opacity-0 blur-sm"} ${className || ""}`}
+      style={style} onLoad={() => setLoaded(true)} />
   );
 }
 
 function MediaPreview({ url, type, isMe }: { url: string; type: string; isMe: boolean }) {
   const [loaded, setLoaded] = useState(false);
-  const bubbleBase = isMe
-    ? "bg-blue-600 text-white rounded-[18px] rounded-br-[4px]"
-    : "bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-[18px] rounded-bl-[4px] shadow-sm";
+  const meBubble = "bg-blue-600 text-white rounded-[18px] rounded-br-[4px]";
+  const themBubble = "bg-white/15 backdrop-blur-sm border border-white/20 text-white rounded-[18px] rounded-bl-[4px]";
+  const bubble = isMe ? meBubble : themBubble;
 
   if (type === "image") {
     return (
       <div className="relative mt-1 max-w-[220px] overflow-hidden rounded-2xl">
         {!loaded && <div className="skeleton w-[220px] h-32 rounded-2xl" />}
-        <FadeImg
-          src={url}
-          alt="Image"
-          className={`max-w-[220px] max-h-56 object-cover rounded-2xl ${loaded ? "block" : "hidden"}`}
-        />
+        <FadeImg src={url} alt="Image"
+          className={`max-w-[220px] max-h-56 object-cover rounded-2xl ${loaded ? "block" : "hidden"}`} />
       </div>
     );
   }
@@ -153,9 +157,9 @@ function MediaPreview({ url, type, isMe }: { url: string; type: string; isMe: bo
   }
   if (type === "audio") {
     return (
-      <div className={`mt-1 px-3 py-2.5 min-w-[200px] max-w-[260px] flex items-center gap-3 ${bubbleBase}`}>
-        <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${isMe ? "bg-white/20" : "bg-blue-100 dark:bg-blue-900/40"}`}>
-          <Mic size={14} className={isMe ? "text-white" : "text-blue-600"} />
+      <div className={`mt-1 px-3 py-2.5 min-w-[200px] max-w-[260px] flex items-center gap-3 ${bubble}`}>
+        <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${isMe ? "bg-white/20" : "bg-white/20"}`}>
+          <Mic size={14} className="text-white" />
         </div>
         <div className="flex-1 min-w-0">
           <audio src={url} controls className="w-full h-8 rounded-lg" />
@@ -167,7 +171,7 @@ function MediaPreview({ url, type, isMe }: { url: string; type: string; isMe: bo
     const filename = url.split("/").pop() || "File";
     return (
       <a href={url} target="_blank" rel="noopener noreferrer"
-        className={`mt-1 flex items-center gap-2 px-4 py-3 text-sm hover:opacity-90 transition-opacity max-w-[220px] ${bubbleBase}`}>
+        className={`mt-1 flex items-center gap-2 px-4 py-3 text-sm hover:opacity-90 transition-opacity max-w-[220px] ${bubble}`}>
         <FileText size={16} />
         <span className="truncate">{filename}</span>
       </a>
@@ -193,8 +197,9 @@ export default function MessagesPage() {
   const [otherUserOnline, setOtherUserOnline] = useState(false);
   const [otherUserLastOnline, setOtherUserLastOnline] = useState<string | null>(null);
   const [otherUserTyping, setOtherUserTyping] = useState(false);
-  const [chatBg, setChatBg] = useState<typeof CHAT_BACKGROUNDS[0]>(CHAT_BACKGROUNDS[0]);
+  const [chatBg, setChatBg] = useState<ChatBg>(DEFAULT_BG);
   const [showBgPicker, setShowBgPicker] = useState(false);
+  const [customBgUrl, setCustomBgUrl] = useState<string | null>(null);
 
   const [isRecording, setIsRecording] = useState(false);
   const [recordingSeconds, setRecordingSeconds] = useState(0);
@@ -207,6 +212,7 @@ export default function MessagesPage() {
   const imageInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const customBgInputRef = useRef<HTMLInputElement>(null);
   const mediaMenuRef = useRef<HTMLDivElement>(null);
   const bgPickerRef = useRef<HTMLDivElement>(null);
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -221,9 +227,7 @@ export default function MessagesPage() {
   }, []);
 
   useEffect(() => {
-    if (messages.length > 0) {
-      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-    }
+    if (messages.length > 0) messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
   useEffect(() => {
@@ -236,11 +240,8 @@ export default function MessagesPage() {
   }, []);
 
   useEffect(() => {
-    if (selectedConv) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
+    if (selectedConv) { document.body.style.overflow = "hidden"; }
+    else { document.body.style.overflow = ""; }
     return () => { document.body.style.overflow = ""; };
   }, [selectedConv]);
 
@@ -273,10 +274,7 @@ export default function MessagesPage() {
   const handleTextChange = (val: string) => {
     setMessageText(val);
     if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
-    if (val) {
-      sendTypingSignal();
-      typingTimeoutRef.current = setTimeout(() => {}, 3000);
-    }
+    if (val) sendTypingSignal();
   };
 
   const loadConversations = async () => {
@@ -325,22 +323,25 @@ export default function MessagesPage() {
     setUserSearch("");
     const existing = conversations.find((c) => c.participants.includes(user._id));
     if (existing) { openConversation(existing); return; }
-    const fakeConv: Conversation = {
-      _id: "new",
-      participants: [currentUserId || "", user._id],
-      otherUser: user,
-    };
-    openConversation(fakeConv);
+    openConversation({ _id: "new", participants: [currentUserId || "", user._id], otherUser: user });
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, type: "image" | "video" | "file") => {
     const file = e.target.files?.[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onloadend = () => {
-      setPendingMedia({ data: reader.result as string, type, name: file.name });
-    };
+    reader.onloadend = () => setPendingMedia({ data: reader.result as string, type, name: file.name });
     reader.readAsDataURL(file);
+    e.target.value = "";
+  };
+
+  const handleCustomBgSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const url = URL.createObjectURL(file);
+    setCustomBgUrl(url);
+    setChatBg({ ...CHAT_BACKGROUNDS[CHAT_BACKGROUNDS.length - 1], imgValue: null, isCustom: true });
+    setShowBgPicker(false);
     e.target.value = "";
   };
 
@@ -360,8 +361,7 @@ export default function MessagesPage() {
       audioChunksRef.current = [];
       mr.ondataavailable = (e) => { if (e.data.size > 0) audioChunksRef.current.push(e.data); };
       mr.onstop = () => {
-        const blob = new Blob(audioChunksRef.current, { type: "audio/webm" });
-        setAudioBlob(blob);
+        setAudioBlob(new Blob(audioChunksRef.current, { type: "audio/webm" }));
         stream.getTracks().forEach((t) => t.stop());
       };
       mr.start();
@@ -369,25 +369,17 @@ export default function MessagesPage() {
       setIsRecording(true);
       setRecordingSeconds(0);
       recordingTimerRef.current = setInterval(() => setRecordingSeconds((s) => s + 1), 1000);
-    } catch {
-      alert("Microphone permission denied");
-    }
+    } catch { alert("Microphone permission denied"); }
   };
 
   const stopRecording = () => {
-    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
-      mediaRecorderRef.current.stop();
-    }
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") mediaRecorderRef.current.stop();
     if (recordingTimerRef.current) clearInterval(recordingTimerRef.current);
     setIsRecording(false);
     setRecordingSeconds(0);
   };
 
-  const cancelRecording = () => {
-    stopRecording();
-    setAudioBlob(null);
-    audioChunksRef.current = [];
-  };
+  const cancelRecording = () => { stopRecording(); setAudioBlob(null); audioChunksRef.current = []; };
 
   const sendMessage = async () => {
     const hasText = messageText.trim();
@@ -409,20 +401,10 @@ export default function MessagesPage() {
       mediaTypeToSend = "audio";
     }
 
-    const body: Record<string, string> = {
-      recipientId: selectedConv.otherUser._id,
-      content: messageText,
-    };
-    if (mediaDataToSend) {
-      body.mediaData = mediaDataToSend;
-      body.mediaType = mediaTypeToSend || "file";
-    }
+    const body: Record<string, string> = { recipientId: selectedConv.otherUser._id, content: messageText };
+    if (mediaDataToSend) { body.mediaData = mediaDataToSend; body.mediaType = mediaTypeToSend || "file"; }
 
-    const res = await fetch("/api/messages", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    });
+    const res = await fetch("/api/messages", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
     const data = await res.json();
     if (data.message) {
       setMessages((prev) => [...prev, data.message]);
@@ -435,26 +417,30 @@ export default function MessagesPage() {
   };
 
   const filteredUsers = users.filter((u) =>
-    u.name.toLowerCase().includes(userSearch.toLowerCase()) ||
-    u.username.toLowerCase().includes(userSearch.toLowerCase())
+    u.name.toLowerCase().includes(userSearch.toLowerCase()) || u.username.toLowerCase().includes(userSearch.toLowerCase())
   );
 
   const formatRecording = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
   const skeletonRows = [false, true, false, true, true, false];
 
-  const chatBgStyle: React.CSSProperties = chatBg.id === "default"
-    ? {}
-    : {
-        background: chatBg.value,
-        backgroundSize: (chatBg as { bgSize?: string }).bgSize || "auto",
-        backgroundColor: (chatBg as { bgColor?: string }).bgColor || undefined,
-      };
+  // Resolve background style — uses only non-shorthand properties to avoid React warning
+  const activeBgImgValue = chatBg.isCustom && customBgUrl ? null : chatBg.imgValue;
+  const activeBgColor = chatBg.bgColor;
+  const chatAreaStyle: React.CSSProperties = {
+    backgroundColor: activeBgColor,
+    backgroundImage: chatBg.isCustom && customBgUrl
+      ? `url(${customBgUrl})`
+      : (activeBgImgValue ?? undefined),
+    backgroundSize: chatBg.isCustom && customBgUrl ? "cover" : (chatBg.bgSize ?? (activeBgImgValue ? "cover" : undefined)),
+    backgroundPosition: "center",
+  };
 
   return (
     <>
       <input ref={imageInputRef} type="file" accept="image/*" className="hidden" onChange={(e) => handleFileChange(e, "image")} />
       <input ref={videoInputRef} type="file" accept="video/*" className="hidden" onChange={(e) => handleFileChange(e, "video")} />
       <input ref={fileInputRef} type="file" className="hidden" onChange={(e) => handleFileChange(e, "file")} />
+      <input ref={customBgInputRef} type="file" accept="image/*" className="hidden" onChange={handleCustomBgSelect} />
 
       {/* Conversation List */}
       <div className="flex h-[calc(100vh-112px)]">
@@ -462,11 +448,9 @@ export default function MessagesPage() {
           <div className="px-4 pt-4 pb-3 border-b border-black/10 dark:border-white/10">
             <div className="flex items-center justify-between mb-3">
               <h2 className="font-bold text-gray-900 dark:text-white text-xl">Messages</h2>
-              <motion.button
-                whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
+              <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
                 onClick={() => setShowNewConv(!showNewConv)}
-                className="w-8 h-8 rounded-xl bg-blue-600 text-white flex items-center justify-center hover:bg-blue-700 transition-colors shadow-btn"
-              >
+                className="w-8 h-8 rounded-xl bg-blue-600 text-white flex items-center justify-center hover:bg-blue-700 transition-colors shadow-btn">
                 <MessageCircle size={16} />
               </motion.button>
             </div>
@@ -510,13 +494,12 @@ export default function MessagesPage() {
               <div className="p-8 text-center text-sm text-gray-500 dark:text-gray-400">
                 <Users className="mx-auto text-gray-300 dark:text-gray-700 mb-3" size={36} />
                 <p className="font-medium">No conversations yet</p>
-                <p className="text-xs mt-1 text-gray-400">Tap the chat icon above to start one</p>
+                <p className="text-xs mt-1 text-gray-400">Tap the icon above to start one</p>
               </div>
             ) : conversations.map((conv) => (
               <motion.button key={conv._id} whileTap={{ scale: 0.98 }}
                 onClick={() => openConversation(conv)}
-                className="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-gray-50 dark:hover:bg-gray-800/60 transition-colors text-left border-b border-black/5 dark:border-white/5"
-              >
+                className="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-gray-50 dark:hover:bg-gray-800/60 transition-colors text-left border-b border-black/5 dark:border-white/5">
                 <Avatar src={conv.otherUser?.profileImage} name={conv.otherUser?.name || "?"} size={48} />
                 <div className="flex-1 min-w-0">
                   <div className="font-semibold text-sm text-gray-900 dark:text-white truncate">{conv.otherUser?.name}</div>
@@ -528,7 +511,7 @@ export default function MessagesPage() {
         </div>
       </div>
 
-      {/* Full-screen Chat Overlay — covers nav bar completely */}
+      {/* Full-screen Chat Overlay */}
       <AnimatePresence>
         {selectedConv && (
           <motion.div
@@ -537,39 +520,38 @@ export default function MessagesPage() {
             exit={{ x: "100%" }}
             transition={{ type: "spring", damping: 28, stiffness: 260 }}
             className="fixed inset-0 z-[200] flex flex-col"
-            style={{ top: 0, left: 0, right: 0, bottom: 0 }}
           >
-            {/* Chat Header */}
-            <div className="flex-shrink-0 flex items-center gap-3 px-4 bg-white dark:bg-gray-900 border-b border-black/10 dark:border-white/10 shadow-soft"
+            {/* Header */}
+            <div className="flex-shrink-0 flex items-center gap-3 px-4 bg-white/10 dark:bg-black/20 backdrop-blur-xl border-b border-white/10"
               style={{ paddingTop: "max(0.75rem, env(safe-area-inset-top))", paddingBottom: "0.75rem" }}>
               <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.9 }}
                 onClick={closeChat}
-                className="w-9 h-9 rounded-xl flex items-center justify-center text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors flex-shrink-0">
+                className="w-9 h-9 rounded-xl flex items-center justify-center text-white hover:bg-white/10 transition-colors flex-shrink-0">
                 <ArrowLeft size={20} />
               </motion.button>
 
               <div className="relative flex-shrink-0">
                 <Avatar src={selectedConv.otherUser?.profileImage} name={selectedConv.otherUser?.name || "?"} size={40} />
                 {otherUserOnline && (
-                  <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white dark:border-gray-900 rounded-full" />
+                  <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-400 border-2 border-white/20 rounded-full" />
                 )}
               </div>
 
               <div className="flex-1 min-w-0">
-                <div className="font-semibold text-gray-900 dark:text-white truncate">{selectedConv.otherUser?.name}</div>
+                <div className="font-semibold text-white truncate">{selectedConv.otherUser?.name}</div>
                 {otherUserTyping ? (
                   <motion.span key="typing" initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-                    className="text-[10px] text-blue-500 font-medium italic">typing...</motion.span>
+                    className="text-[10px] text-blue-300 font-medium italic">typing...</motion.span>
                 ) : (
                   <OnlineStatus isOnline={otherUserOnline} lastOnline={otherUserLastOnline} />
                 )}
               </div>
 
-              {/* Background picker button */}
+              {/* Background picker */}
               <div className="relative flex-shrink-0" ref={bgPickerRef}>
                 <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.9 }}
                   onClick={() => setShowBgPicker(!showBgPicker)}
-                  className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all ${showBgPicker ? "bg-blue-600 text-white" : "text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"}`}
+                  className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all ${showBgPicker ? "bg-white/20 text-white" : "text-white/70 hover:bg-white/10"}`}
                   title="Chat background">
                   <Palette size={18} />
                 </motion.button>
@@ -579,31 +561,25 @@ export default function MessagesPage() {
                       initial={{ opacity: 0, scale: 0.88, y: 6 }}
                       animate={{ opacity: 1, scale: 1, y: 0 }}
                       exit={{ opacity: 0, scale: 0.88, y: 6 }}
-                      transition={{ duration: 0.15 }}
-                      className="absolute top-full right-0 mt-2 bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-black/10 dark:border-white/10 p-3 z-10 w-56"
+                      transition={{ duration: 0.18 }}
+                      className="absolute top-full right-0 mt-2 bg-gray-900/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/10 p-3 z-10 w-60"
                     >
-                      <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2 px-1">Chat Background</p>
-                      <div className="grid grid-cols-3 gap-2">
-                        {CHAT_BACKGROUNDS.map((bg) => (
-                          <button
-                            key={bg.id}
+                      <p className="text-[11px] font-semibold text-white/50 uppercase tracking-wider mb-2.5 px-1">Chat Background</p>
+                      <div className="grid grid-cols-5 gap-2 mb-3">
+                        {CHAT_BACKGROUNDS.filter((b) => !b.isCustom).map((bg) => (
+                          <button key={bg.id}
                             onClick={() => { setChatBg(bg); setShowBgPicker(false); }}
-                            className={`relative h-12 rounded-xl border-2 transition-all overflow-hidden ${chatBg.id === bg.id ? "border-blue-500 scale-105" : "border-transparent hover:border-gray-300"}`}
+                            className={`relative h-10 w-10 rounded-xl border-2 transition-all overflow-hidden ${chatBg.id === bg.id ? "border-blue-400 scale-110" : "border-white/10 hover:border-white/30"}`}
                             style={{
-                              background: bg.id === "default" ? "#f8fafc" : bg.value,
-                              backgroundSize: (bg as { bgSize?: string }).bgSize || "auto",
-                              backgroundColor: (bg as { bgColor?: string }).bgColor || undefined,
+                              backgroundColor: bg.bgColor,
+                              backgroundImage: bg.imgValue ?? undefined,
+                              backgroundSize: bg.bgSize ?? "cover",
                             }}
                             title={bg.label}
                           >
-                            {bg.id === "default" && (
-                              <div className="absolute inset-0 flex items-center justify-center">
-                                <span className="text-[9px] text-gray-500 font-medium">None</span>
-                              </div>
-                            )}
                             {chatBg.id === bg.id && (
                               <div className="absolute inset-0 flex items-center justify-center">
-                                <div className="w-4 h-4 rounded-full bg-blue-500 flex items-center justify-center">
+                                <div className="w-4 h-4 rounded-full bg-blue-500 flex items-center justify-center shadow">
                                   <Check size={9} className="text-white" />
                                 </div>
                               </div>
@@ -611,20 +587,23 @@ export default function MessagesPage() {
                           </button>
                         ))}
                       </div>
-                      <p className="text-[10px] text-center text-gray-400 mt-2">{chatBg.label}</p>
+                      <p className="text-center text-[10px] text-white/40 mb-2">{chatBg.label}</p>
+                      <button
+                        onClick={() => customBgInputRef.current?.click()}
+                        className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 border border-white/10 text-white/80 text-xs font-medium transition-all"
+                      >
+                        <Upload size={13} />
+                        {chatBg.isCustom && customBgUrl ? "Change custom image" : "Upload custom image"}
+                      </button>
                     </motion.div>
                   )}
                 </AnimatePresence>
               </div>
             </div>
 
-            {/* Messages area */}
-            <div
-              className="flex-1 overflow-y-auto scrollbar-hide px-4 py-4 space-y-3"
-              style={chatBg.id === "default"
-                ? { background: "var(--chat-bg, #f9fafb)" }
-                : chatBgStyle}
-            >
+            {/* Messages area — uses backgroundImage + backgroundColor (not shorthand) */}
+            <div className="flex-1 overflow-y-auto scrollbar-hide px-4 py-4 space-y-3"
+              style={chatAreaStyle}>
               {loadingMessages ? (
                 <div className="space-y-4">
                   {skeletonRows.map((isMe, i) => <MessageSkeleton key={i} isMe={isMe} />)}
@@ -633,15 +612,15 @@ export default function MessagesPage() {
                 <>
                   {messages.length === 0 && (
                     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-                      className="flex flex-col items-center justify-center h-full gap-3 text-center">
-                      <div className="w-16 h-16 rounded-2xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center">
-                        <MessageCircle size={28} className="text-blue-400" />
+                      className="flex flex-col items-center justify-center h-full gap-3 text-center py-20">
+                      <div className="w-16 h-16 rounded-2xl bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center">
+                        <MessageCircle size={28} className="text-white/80" />
                       </div>
                       <div>
-                        <p className="font-medium text-gray-700 dark:text-gray-300 text-sm">
+                        <p className="font-semibold text-white text-sm drop-shadow">
                           Say hello to {selectedConv.otherUser?.name?.split(" ")[0]}!
                         </p>
-                        <p className="text-xs text-gray-400 dark:text-gray-600 mt-0.5">Start the conversation below</p>
+                        <p className="text-xs text-white/50 mt-0.5">Start the conversation below</p>
                       </div>
                     </motion.div>
                   )}
@@ -649,7 +628,6 @@ export default function MessagesPage() {
                   <AnimatePresence initial={false}>
                     {messages.map((msg) => {
                       const isMe = msg.senderId === currentUserId;
-                      const hasOnlyMedia = !msg.content && msg.mediaUrl;
                       return (
                         <motion.div key={msg._id}
                           initial={{ opacity: 0, y: 14, scale: 0.94 }}
@@ -666,20 +644,13 @@ export default function MessagesPage() {
                               <MediaPreview url={msg.mediaUrl} type="audio" isMe={isMe} />
                             )}
                             {msg.content && (
-                              <div className={`px-4 py-2.5 text-sm leading-relaxed ${
-                                msg.mediaUrl && msg.mediaType !== "audio" ? "mt-1" : ""
-                              } ${
+                              <div className={`px-4 py-2.5 text-sm leading-relaxed ${msg.mediaUrl && msg.mediaType !== "audio" ? "mt-1" : ""} ${
                                 isMe
                                   ? "bg-blue-600 text-white rounded-[18px] rounded-br-[4px]"
-                                  : "bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-[18px] rounded-bl-[4px] shadow-sm"
+                                  : "bg-white/15 backdrop-blur-sm border border-white/15 text-white rounded-[18px] rounded-bl-[4px]"
                               }`}>
                                 {msg.content}
                               </div>
-                            )}
-                            {hasOnlyMedia && !msg.content && msg.mediaType !== "audio" && msg.mediaType !== "image" && msg.mediaType !== "video" && (
-                              <span className="text-[10px] text-gray-400 mt-0.5">
-                                {msg.mediaType === "file" ? "📎 File" : "Media"}
-                              </span>
                             )}
                             {isMe && (
                               <div className="flex items-center gap-1 mt-0.5 pr-1">
@@ -702,51 +673,49 @@ export default function MessagesPage() {
             <AnimatePresence>
               {(pendingMedia || audioBlob) && (
                 <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }}
-                  className="flex-shrink-0 px-4 py-2.5 bg-white dark:bg-gray-900 border-t border-black/10 dark:border-white/10 flex items-center gap-3 overflow-hidden">
+                  className="flex-shrink-0 px-4 py-2.5 bg-black/30 backdrop-blur-sm border-t border-white/10 flex items-center gap-3 overflow-hidden">
                   {pendingMedia?.type === "image" && <img src={pendingMedia.data} alt="" className="w-12 h-12 rounded-xl object-cover" />}
                   {pendingMedia?.type === "video" && (
-                    <div className="w-12 h-12 rounded-xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center flex-shrink-0">
-                      <Film size={18} className="text-purple-500" />
+                    <div className="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center flex-shrink-0">
+                      <Film size={18} className="text-purple-300" />
                     </div>
                   )}
                   {pendingMedia?.type === "file" && (
-                    <div className="w-12 h-12 rounded-xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center flex-shrink-0">
-                      <FileText size={18} className="text-green-500" />
+                    <div className="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center flex-shrink-0">
+                      <FileText size={18} className="text-green-300" />
                     </div>
                   )}
                   {audioBlob && (
                     <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center flex-shrink-0">
-                        <Mic size={14} className="text-blue-600" />
+                      <div className="w-8 h-8 rounded-full bg-blue-500/30 flex items-center justify-center flex-shrink-0">
+                        <Mic size={14} className="text-blue-300" />
                       </div>
-                      <span className="text-xs text-gray-600 dark:text-gray-400">Voice note ready to send</span>
+                      <span className="text-xs text-white/70">Voice note ready to send</span>
                     </div>
                   )}
-                  {pendingMedia && <span className="text-sm text-gray-700 dark:text-gray-300 truncate flex-1">{pendingMedia.name}</span>}
+                  {pendingMedia && <span className="text-sm text-white/70 truncate flex-1">{pendingMedia.name}</span>}
                   <button onClick={() => { setPendingMedia(null); setAudioBlob(null); }}
-                    className="text-gray-400 hover:text-red-500 transition-colors p-1">
+                    className="text-white/40 hover:text-red-400 transition-colors p-1">
                     <X size={16} />
                   </button>
                 </motion.div>
               )}
             </AnimatePresence>
 
-            {/* Input Bar — always at bottom, never moves */}
-            <div
-              className="flex-shrink-0 px-3 py-3 bg-white dark:bg-gray-900 border-t border-black/10 dark:border-white/10"
-              style={{ paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))" }}
-            >
+            {/* Input Bar */}
+            <div className="flex-shrink-0 px-3 py-3 bg-black/20 backdrop-blur-xl border-t border-white/10"
+              style={{ paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))" }}>
               {isRecording ? (
                 <div className="flex items-center gap-3">
                   <motion.button whileTap={{ scale: 0.9 }} onClick={cancelRecording}
-                    className="w-9 h-9 rounded-xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-500 flex-shrink-0">
+                    className="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center text-white/70 flex-shrink-0">
                     <X size={18} />
                   </motion.button>
-                  <div className="flex-1 flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
+                  <div className="flex-1 flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-red-500/20 border border-red-400/30">
                     <motion.div animate={{ opacity: [1, 0.3, 1] }} transition={{ duration: 1, repeat: Infinity }}
-                      className="w-2.5 h-2.5 bg-red-500 rounded-full flex-shrink-0" />
-                    <span className="text-sm font-medium text-red-600 dark:text-red-400">Recording</span>
-                    <span className="text-sm text-red-500 ml-auto">{formatRecording(recordingSeconds)}</span>
+                      className="w-2.5 h-2.5 bg-red-400 rounded-full flex-shrink-0" />
+                    <span className="text-sm font-medium text-red-300">Recording</span>
+                    <span className="text-sm text-red-400 ml-auto">{formatRecording(recordingSeconds)}</span>
                   </div>
                   <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.92 }} onClick={stopRecording}
                     className="w-9 h-9 bg-red-500 text-white rounded-xl flex items-center justify-center flex-shrink-0">
@@ -758,9 +727,7 @@ export default function MessagesPage() {
                   <div className="relative flex-shrink-0" ref={mediaMenuRef}>
                     <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.92 }}
                       onClick={() => setShowMediaMenu(!showMediaMenu)}
-                      className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all ${
-                        showMediaMenu ? "bg-blue-600 text-white" : "bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600"
-                      }`}>
+                      className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all ${showMediaMenu ? "bg-blue-500 text-white" : "bg-white/10 text-white/70 hover:bg-white/20"}`}>
                       <motion.div animate={{ rotate: showMediaMenu ? 45 : 0 }} transition={{ duration: 0.2 }}>
                         <Plus size={18} />
                       </motion.div>
@@ -772,15 +739,15 @@ export default function MessagesPage() {
                           animate={{ opacity: 1, scale: 1, y: 0 }}
                           exit={{ opacity: 0, scale: 0.88, y: 6 }}
                           transition={{ duration: 0.15 }}
-                          className="absolute bottom-full left-0 mb-2 bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-black/10 dark:border-white/10 overflow-hidden z-10 w-44"
+                          className="absolute bottom-full left-0 mb-2 bg-gray-900/95 backdrop-blur-xl rounded-2xl shadow-xl border border-white/10 overflow-hidden z-10 w-44"
                         >
                           {[
-                            { label: "Photo", type: "image" as const, icon: ImageIcon, color: "text-blue-600", bg: "bg-blue-50 dark:bg-blue-900/40" },
-                            { label: "Video", type: "video" as const, icon: Film, color: "text-purple-600", bg: "bg-purple-50 dark:bg-purple-900/40" },
-                            { label: "File", type: "file" as const, icon: Paperclip, color: "text-green-600", bg: "bg-green-50 dark:bg-green-900/40" },
+                            { label: "Photo", type: "image" as const, icon: ImageIcon, color: "text-blue-400", bg: "bg-blue-500/20" },
+                            { label: "Video", type: "video" as const, icon: Film, color: "text-purple-400", bg: "bg-purple-500/20" },
+                            { label: "File", type: "file" as const, icon: Paperclip, color: "text-green-400", bg: "bg-green-500/20" },
                           ].map(({ label, type, icon: Icon, color, bg }) => (
                             <button key={type} onClick={() => handleMediaMenuSelect(type)}
-                              className="flex items-center gap-3 w-full px-4 py-3 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700/60 transition-colors">
+                              className="flex items-center gap-3 w-full px-4 py-3 text-sm text-white/80 hover:bg-white/10 transition-colors">
                               <div className={`w-8 h-8 rounded-xl ${bg} flex items-center justify-center ${color}`}>
                                 <Icon size={15} />
                               </div>
@@ -792,37 +759,29 @@ export default function MessagesPage() {
                     </AnimatePresence>
                   </div>
 
-                  <input
-                    type="text"
-                    value={messageText}
+                  <input type="text" value={messageText}
                     onChange={(e) => handleTextChange(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && sendMessage()}
                     placeholder="Message..."
-                    className="flex-1 px-4 py-2.5 text-sm rounded-2xl border border-black/10 dark:border-white/10 bg-gray-50 dark:bg-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:bg-white dark:focus:bg-gray-700 transition-all"
+                    className="flex-1 px-4 py-2.5 text-sm rounded-2xl bg-white/10 border border-white/15 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-blue-400/50 focus:bg-white/15 transition-all"
                   />
 
                   <AnimatePresence mode="wait">
                     {messageText.trim() || pendingMedia || audioBlob ? (
                       <motion.button key="send"
                         initial={{ scale: 0.5, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.5, opacity: 0 }}
-                        transition={{ duration: 0.15 }}
-                        whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.92 }}
-                        onClick={sendMessage}
-                        disabled={sendingMsg}
-                        className="w-9 h-9 bg-blue-600 text-white rounded-xl flex items-center justify-center hover:bg-blue-700 transition-colors shadow-btn disabled:opacity-50 flex-shrink-0"
-                      >
+                        transition={{ duration: 0.15 }} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.92 }}
+                        onClick={sendMessage} disabled={sendingMsg}
+                        className="w-9 h-9 bg-blue-600 text-white rounded-xl flex items-center justify-center hover:bg-blue-500 transition-colors shadow-btn disabled:opacity-50 flex-shrink-0">
                         {sendingMsg ? <Loader2 size={15} className="animate-spin" /> : <Send size={15} />}
                       </motion.button>
                     ) : (
                       <motion.button key="mic"
                         initial={{ scale: 0.5, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.5, opacity: 0 }}
-                        transition={{ duration: 0.15 }}
-                        whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.92 }}
-                        onMouseDown={startRecording}
-                        onTouchStart={startRecording}
-                        className="w-9 h-9 bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 rounded-xl flex items-center justify-center hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 transition-colors flex-shrink-0"
-                        title="Hold to record"
-                      >
+                        transition={{ duration: 0.15 }} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.92 }}
+                        onMouseDown={startRecording} onTouchStart={startRecording}
+                        className="w-9 h-9 bg-white/10 text-white/70 rounded-xl flex items-center justify-center hover:bg-white/20 transition-colors flex-shrink-0"
+                        title="Hold to record">
                         <Mic size={17} />
                       </motion.button>
                     )}
