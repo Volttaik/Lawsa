@@ -256,11 +256,9 @@ function PostCard({ post, currentUser, onDelete }: {
             <div>
               <Link href={`/dashboard/profile/${post.authorId}`}
                 className="font-semibold text-gray-900 dark:text-white text-sm hover:text-blue-600 transition-colors">
-                {post.authorName}
+                @{post.authorUsername}
               </Link>
               <div className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400 flex-wrap mt-0.5">
-                <span>@{post.authorUsername}</span>
-                <span>·</span>
                 <ReactTimeago date={post.createdAt} />
                 {post.category && post.category !== "general" && (
                   <><span>·</span><CategoryBadge category={post.category} /></>
@@ -328,7 +326,7 @@ function PostCard({ post, currentUser, onDelete }: {
                   transition={{ delay: i * 0.04 }} className="flex gap-2.5">
                   <Avatar src={comment.authorImage} name={comment.authorName} size={26} />
                   <div className="flex-1 bg-gray-50 dark:bg-gray-800 rounded-xl px-3 py-2 border border-black/5 dark:border-white/5">
-                    <div className="text-xs font-semibold text-gray-900 dark:text-white">{comment.authorName}</div>
+                    <div className="text-xs font-semibold text-gray-900 dark:text-white">@{comment.authorUsername || comment.authorName}</div>
                     <div className="text-xs text-gray-700 dark:text-gray-300 mt-0.5">{comment.content}</div>
                   </div>
                 </motion.div>
