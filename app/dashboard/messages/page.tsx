@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Send, Loader2, ArrowLeft, MessageCircle, Users,
   Image as ImageIcon, Film, Paperclip, X, Play, FileText,
-  Plus, Mic, StopCircle, Check, CheckCheck,
+  Plus, Mic, StopCircle, Check, CheckCheck, Palette,
 } from "lucide-react";
 
 interface Conversation {
@@ -33,6 +33,18 @@ interface ConnectedUser {
   username: string;
   profileImage?: string;
 }
+
+const CHAT_BACKGROUNDS = [
+  { id: "default", label: "Default", value: "" },
+  { id: "blue", label: "Ocean", value: "linear-gradient(135deg,#e0f2fe 0%,#bfdbfe 100%)" },
+  { id: "purple", label: "Dusk", value: "linear-gradient(135deg,#ede9fe 0%,#ddd6fe 100%)" },
+  { id: "rose", label: "Rose", value: "linear-gradient(135deg,#ffe4e6 0%,#fecdd3 100%)" },
+  { id: "green", label: "Forest", value: "linear-gradient(135deg,#d1fae5 0%,#a7f3d0 100%)" },
+  { id: "amber", label: "Sand", value: "linear-gradient(135deg,#fef3c7 0%,#fde68a 100%)" },
+  { id: "dark", label: "Night", value: "linear-gradient(135deg,#1e1b4b 0%,#312e81 100%)" },
+  { id: "pattern1", label: "Dots", value: "radial-gradient(circle,#dbeafe 1px,transparent 1px)", bgSize: "20px 20px", bgColor: "#f8fafc" },
+  { id: "pattern2", label: "Lines", value: "repeating-linear-gradient(45deg,#f1f5f9 0,#f1f5f9 1px,transparent 0,transparent 50%)", bgSize: "10px 10px", bgColor: "#ffffff" },
+];
 
 function Avatar({ src, name, size = 40 }: { src?: string; name: string; size?: number }) {
   if (src) return <img src={src} alt={name} className="rounded-full object-cover flex-shrink-0" style={{ width: size, height: size }} />;
@@ -93,14 +105,34 @@ function TypingIndicator() {
   );
 }
 
-function MediaPreview({ url, type }: { url: string; type: string }) {
+function FadeImg({ src, alt, className, style }: { src: string; alt: string; className?: string; style?: React.CSSProperties }) {
   const [loaded, setLoaded] = useState(false);
+  return (
+    <img
+      src={src}
+      alt={alt}
+      className={`transition-all duration-400 ${loaded ? "opacity-100 blur-0" : "opacity-0 blur-sm"} ${className || ""}`}
+      style={style}
+      onLoad={() => setLoaded(true)}
+    />
+  );
+}
+
+function MediaPreview({ url, type, isMe }: { url: string; type: string; isMe: boolean }) {
+  const [loaded, setLoaded] = useState(false);
+  const bubbleBase = isMe
+    ? "bg-blue-600 text-white rounded-[18px] rounded-br-[4px]"
+    : "bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-[18px] rounded-bl-[4px] shadow-sm";
+
   if (type === "image") {
     return (
-      <div className="relative mt-1 max-w-[220px]">
+      <div className="relative mt-1 max-w-[220px] overflow-hidden rounded-2xl">
         {!loaded && <div className="skeleton w-[220px] h-32 rounded-2xl" />}
-        <img src={url} alt="Image" onLoad={() => setLoaded(true)}
-          className={`rounded-2xl max-w-[220px] max-h-56 object-cover ${loaded ? "block" : "hidden"}`} />
+        <FadeImg
+          src={url}
+          alt="Image"
+          className={`max-w-[220px] max-h-56 object-cover rounded-2xl ${loaded ? "block" : "hidden"}`}
+        />
       </div>
     );
   }
@@ -121,8 +153,13 @@ function MediaPreview({ url, type }: { url: string; type: string }) {
   }
   if (type === "audio") {
     return (
-      <div className="mt-1 max-w-[260px]">
-        <audio src={url} controls className="w-full rounded-xl" style={{ height: 40 }} />
+      <div className={`mt-1 px-3 py-2.5 min-w-[200px] max-w-[260px] flex items-center gap-3 ${bubbleBase}`}>
+        <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${isMe ? "bg-white/20" : "bg-blue-100 dark:bg-blue-900/40"}`}>
+          <Mic size={14} className={isMe ? "text-white" : "text-blue-600"} />
+        </div>
+        <div className="flex-1 min-w-0">
+          <audio src={url} controls className="w-full h-8 rounded-lg" />
+        </div>
       </div>
     );
   }
@@ -130,7 +167,7 @@ function MediaPreview({ url, type }: { url: string; type: string }) {
     const filename = url.split("/").pop() || "File";
     return (
       <a href={url} target="_blank" rel="noopener noreferrer"
-        className="mt-1 flex items-center gap-2 bg-black/10 rounded-2xl px-4 py-3 text-sm hover:bg-black/15 transition-colors max-w-[220px]">
+        className={`mt-1 flex items-center gap-2 px-4 py-3 text-sm hover:opacity-90 transition-opacity max-w-[220px] ${bubbleBase}`}>
         <FileText size={16} />
         <span className="truncate">{filename}</span>
       </a>
@@ -156,8 +193,9 @@ export default function MessagesPage() {
   const [otherUserOnline, setOtherUserOnline] = useState(false);
   const [otherUserLastOnline, setOtherUserLastOnline] = useState<string | null>(null);
   const [otherUserTyping, setOtherUserTyping] = useState(false);
+  const [chatBg, setChatBg] = useState<typeof CHAT_BACKGROUNDS[0]>(CHAT_BACKGROUNDS[0]);
+  const [showBgPicker, setShowBgPicker] = useState(false);
 
-  // Voice recording
   const [isRecording, setIsRecording] = useState(false);
   const [recordingSeconds, setRecordingSeconds] = useState(0);
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
@@ -170,6 +208,7 @@ export default function MessagesPage() {
   const videoInputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const mediaMenuRef = useRef<HTMLDivElement>(null);
+  const bgPickerRef = useRef<HTMLDivElement>(null);
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const selectedConvRef = useRef<Conversation | null>(null);
@@ -189,13 +228,21 @@ export default function MessagesPage() {
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
-      if (mediaMenuRef.current && !mediaMenuRef.current.contains(e.target as Node)) {
-        setShowMediaMenu(false);
-      }
+      if (mediaMenuRef.current && !mediaMenuRef.current.contains(e.target as Node)) setShowMediaMenu(false);
+      if (bgPickerRef.current && !bgPickerRef.current.contains(e.target as Node)) setShowBgPicker(false);
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, []);
+
+  useEffect(() => {
+    if (selectedConv) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => { document.body.style.overflow = ""; };
+  }, [selectedConv]);
 
   const pollConversation = useCallback(async () => {
     const conv = selectedConvRef.current;
@@ -214,17 +261,13 @@ export default function MessagesPage() {
     if (selectedConv && selectedConv._id !== "new") {
       pollRef.current = setInterval(pollConversation, 3000);
     }
-    return () => {
-      if (pollRef.current) clearInterval(pollRef.current);
-    };
+    return () => { if (pollRef.current) clearInterval(pollRef.current); };
   }, [selectedConv, pollConversation]);
 
   const sendTypingSignal = useCallback(async () => {
     const conv = selectedConvRef.current;
     if (!conv || conv._id === "new") return;
-    try {
-      await fetch(`/api/messages/${conv._id}/typing`, { method: "POST" });
-    } catch {}
+    try { await fetch(`/api/messages/${conv._id}/typing`, { method: "POST" }); } catch {}
   }, []);
 
   const handleTextChange = (val: string) => {
@@ -273,6 +316,7 @@ export default function MessagesPage() {
     setPendingMedia(null);
     setMessageText("");
     setAudioBlob(null);
+    setShowBgPicker(false);
     stopRecording();
   };
 
@@ -309,7 +353,6 @@ export default function MessagesPage() {
     }, 80);
   };
 
-  // Voice recording
   const startRecording = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -399,6 +442,14 @@ export default function MessagesPage() {
   const formatRecording = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
   const skeletonRows = [false, true, false, true, true, false];
 
+  const chatBgStyle: React.CSSProperties = chatBg.id === "default"
+    ? {}
+    : {
+        background: chatBg.value,
+        backgroundSize: (chatBg as { bgSize?: string }).bgSize || "auto",
+        backgroundColor: (chatBg as { bgColor?: string }).bgColor || undefined,
+      };
+
   return (
     <>
       <input ref={imageInputRef} type="file" accept="image/*" className="hidden" onChange={(e) => handleFileChange(e, "image")} />
@@ -477,7 +528,7 @@ export default function MessagesPage() {
         </div>
       </div>
 
-      {/* Full-screen Chat Overlay */}
+      {/* Full-screen Chat Overlay — covers nav bar completely */}
       <AnimatePresence>
         {selectedConv && (
           <motion.div
@@ -485,10 +536,11 @@ export default function MessagesPage() {
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
             transition={{ type: "spring", damping: 28, stiffness: 260 }}
-            className="fixed inset-0 z-[100] flex flex-col bg-gray-50 dark:bg-gray-950"
+            className="fixed inset-0 z-[200] flex flex-col"
+            style={{ top: 0, left: 0, right: 0, bottom: 0 }}
           >
             {/* Chat Header */}
-            <div className="flex-shrink-0 flex items-center gap-3 px-4 bg-white dark:bg-gray-900 border-b border-black/10 dark:border-white/10"
+            <div className="flex-shrink-0 flex items-center gap-3 px-4 bg-white dark:bg-gray-900 border-b border-black/10 dark:border-white/10 shadow-soft"
               style={{ paddingTop: "max(0.75rem, env(safe-area-inset-top))", paddingBottom: "0.75rem" }}>
               <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.9 }}
                 onClick={closeChat}
@@ -506,22 +558,73 @@ export default function MessagesPage() {
               <div className="flex-1 min-w-0">
                 <div className="font-semibold text-gray-900 dark:text-white truncate">{selectedConv.otherUser?.name}</div>
                 {otherUserTyping ? (
-                  <motion.span
-                    key="typing"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="text-[10px] text-blue-500 font-medium italic"
-                  >
-                    typing...
-                  </motion.span>
+                  <motion.span key="typing" initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                    className="text-[10px] text-blue-500 font-medium italic">typing...</motion.span>
                 ) : (
                   <OnlineStatus isOnline={otherUserOnline} lastOnline={otherUserLastOnline} />
                 )}
               </div>
+
+              {/* Background picker button */}
+              <div className="relative flex-shrink-0" ref={bgPickerRef}>
+                <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.9 }}
+                  onClick={() => setShowBgPicker(!showBgPicker)}
+                  className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all ${showBgPicker ? "bg-blue-600 text-white" : "text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"}`}
+                  title="Chat background">
+                  <Palette size={18} />
+                </motion.button>
+                <AnimatePresence>
+                  {showBgPicker && (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.88, y: 6 }}
+                      animate={{ opacity: 1, scale: 1, y: 0 }}
+                      exit={{ opacity: 0, scale: 0.88, y: 6 }}
+                      transition={{ duration: 0.15 }}
+                      className="absolute top-full right-0 mt-2 bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-black/10 dark:border-white/10 p-3 z-10 w-56"
+                    >
+                      <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2 px-1">Chat Background</p>
+                      <div className="grid grid-cols-3 gap-2">
+                        {CHAT_BACKGROUNDS.map((bg) => (
+                          <button
+                            key={bg.id}
+                            onClick={() => { setChatBg(bg); setShowBgPicker(false); }}
+                            className={`relative h-12 rounded-xl border-2 transition-all overflow-hidden ${chatBg.id === bg.id ? "border-blue-500 scale-105" : "border-transparent hover:border-gray-300"}`}
+                            style={{
+                              background: bg.id === "default" ? "#f8fafc" : bg.value,
+                              backgroundSize: (bg as { bgSize?: string }).bgSize || "auto",
+                              backgroundColor: (bg as { bgColor?: string }).bgColor || undefined,
+                            }}
+                            title={bg.label}
+                          >
+                            {bg.id === "default" && (
+                              <div className="absolute inset-0 flex items-center justify-center">
+                                <span className="text-[9px] text-gray-500 font-medium">None</span>
+                              </div>
+                            )}
+                            {chatBg.id === bg.id && (
+                              <div className="absolute inset-0 flex items-center justify-center">
+                                <div className="w-4 h-4 rounded-full bg-blue-500 flex items-center justify-center">
+                                  <Check size={9} className="text-white" />
+                                </div>
+                              </div>
+                            )}
+                          </button>
+                        ))}
+                      </div>
+                      <p className="text-[10px] text-center text-gray-400 mt-2">{chatBg.label}</p>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
             </div>
 
-            {/* Messages */}
-            <div className="flex-1 overflow-y-auto scrollbar-hide px-4 py-4 space-y-3">
+            {/* Messages area */}
+            <div
+              className="flex-1 overflow-y-auto scrollbar-hide px-4 py-4 space-y-3"
+              style={chatBg.id === "default"
+                ? { background: "var(--chat-bg, #f9fafb)" }
+                : chatBgStyle}
+            >
               {loadingMessages ? (
                 <div className="space-y-4">
                   {skeletonRows.map((isMe, i) => <MessageSkeleton key={i} isMe={isMe} />)}
@@ -538,7 +641,7 @@ export default function MessagesPage() {
                         <p className="font-medium text-gray-700 dark:text-gray-300 text-sm">
                           Say hello to {selectedConv.otherUser?.name?.split(" ")[0]}!
                         </p>
-                        <p className="text-xs text-gray-400 dark:text-gray-600 mt-0.5">Start the conversation below 👋</p>
+                        <p className="text-xs text-gray-400 dark:text-gray-600 mt-0.5">Start the conversation below</p>
                       </div>
                     </motion.div>
                   )}
@@ -546,6 +649,7 @@ export default function MessagesPage() {
                   <AnimatePresence initial={false}>
                     {messages.map((msg) => {
                       const isMe = msg.senderId === currentUserId;
+                      const hasOnlyMedia = !msg.content && msg.mediaUrl;
                       return (
                         <motion.div key={msg._id}
                           initial={{ opacity: 0, y: 14, scale: 0.94 }}
@@ -555,15 +659,27 @@ export default function MessagesPage() {
                         >
                           {!isMe && <Avatar src={msg.senderImage} name={msg.senderName} size={30} />}
                           <div className={`max-w-[75%] flex flex-col ${isMe ? "items-end" : "items-start"}`}>
-                            {msg.mediaUrl && <MediaPreview url={msg.mediaUrl} type={msg.mediaType || "file"} />}
+                            {msg.mediaUrl && msg.mediaType !== "audio" && (
+                              <MediaPreview url={msg.mediaUrl} type={msg.mediaType || "file"} isMe={isMe} />
+                            )}
+                            {msg.mediaUrl && msg.mediaType === "audio" && (
+                              <MediaPreview url={msg.mediaUrl} type="audio" isMe={isMe} />
+                            )}
                             {msg.content && (
-                              <div className={`px-4 py-2.5 text-sm mt-1 leading-relaxed ${
+                              <div className={`px-4 py-2.5 text-sm leading-relaxed ${
+                                msg.mediaUrl && msg.mediaType !== "audio" ? "mt-1" : ""
+                              } ${
                                 isMe
                                   ? "bg-blue-600 text-white rounded-[18px] rounded-br-[4px]"
                                   : "bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-[18px] rounded-bl-[4px] shadow-sm"
                               }`}>
                                 {msg.content}
                               </div>
+                            )}
+                            {hasOnlyMedia && !msg.content && msg.mediaType !== "audio" && msg.mediaType !== "image" && msg.mediaType !== "video" && (
+                              <span className="text-[10px] text-gray-400 mt-0.5">
+                                {msg.mediaType === "file" ? "📎 File" : "Media"}
+                              </span>
                             )}
                             {isMe && (
                               <div className="flex items-center gap-1 mt-0.5 pr-1">
@@ -603,7 +719,7 @@ export default function MessagesPage() {
                       <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center flex-shrink-0">
                         <Mic size={14} className="text-blue-600" />
                       </div>
-                      <span className="text-xs text-gray-600 dark:text-gray-400">Voice note ready</span>
+                      <span className="text-xs text-gray-600 dark:text-gray-400">Voice note ready to send</span>
                     </div>
                   )}
                   {pendingMedia && <span className="text-sm text-gray-700 dark:text-gray-300 truncate flex-1">{pendingMedia.name}</span>}
@@ -615,12 +731,12 @@ export default function MessagesPage() {
               )}
             </AnimatePresence>
 
-            {/* Input Bar */}
-            <div className="flex-shrink-0 px-3 py-3 bg-white dark:bg-gray-900 border-t border-black/10 dark:border-white/10"
-              style={{ paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))" }}>
-
+            {/* Input Bar — always at bottom, never moves */}
+            <div
+              className="flex-shrink-0 px-3 py-3 bg-white dark:bg-gray-900 border-t border-black/10 dark:border-white/10"
+              style={{ paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))" }}
+            >
               {isRecording ? (
-                /* Recording UI */
                 <div className="flex items-center gap-3">
                   <motion.button whileTap={{ scale: 0.9 }} onClick={cancelRecording}
                     className="w-9 h-9 rounded-xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-500 flex-shrink-0">
@@ -639,14 +755,11 @@ export default function MessagesPage() {
                 </div>
               ) : (
                 <div className="flex items-center gap-2">
-                  {/* + Media Button */}
                   <div className="relative flex-shrink-0" ref={mediaMenuRef}>
                     <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.92 }}
                       onClick={() => setShowMediaMenu(!showMediaMenu)}
                       className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all ${
-                        showMediaMenu
-                          ? "bg-blue-600 text-white"
-                          : "bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600"
+                        showMediaMenu ? "bg-blue-600 text-white" : "bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600"
                       }`}>
                       <motion.div animate={{ rotate: showMediaMenu ? 45 : 0 }} transition={{ duration: 0.2 }}>
                         <Plus size={18} />
@@ -679,7 +792,6 @@ export default function MessagesPage() {
                     </AnimatePresence>
                   </div>
 
-                  {/* Text input */}
                   <input
                     type="text"
                     value={messageText}
@@ -689,7 +801,6 @@ export default function MessagesPage() {
                     className="flex-1 px-4 py-2.5 text-sm rounded-2xl border border-black/10 dark:border-white/10 bg-gray-50 dark:bg-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:bg-white dark:focus:bg-gray-700 transition-all"
                   />
 
-                  {/* Send / Mic / Voice-send */}
                   <AnimatePresence mode="wait">
                     {messageText.trim() || pendingMedia || audioBlob ? (
                       <motion.button key="send"
