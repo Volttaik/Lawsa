@@ -3,7 +3,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, MessageCircle, PlusSquare, Users, User, Bell, Loader2, Shield } from "lucide-react";
+import { Home, MessageCircle, PlusSquare, Users, User, Bell, Loader2 } from "lucide-react";
 import { Logo } from "@/components/Logo";
 
 interface CurrentUser {
@@ -84,7 +84,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     { href: "/dashboard", icon: Home, label: "Home" },
     { href: "/dashboard/messages", icon: MessageCircle, label: "Chats" },
     { href: "/dashboard/post", icon: PlusSquare, label: "Post" },
-    { href: "/dashboard/clans", icon: Shield, label: "Clans" },
+    { href: "/dashboard/connect", icon: Users, label: "Connect" },
     { href: `/dashboard/profile/${userId}`, icon: User, label: "Profile" },
   ];
 
@@ -160,8 +160,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           {navItems.map(({ href, icon: Icon, label }) => {
             const isActive = label === "Profile"
               ? pathname.includes("/profile/")
-              : label === "Clans"
-              ? pathname.includes("/clans")
+              : label === "Connect"
+              ? pathname.includes("/connect")
               : pathname === href;
 
             return (
