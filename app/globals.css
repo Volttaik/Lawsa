@@ -80,8 +80,8 @@
   }
   .fade-in-img {
     opacity: 0;
-    transition: opacity 0.4s ease, filter 0.4s ease;
-    filter: blur(4px);
+    transition: opacity 0.9s ease, filter 0.9s ease;
+    filter: blur(6px);
   }
   .fade-in-img.loaded {
     opacity: 1;

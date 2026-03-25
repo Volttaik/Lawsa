@@ -121,34 +121,67 @@ function TypingIndicator() {
 /* ---------- Voice Note Player ---------- */
 function VoiceNotePlayer({ url, isMe }: { url: string; isMe: boolean }) {
   const audioRef = useRef<HTMLAudioElement>(null);
+  const rafRef = useRef<number | null>(null);
   const [playing, setPlaying] = useState(false);
   const [duration, setDuration] = useState(0);
   const [current, setCurrent] = useState(0);
 
-  const fmt = (s: number) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
+  const fmt = (s: number) => {
+    if (!s || !isFinite(s)) return "0:00";
+    return `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
+  };
+
+  const tick = () => {
+    if (audioRef.current) setCurrent(audioRef.current.currentTime);
+    rafRef.current = requestAnimationFrame(tick);
+  };
+
+  const handleDuration = () => {
+    const d = audioRef.current?.duration;
+    if (d && isFinite(d)) setDuration(d);
+  };
 
   const toggle = () => {
     if (!audioRef.current) return;
-    if (playing) { audioRef.current.pause(); setPlaying(false); }
-    else { audioRef.current.play(); setPlaying(true); }
+    if (playing) {
+      audioRef.current.pause();
+      setPlaying(false);
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    } else {
+      audioRef.current.play();
+      setPlaying(true);
+      rafRef.current = requestAnimationFrame(tick);
+    }
   };
 
   const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!audioRef.current) return;
-    audioRef.current.currentTime = Number(e.target.value);
-    setCurrent(Number(e.target.value));
+    const val = Number(e.target.value);
+    audioRef.current.currentTime = val;
+    setCurrent(val);
   };
 
-  const progress = duration > 0 ? current / duration : 0;
+  const handleEnded = () => {
+    setPlaying(false);
+    setCurrent(0);
+    if (rafRef.current) cancelAnimationFrame(rafRef.current);
+  };
+
+  useEffect(() => {
+    return () => { if (rafRef.current) cancelAnimationFrame(rafRef.current); };
+  }, []);
+
+  const knownDuration = duration > 0 && isFinite(duration);
+  const progress = knownDuration ? current / duration : 0;
 
   return (
     <div className={`flex items-center gap-3 px-3.5 py-2.5 rounded-2xl min-w-[230px] max-w-[280px] ${
       isMe ? "rounded-br-sm bg-blue-600" : "rounded-bl-sm bg-gray-800/70 backdrop-blur-md"
     }`}>
       <audio ref={audioRef} src={url} preload="metadata"
-        onLoadedMetadata={() => setDuration(audioRef.current?.duration || 0)}
-        onTimeUpdate={() => setCurrent(audioRef.current?.currentTime || 0)}
-        onEnded={() => { setPlaying(false); setCurrent(0); }} />
+        onLoadedMetadata={handleDuration}
+        onDurationChange={handleDuration}
+        onEnded={handleEnded} />
 
       <button onClick={toggle}
         className="w-9 h-9 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center flex-shrink-0 transition-all">
@@ -157,14 +190,14 @@ function VoiceNotePlayer({ url, isMe }: { url: string; isMe: boolean }) {
           : <Play size={15} className="text-white ml-0.5" />}
       </button>
 
-      <div className="flex-1 min-w-0 flex flex-col gap-1">
-        <div className="relative w-full h-1 rounded-full bg-white/20 overflow-hidden">
-          <div className="absolute inset-y-0 left-0 rounded-full bg-white transition-all"
+      <div className="flex-1 min-w-0 flex flex-col gap-1.5">
+        <div className="relative w-full h-1.5 rounded-full bg-white/20">
+          <div className="absolute inset-y-0 left-0 rounded-full bg-white transition-none"
             style={{ width: `${progress * 100}%` }} />
           <input
-            type="range" min={0} max={duration || 1} step={0.1} value={current}
+            type="range" min={0} max={knownDuration ? duration : 1} step={0.01} value={current}
             onChange={handleSeek}
-            className="absolute inset-0 w-full opacity-0 cursor-pointer"
+            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
           />
         </div>
         <div className="flex items-center justify-between">
@@ -173,7 +206,7 @@ function VoiceNotePlayer({ url, isMe }: { url: string; isMe: boolean }) {
             <span className="text-[9px] text-white/50 font-medium uppercase tracking-wide">Voice</span>
           </div>
           <span className="text-[10px] text-white/60 tabular-nums">
-            {playing ? fmt(current) : fmt(duration)}
+            {playing ? fmt(current) : knownDuration ? fmt(duration) : "0:00"}
           </span>
         </div>
       </div>
