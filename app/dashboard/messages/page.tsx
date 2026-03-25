@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { cache } from "@/lib/cache";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -36,6 +36,12 @@ interface ConnectedUser {
   name: string;
   username: string;
   profileImage?: string;
+}
+
+interface ClanInfo {
+  id: string;
+  name: string;
+  logo?: string;
 }
 
 interface ChatBg {
@@ -122,11 +128,23 @@ function TypingIndicator() {
 }
 
 /* ---------- Voice Note Player ---------- */
+const WAVEFORM_TEMPLATE = [0.4,0.6,0.8,0.5,0.9,0.65,0.75,0.45,0.85,0.55,0.7,0.4,0.95,0.6,0.5,0.8,0.35,0.7,0.9,0.55,0.65,0.45,0.8,0.6,0.7,0.5,0.4,0.85,0.65,0.75];
+
 function VoiceNotePlayer({ url, isMe }: { url: string; isMe: boolean }) {
   const audioRef = useRef<HTMLAudioElement>(null);
   const [playing, setPlaying] = useState(false);
   const [duration, setDuration] = useState(0);
   const [current, setCurrent] = useState(0);
+
+  const bars = useMemo(() => {
+    let seed = 0;
+    for (let i = 0; i < url.length; i++) seed = (seed * 31 + url.charCodeAt(i)) & 0xffff;
+    return WAVEFORM_TEMPLATE.map((h) => {
+      seed = (seed * 1664525 + 1013904223) & 0xffffffff;
+      const rand = (seed & 0xffff) / 0xffff;
+      return Math.max(0.15, Math.min(1.0, h * 0.65 + rand * 0.35));
+    });
+  }, [url]);
 
   const fmt = (s: number) => {
     if (!s || !isFinite(s)) return "0:00";
@@ -140,24 +158,12 @@ function VoiceNotePlayer({ url, isMe }: { url: string; isMe: boolean }) {
 
   const toggle = () => {
     if (!audioRef.current) return;
-    if (playing) {
-      audioRef.current.pause();
-      setPlaying(false);
-    } else {
-      audioRef.current.play();
-      setPlaying(true);
-    }
+    if (playing) { audioRef.current.pause(); setPlaying(false); }
+    else { audioRef.current.play(); setPlaying(true); }
   };
 
-  const handleTimeUpdate = () => {
-    if (audioRef.current) setCurrent(audioRef.current.currentTime);
-  };
-
-  const handleEnded = () => {
-    setPlaying(false);
-    setCurrent(0);
-  };
-
+  const handleTimeUpdate = () => { if (audioRef.current) setCurrent(audioRef.current.currentTime); };
+  const handleEnded = () => { setPlaying(false); setCurrent(0); };
   const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = Number(e.target.value);
     if (audioRef.current) audioRef.current.currentTime = val;
@@ -166,10 +172,13 @@ function VoiceNotePlayer({ url, isMe }: { url: string; isMe: boolean }) {
 
   const knownDuration = duration > 0 && isFinite(duration);
   const progress = knownDuration ? current / duration : 0;
+  const playedCount = Math.floor(progress * bars.length);
+
+  const sent = isMe;
 
   return (
-    <div className={`flex items-center gap-3 px-3.5 py-2.5 rounded-2xl min-w-[220px] max-w-[280px] ${
-      isMe ? "rounded-br-sm bg-blue-600" : "rounded-bl-sm bg-gray-800/70 backdrop-blur-md"
+    <div className={`flex items-center gap-2.5 px-3 py-2.5 rounded-[22px] min-w-[220px] max-w-[280px] ${
+      sent ? "rounded-br-[6px] bg-blue-600" : "rounded-bl-[6px] bg-white border border-black/10 shadow-sm"
     }`}>
       <audio ref={audioRef} src={url} preload="metadata"
         onLoadedMetadata={handleDuration}
@@ -178,31 +187,45 @@ function VoiceNotePlayer({ url, isMe }: { url: string; isMe: boolean }) {
         onEnded={handleEnded} />
 
       <button onClick={toggle}
-        className="w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center flex-shrink-0 transition-all">
+        className={`w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 transition-all active:scale-90 ${
+          sent ? "bg-white/25 hover:bg-white/35" : "bg-blue-600 hover:bg-blue-700"
+        }`}>
         {playing
-          ? <Pause size={14} className="text-white" />
-          : <Play size={14} className="text-white ml-0.5" />}
+          ? <Pause size={15} className="text-white" />
+          : <Play size={15} className="text-white ml-0.5" />}
       </button>
 
-      <div className="flex-1 min-w-0 flex flex-col gap-1.5">
+      <div className="flex-1 flex flex-col gap-1.5 min-w-0">
         <input
-          type="range"
-          min={0}
-          max={knownDuration ? duration : 100}
-          step={0.01}
-          value={knownDuration ? current : 0}
-          onChange={handleSeek}
-          className="w-full h-1 rounded-full appearance-none cursor-pointer"
-          style={{
-            background: `linear-gradient(to right, rgba(255,255,255,0.9) ${progress * 100}%, rgba(255,255,255,0.25) ${progress * 100}%)`,
-          }}
+          type="range" min={0} max={knownDuration ? duration : 100} step={0.01}
+          value={knownDuration ? current : 0} onChange={handleSeek}
+          className="absolute opacity-0 w-0 h-0 pointer-events-none"
         />
-        <div className="flex items-center justify-between">
-          <span className="text-[9px] text-white/50 font-medium uppercase tracking-wide">Voice</span>
-          <span className="text-[10px] text-white/70 tabular-nums">
-            {playing || current > 0 ? fmt(current) : knownDuration ? fmt(duration) : "0:00"}
-          </span>
+        <div
+          className="flex items-center gap-[2.5px] h-7 cursor-pointer"
+          onClick={(e) => {
+            if (!knownDuration || !audioRef.current) return;
+            const rect = (e.currentTarget as HTMLDivElement).getBoundingClientRect();
+            const ratio = (e.clientX - rect.left) / rect.width;
+            const newTime = ratio * duration;
+            audioRef.current.currentTime = newTime;
+            setCurrent(newTime);
+          }}
+        >
+          {bars.map((h, i) => (
+            <div key={i} className="rounded-full flex-1 transition-all duration-100"
+              style={{
+                height: `${h * 100}%`,
+                backgroundColor: sent
+                  ? i < playedCount ? "rgba(255,255,255,1)" : "rgba(255,255,255,0.35)"
+                  : i < playedCount ? "#2563eb" : "#2563eb55",
+              }}
+            />
+          ))}
         </div>
+        <span className={`text-[10px] font-medium tabular-nums self-end leading-none ${sent ? "text-white/70" : "text-gray-500"}`}>
+          {playing || current > 0 ? fmt(current) : knownDuration ? fmt(duration) : "0:00"}
+        </span>
       </div>
     </div>
   );
@@ -298,6 +321,9 @@ export default function MessagesPage() {
   const [showBgPicker, setShowBgPicker] = useState(false);
   const [customBgUrl, setCustomBgUrl] = useState<string | null>(null);
 
+  const [clanInfo, setClanInfo] = useState<ClanInfo | null>(null);
+  const [isClanChat, setIsClanChat] = useState(false);
+
   const [isRecording, setIsRecording] = useState(false);
   const [recordingSeconds, setRecordingSeconds] = useState(0);
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
@@ -338,7 +364,12 @@ export default function MessagesPage() {
   }, []);
 
   useEffect(() => {
-    fetch("/api/auth/me").then((r) => r.json()).then((d) => setCurrentUserId(d.user?._id || d.user?.id || null));
+    fetch("/api/auth/me").then((r) => r.json()).then((d) => {
+      setCurrentUserId(d.user?._id || d.user?.id || null);
+      if (d.user?.clanId) {
+        setClanInfo({ id: d.user.clanId, name: d.user.clanName || "World Chat", logo: d.user.clanLogo || "" });
+      }
+    });
     loadConversations();
     loadUsers();
     const convPoll = setInterval(() => loadConversations(true), 10000);
@@ -376,12 +407,24 @@ export default function MessagesPage() {
     const conv = selectedConvRef.current;
     if (!conv || conv._id === "new") return;
     try {
-      const res = await fetch(`/api/messages/${conv._id}`);
-      const data = await res.json();
-      if (data.messages) setMessages(data.messages);
-      if (typeof data.otherUserOnline === "boolean") setOtherUserOnline(data.otherUserOnline);
-      if (data.otherUserLastOnline !== undefined) setOtherUserLastOnline(data.otherUserLastOnline);
-      if (typeof data.otherUserTyping === "boolean") setOtherUserTyping(data.otherUserTyping);
+      if (conv._id.startsWith("clan-")) {
+        const clanId = conv._id.replace("clan-", "");
+        const res = await fetch(`/api/clans/${clanId}/chat`);
+        const data = await res.json();
+        if (data.messages) {
+          setMessages(data.messages.map((m: any) => ({
+            _id: m._id, senderId: m.senderId, senderName: m.senderName,
+            senderImage: m.senderImage, content: m.content, createdAt: m.createdAt,
+          })));
+        }
+      } else {
+        const res = await fetch(`/api/messages/${conv._id}`);
+        const data = await res.json();
+        if (data.messages) setMessages(data.messages);
+        if (typeof data.otherUserOnline === "boolean") setOtherUserOnline(data.otherUserOnline);
+        if (data.otherUserLastOnline !== undefined) setOtherUserLastOnline(data.otherUserLastOnline);
+        if (typeof data.otherUserTyping === "boolean") setOtherUserTyping(data.otherUserTyping);
+      }
     } catch {}
   }, []);
 
@@ -434,7 +477,21 @@ export default function MessagesPage() {
     setAudioBlob(null);
     setPendingMedia(null);
     setLoadingMessages(true);
-    if (conv._id !== "new") {
+    const isClan = conv._id.startsWith("clan-");
+    setIsClanChat(isClan);
+    if (isClan) {
+      const clanId = conv._id.replace("clan-", "");
+      try {
+        const res = await fetch(`/api/clans/${clanId}/chat`);
+        const data = await res.json();
+        if (data.messages) {
+          setMessages(data.messages.map((m: any) => ({
+            _id: m._id, senderId: m.senderId, senderName: m.senderName,
+            senderImage: m.senderImage, content: m.content, createdAt: m.createdAt,
+          })));
+        }
+      } catch {}
+    } else if (conv._id !== "new") {
       const res = await fetch(`/api/messages/${conv._id}`);
       const data = await res.json();
       setMessages(data.messages || []);
@@ -452,6 +509,7 @@ export default function MessagesPage() {
     setMessageText("");
     setAudioBlob(null);
     setShowBgPicker(false);
+    setIsClanChat(false);
     stopRecording();
   };
 
@@ -550,9 +608,31 @@ export default function MessagesPage() {
     const hasText = messageText.trim();
     const hasMedia = pendingMedia || audioBlob;
     if (!hasText && !hasMedia) return;
-    if (!selectedConv?.otherUser) return;
+    if (!isClanChat && !selectedConv?.otherUser) return;
     if (pendingMedia?.uploading) return;
     setSendingMsg(true);
+
+    if (isClanChat && selectedConv?._id.startsWith("clan-")) {
+      const clanId = selectedConv._id.replace("clan-", "");
+      if (!hasText) { setSendingMsg(false); return; }
+      try {
+        const res = await fetch(`/api/clans/${clanId}/chat`, {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ content: messageText.trim() }),
+        });
+        const data = await res.json();
+        if (data.message) {
+          const m = data.message;
+          setMessages((prev) => [...prev, {
+            _id: m._id, senderId: m.senderId, senderName: m.senderName,
+            senderImage: m.senderImage, content: m.content, createdAt: m.createdAt,
+          }]);
+          setMessageText("");
+        }
+      } catch {}
+      setSendingMsg(false);
+      return;
+    }
 
     let mediaUrlToSend = pendingMedia?.serverUrl || "";
     let mediaTypeToSend = pendingMedia?.type || "";
@@ -575,7 +655,7 @@ export default function MessagesPage() {
       }
     }
 
-    const body: Record<string, string> = { recipientId: selectedConv.otherUser._id, content: messageText };
+    const body: Record<string, string> = { recipientId: selectedConv?.otherUser?._id || "", content: messageText };
     if (mediaUrlToSend) { body.mediaUrl = mediaUrlToSend; body.mediaType = mediaTypeToSend || "file"; }
 
     const res = await fetch("/api/messages", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
@@ -701,23 +781,50 @@ export default function MessagesPage() {
                   </div>
                 ))}
               </div>
-            ) : conversations.length === 0 ? (
-              <div className="p-8 text-center text-sm text-gray-500 dark:text-gray-400">
-                <Users className="mx-auto text-gray-300 dark:text-gray-700 mb-3" size={36} />
-                <p className="font-medium">No conversations yet</p>
-                <p className="text-xs mt-1 text-gray-400">Tap the icon above to start one</p>
-              </div>
-            ) : conversations.map((conv) => (
-              <motion.button key={conv._id} whileTap={{ scale: 0.98 }}
-                onClick={() => openConversation(conv)}
-                className="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-gray-50 dark:hover:bg-gray-800/60 transition-colors text-left border-b border-black/5 dark:border-white/5">
-                <Avatar src={conv.otherUser?.profileImage} name={conv.otherUser?.name || "?"} size={48} />
-                <div className="flex-1 min-w-0">
-                  <div className="font-semibold text-sm text-gray-900 dark:text-white truncate">{conv.otherUser?.name}</div>
-                  <div className="text-xs text-gray-500 dark:text-gray-400 truncate mt-0.5">{conv.lastMessage || "Start a conversation"}</div>
-                </div>
-              </motion.button>
-            ))}
+            ) : (
+              <>
+                {clanInfo && (
+                  <motion.button
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => openConversation({ _id: `clan-${clanInfo.id}`, participants: [], otherUser: { _id: clanInfo.id, name: `${clanInfo.name} — World Chat`, username: "world-chat", profileImage: clanInfo.logo } })}
+                    className="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors text-left border-b border-black/5 dark:border-white/5">
+                    <div className="relative flex-shrink-0">
+                      {clanInfo.logo ? (
+                        <img src={clanInfo.logo} alt={clanInfo.name} className="w-12 h-12 rounded-full object-cover" />
+                      ) : (
+                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center">
+                          <Users size={22} className="text-white" />
+                        </div>
+                      )}
+                      <span className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-blue-600 border-2 border-white dark:border-gray-900 rounded-full flex items-center justify-center">
+                        <Users size={8} className="text-white" />
+                      </span>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="font-semibold text-sm text-gray-900 dark:text-white truncate">{clanInfo.name}</div>
+                      <div className="text-xs text-blue-500 dark:text-blue-400 truncate mt-0.5 font-medium">World Chat</div>
+                    </div>
+                  </motion.button>
+                )}
+                {conversations.length === 0 && !clanInfo ? (
+                  <div className="p-8 text-center text-sm text-gray-500 dark:text-gray-400">
+                    <Users className="mx-auto text-gray-300 dark:text-gray-700 mb-3" size={36} />
+                    <p className="font-medium">No conversations yet</p>
+                    <p className="text-xs mt-1 text-gray-400">Tap the icon above to start one</p>
+                  </div>
+                ) : conversations.map((conv) => (
+                  <motion.button key={conv._id} whileTap={{ scale: 0.98 }}
+                    onClick={() => openConversation(conv)}
+                    className="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-gray-50 dark:hover:bg-gray-800/60 transition-colors text-left border-b border-black/5 dark:border-white/5">
+                    <Avatar src={conv.otherUser?.profileImage} name={conv.otherUser?.name || "?"} size={48} />
+                    <div className="flex-1 min-w-0">
+                      <div className="font-semibold text-sm text-gray-900 dark:text-white truncate">{conv.otherUser?.name}</div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400 truncate mt-0.5">{conv.lastMessage || "Start a conversation"}</div>
+                    </div>
+                  </motion.button>
+                ))}
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -742,15 +849,27 @@ export default function MessagesPage() {
               </motion.button>
 
               <div className="relative flex-shrink-0">
-                <Avatar src={selectedConv.otherUser?.profileImage} name={selectedConv.otherUser?.name || "?"} size={40} />
-                {otherUserOnline && (
+                {isClanChat && clanInfo?.logo ? (
+                  <img src={clanInfo.logo} alt={clanInfo.name} className="w-10 h-10 rounded-full object-cover" />
+                ) : isClanChat ? (
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center">
+                    <Users size={18} className="text-white" />
+                  </div>
+                ) : (
+                  <Avatar src={selectedConv.otherUser?.profileImage} name={selectedConv.otherUser?.name || "?"} size={40} />
+                )}
+                {!isClanChat && otherUserOnline && (
                   <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-400 border-2 border-white/20 rounded-full" />
                 )}
               </div>
 
               <div className="flex-1 min-w-0">
-                <div className="font-semibold text-white truncate">{selectedConv.otherUser?.name}</div>
-                {otherUserTyping ? (
+                <div className="font-semibold text-white truncate">
+                  {isClanChat ? clanInfo?.name : selectedConv.otherUser?.name}
+                </div>
+                {isClanChat ? (
+                  <span className="text-[10px] text-blue-300 font-medium">World Chat</span>
+                ) : otherUserTyping ? (
                   <motion.span key="typing" initial={{ opacity: 0 }} animate={{ opacity: 1 }}
                     className="text-[10px] text-blue-300 font-medium italic">typing...</motion.span>
                 ) : (
@@ -825,13 +944,15 @@ export default function MessagesPage() {
                     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
                       className="flex flex-col items-center justify-center h-full gap-3 text-center py-20">
                       <div className="w-16 h-16 rounded-2xl bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center">
-                        <MessageCircle size={28} className="text-white/80" />
+                        {isClanChat ? <Users size={28} className="text-white/80" /> : <MessageCircle size={28} className="text-white/80" />}
                       </div>
                       <div>
                         <p className="font-semibold text-white text-sm drop-shadow">
-                          Say hello to {selectedConv.otherUser?.name?.split(" ")[0]}!
+                          {isClanChat ? `Welcome to ${clanInfo?.name} World Chat!` : `Say hello to ${selectedConv.otherUser?.name?.split(" ")[0]}!`}
                         </p>
-                        <p className="text-xs text-white/50 mt-0.5">Start the conversation below</p>
+                        <p className="text-xs text-white/50 mt-0.5">
+                          {isClanChat ? "Be the first to say something" : "Start the conversation below"}
+                        </p>
                       </div>
                     </motion.div>
                   )}
@@ -846,15 +967,18 @@ export default function MessagesPage() {
                           animate={{ opacity: 1, y: 0, scale: 1 }}
                           transition={{ duration: 0.22 }}
                           className={`flex items-end gap-1.5 ${isMe ? "flex-row-reverse" : ""}`}
-                          onMouseDown={() => startLongPress(msg)}
+                          onMouseDown={() => !isClanChat && startLongPress(msg)}
                           onMouseUp={cancelLongPress}
                           onMouseLeave={cancelLongPress}
-                          onTouchStart={() => startLongPress(msg)}
+                          onTouchStart={() => !isClanChat && startLongPress(msg)}
                           onTouchEnd={cancelLongPress}
                           onTouchMove={cancelLongPress}
                         >
                           {!isMe && <Avatar src={msg.senderImage} name={msg.senderName} size={30} />}
                           <div className={`max-w-[75%] flex flex-col ${isMe ? "items-end" : "items-start"}`}>
+                            {isClanChat && !isMe && (
+                              <span className="text-[10px] text-white/50 font-medium px-1 mb-0.5 truncate max-w-full">{msg.senderName}</span>
+                            )}
                             {msg.isDeleted ? (
                               <div className={`px-4 py-2.5 text-sm italic opacity-50 rounded-[18px] ${
                                 isMe ? "bg-blue-600/60 text-white rounded-br-[4px]" : "bg-white/10 text-white rounded-bl-[4px]"

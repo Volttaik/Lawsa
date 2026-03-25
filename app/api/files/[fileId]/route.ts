@@ -24,7 +24,7 @@ export async function GET(
             `inline; filename="${encodeURIComponent(filename.split("/").pop() || filename)}"`
         );
 
-        return new NextResponse(buffer, { status: 200, headers });
+        return new NextResponse(new Uint8Array(buffer), { status: 200, headers });
     } catch (error: any) {
         if (error.message === "File not found") {
             return NextResponse.json({ error: "File not found" }, { status: 404 });
