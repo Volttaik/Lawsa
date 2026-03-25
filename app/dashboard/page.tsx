@@ -1,23 +1,28 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Heart, MessageCircle, Share2, Trash2, Send, Loader2, ChevronDown, Play, UserPlus, UserCheck } from "lucide-react";
+import {
+  Heart, MessageCircle, Share2, Trash2, Send, Loader2, ChevronDown, Play, UserPlus, UserCheck,
+  LayoutGrid, Globe, Scale, Cpu, Trophy, Newspaper, BookOpen, Briefcase, CalendarDays, HeartPulse, Music, Palette, Sparkles,
+} from "lucide-react";
 import Link from "next/link";
 import ReactTimeago from "react-timeago";
 
-const CATEGORIES = [
-  { id: "all", label: "✨ All" },
-  { id: "general", label: "📢 General" },
-  { id: "law", label: "⚖️ Law" },
-  { id: "tech", label: "💻 Tech" },
-  { id: "sports", label: "🏆 Sports" },
-  { id: "news", label: "📰 News" },
-  { id: "lectures", label: "📚 Lectures" },
-  { id: "career", label: "💼 Career" },
-  { id: "events", label: "🎉 Events" },
-  { id: "health", label: "🏥 Health" },
-  { id: "music", label: "🎵 Music" },
-  { id: "art", label: "🎨 Art" },
+interface CategoryDef { id: string; label: string; Icon: React.FC<{ size?: number; className?: string }> }
+
+const CATEGORIES: CategoryDef[] = [
+  { id: "all",      label: "All",      Icon: LayoutGrid },
+  { id: "general",  label: "General",  Icon: Globe },
+  { id: "law",      label: "Law",      Icon: Scale },
+  { id: "tech",     label: "Tech",     Icon: Cpu },
+  { id: "sports",   label: "Sports",   Icon: Trophy },
+  { id: "news",     label: "News",     Icon: Newspaper },
+  { id: "lectures", label: "Lectures", Icon: BookOpen },
+  { id: "career",   label: "Career",   Icon: Briefcase },
+  { id: "events",   label: "Events",   Icon: CalendarDays },
+  { id: "health",   label: "Health",   Icon: HeartPulse },
+  { id: "music",    label: "Music",    Icon: Music },
+  { id: "art",      label: "Art",      Icon: Palette },
 ];
 
 interface Post {
@@ -42,7 +47,6 @@ interface Comment {
   authorUsername: string;
   authorImage?: string;
   content: string;
-  likes?: string[];
   createdAt: string;
 }
 
@@ -67,24 +71,20 @@ interface RecommendedUser {
 function FadeImg({ src, alt, className, style }: { src: string; alt: string; className?: string; style?: React.CSSProperties }) {
   const [loaded, setLoaded] = useState(false);
   return (
-    <img
-      src={src}
-      alt={alt}
-      style={style}
+    <img src={src} alt={alt} style={style}
       className={`transition-all duration-500 ${loaded ? "opacity-100 blur-0 scale-100" : "opacity-0 blur-sm scale-[1.02]"} ${className || ""}`}
-      onLoad={() => setLoaded(true)}
-    />
+      onLoad={() => setLoaded(true)} />
   );
 }
 
 function PostSkeleton() {
   return (
     <div className="bg-white dark:bg-gray-900 rounded-2xl border border-black/10 dark:border-white/10 shadow-card overflow-hidden">
-      <div className="skeleton w-full h-52" />
-      <div className="p-4">
-        <div className="flex items-start gap-3 mb-4">
+      <div className="skeleton w-full h-48" />
+      <div className="p-4 space-y-3">
+        <div className="flex items-start gap-3">
           <div className="skeleton rounded-full flex-shrink-0" style={{ width: 40, height: 40 }} />
-          <div className="flex-1 space-y-2">
+          <div className="flex-1 space-y-2 pt-1">
             <div className="skeleton h-3.5 w-1/3" />
             <div className="skeleton h-3 w-1/4" />
           </div>
@@ -92,9 +92,9 @@ function PostSkeleton() {
         <div className="space-y-2">
           <div className="skeleton h-3.5 w-full" />
           <div className="skeleton h-3.5 w-5/6" />
-          <div className="skeleton h-3.5 w-4/6" />
+          <div className="skeleton h-3.5 w-3/5" />
         </div>
-        <div className="mt-4 flex items-center gap-2">
+        <div className="flex gap-2 pt-1">
           <div className="skeleton h-7 w-16 rounded-lg" />
           <div className="skeleton h-7 w-20 rounded-lg" />
           <div className="skeleton h-7 w-14 rounded-lg ml-auto" />
@@ -107,10 +107,8 @@ function PostSkeleton() {
 function Avatar({ src, name, size = 40 }: { src?: string; name: string; size?: number }) {
   if (src) return <img src={src} alt={name} className="rounded-full object-cover flex-shrink-0" style={{ width: size, height: size }} />;
   return (
-    <div
-      className="rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-bold flex-shrink-0"
-      style={{ width: size, height: size, fontSize: size / 2.5 }}
-    >
+    <div className="rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-bold flex-shrink-0"
+      style={{ width: size, height: size, fontSize: size / 2.5 }}>
       {name?.[0]?.toUpperCase() || "?"}
     </div>
   );
@@ -121,35 +119,38 @@ function VideoPlayer({ src }: { src: string }) {
   return (
     <div className="relative w-full rounded-xl overflow-hidden bg-gray-900" style={{ minHeight: 200 }}>
       {!loaded && (
-        <div className="absolute inset-0 skeleton rounded-xl flex items-center justify-center">
-          <div className="w-14 h-14 rounded-full bg-white/20 flex items-center justify-center backdrop-blur-sm">
+        <div className="absolute inset-0 skeleton flex items-center justify-center">
+          <div className="w-14 h-14 rounded-full bg-white/20 flex items-center justify-center">
             <Play size={22} className="text-white ml-1" />
           </div>
         </div>
       )}
-      <video
-        src={src}
-        controls
-        preload="metadata"
+      <video src={src} controls preload="metadata"
         className={`w-full max-h-80 object-cover transition-opacity duration-500 ${loaded ? "opacity-100" : "opacity-0"}`}
-        onLoadedData={() => setLoaded(true)}
-      />
+        onLoadedData={() => setLoaded(true)} />
     </div>
   );
 }
 
-function PostCard({ post, currentUser, onDelete }: {
-  post: Post;
-  currentUser: CurrentUser | null;
-  onDelete: (id: string) => void;
-}) {
+function CategoryBadge({ category }: { category: string }) {
+  const cat = CATEGORIES.find((c) => c.id === category);
+  if (!cat || cat.id === "general") return null;
+  const { Icon } = cat;
+  return (
+    <span className="inline-flex items-center gap-1 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border border-blue-100 dark:border-blue-800 px-1.5 py-0.5 rounded-full text-[10px] font-medium">
+      <Icon size={9} />
+      {cat.label}
+    </span>
+  );
+}
+
+function PostCard({ post, currentUser, onDelete }: { post: Post; currentUser: CurrentUser | null; onDelete: (id: string) => void }) {
   const [showComments, setShowComments] = useState(false);
   const [comments, setComments] = useState<Comment[]>([]);
   const [commentText, setCommentText] = useState("");
   const [loadingComment, setLoadingComment] = useState(false);
   const [liked, setLiked] = useState(post.likes?.includes(currentUser?._id || currentUser?.id || "") || false);
   const [likesCount, setLikesCount] = useState(post.likes?.length || 0);
-
   const isOwner = currentUser && (post.authorId === currentUser._id || post.authorId === currentUser.id);
   const hasMedia = (post.images && post.images.length > 0) || (post.videos && post.videos.length > 0);
 
@@ -171,40 +172,30 @@ function PostCard({ post, currentUser, onDelete }: {
     if (!commentText.trim()) return;
     setLoadingComment(true);
     const res = await fetch(`/api/posts/${post._id}/comments`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
+      method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ content: commentText }),
     });
     const data = await res.json();
-    if (data.comment) {
-      setComments([data.comment, ...comments]);
-      setCommentText("");
-    }
+    if (data.comment) { setComments([data.comment, ...comments]); setCommentText(""); }
     setLoadingComment(false);
   };
 
   return (
-    <motion.div
-      layout
+    <motion.div layout
       initial={{ opacity: 0, y: 24 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -16, scale: 0.97 }}
       transition={{ duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] }}
-      whileHover={{ boxShadow: "0 6px 20px rgba(0,0,0,0.1)" }}
+      whileHover={{ boxShadow: "0 6px 24px rgba(0,0,0,0.09)" }}
       className="bg-white dark:bg-gray-900 rounded-2xl border border-black/10 dark:border-white/10 shadow-card overflow-hidden transition-shadow"
     >
-      {/* Media FIRST */}
       {hasMedia && (
         <div className="w-full">
           {post.images && post.images.length > 0 && (
             <div className={`grid gap-0.5 overflow-hidden ${post.images.length > 1 ? "grid-cols-2" : "grid-cols-1"}`}>
               {post.images.map((img, i) => (
-                <FadeImg
-                  key={i}
-                  src={img}
-                  alt="Post"
-                  className={`w-full object-cover ${post.images!.length === 1 ? "max-h-96 rounded-t-2xl" : "max-h-64"}`}
-                />
+                <FadeImg key={i} src={img} alt="Post"
+                  className={`w-full object-cover ${post.images!.length === 1 ? "max-h-96 rounded-t-2xl" : "max-h-64"}`} />
               ))}
             </div>
           )}
@@ -223,29 +214,23 @@ function PostCard({ post, currentUser, onDelete }: {
               <Avatar src={post.authorImage} name={post.authorName} size={40} />
             </Link>
             <div>
-              <Link href={`/dashboard/profile/${post.authorId}`} className="font-semibold text-gray-900 dark:text-white text-sm hover:text-blue-600 transition-colors">
+              <Link href={`/dashboard/profile/${post.authorId}`}
+                className="font-semibold text-gray-900 dark:text-white text-sm hover:text-blue-600 transition-colors">
                 {post.authorName}
               </Link>
-              <div className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400 flex-wrap">
+              <div className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400 flex-wrap mt-0.5">
                 <span>@{post.authorUsername}</span>
                 <span>·</span>
                 <ReactTimeago date={post.createdAt} />
                 {post.category && post.category !== "general" && (
-                  <>
-                    <span>·</span>
-                    <span className="bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-1.5 py-0.5 rounded-full text-[10px] font-medium capitalize">
-                      {CATEGORIES.find(c => c.id === post.category)?.label?.split(" ").slice(1).join(" ") || post.category}
-                    </span>
-                  </>
+                  <><span>·</span><CategoryBadge category={post.category} /></>
                 )}
               </div>
             </div>
           </div>
           {isOwner && (
-            <button
-              onClick={() => onDelete(post._id)}
-              className="w-7 h-7 rounded-lg flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all border border-transparent hover:border-red-200"
-            >
+            <button onClick={() => onDelete(post._id)}
+              className="w-7 h-7 rounded-lg flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all">
               <Trash2 size={13} />
             </button>
           )}
@@ -254,30 +239,22 @@ function PostCard({ post, currentUser, onDelete }: {
       </div>
 
       <div className="px-4 py-2.5 border-t border-black/5 dark:border-white/5 mt-3 flex items-center gap-1">
-        <motion.button
-          whileTap={{ scale: 0.85 }}
-          onClick={handleLike}
-          className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all ${liked ? "text-red-500 bg-red-50 dark:bg-red-900/20" : "text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-800"}`}
-        >
-          <motion.div animate={liked ? { scale: [1, 1.5, 1] } : {}} transition={{ duration: 0.3 }}>
+        <motion.button whileTap={{ scale: 0.82 }} onClick={handleLike}
+          className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all ${liked ? "text-red-500 bg-red-50 dark:bg-red-900/20" : "text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800"}`}>
+          <motion.div animate={liked ? { scale: [1, 1.6, 1] } : {}} transition={{ duration: 0.3 }}>
             <Heart size={14} className={liked ? "fill-red-500" : ""} />
           </motion.div>
           {likesCount > 0 && <span>{likesCount}</span>}
           <span className="hidden sm:block">Like</span>
         </motion.button>
-        <motion.button
-          whileTap={{ scale: 0.85 }}
-          onClick={loadComments}
-          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-800 transition-all"
-        >
+        <motion.button whileTap={{ scale: 0.82 }} onClick={loadComments}
+          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all">
           <MessageCircle size={14} />
           {(post.comments?.length || 0) > 0 && <span>{post.comments?.length}</span>}
           <span className="hidden sm:block">Comment</span>
         </motion.button>
-        <motion.button
-          whileTap={{ scale: 0.85 }}
-          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-800 transition-all ml-auto"
-        >
+        <motion.button whileTap={{ scale: 0.82 }}
+          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all ml-auto">
           <Share2 size={14} />
           <span className="hidden sm:block">Share</span>
         </motion.button>
@@ -285,30 +262,18 @@ function PostCard({ post, currentUser, onDelete }: {
 
       <AnimatePresence>
         {showComments && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.25 }}
-            className="border-t border-black/5 dark:border-white/5 overflow-hidden"
-          >
+          <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.25 }} className="border-t border-black/5 dark:border-white/5 overflow-hidden">
             {currentUser && (
               <div className="px-4 py-3 flex items-center gap-3">
                 <Avatar src={currentUser.profileImage} name={currentUser.name} size={28} />
                 <div className="flex-1 relative">
-                  <input
-                    type="text"
-                    value={commentText}
-                    onChange={(e) => setCommentText(e.target.value)}
+                  <input type="text" value={commentText} onChange={(e) => setCommentText(e.target.value)}
                     placeholder="Write a comment..."
                     className="w-full pl-4 pr-10 py-2 text-sm rounded-xl border border-black/10 dark:border-white/10 bg-gray-50 dark:bg-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all"
-                    onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleComment()}
-                  />
-                  <button
-                    onClick={handleComment}
-                    disabled={loadingComment || !commentText.trim()}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 text-blue-600 disabled:text-gray-300 transition-colors"
-                  >
+                    onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleComment()} />
+                  <button onClick={handleComment} disabled={loadingComment || !commentText.trim()}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-blue-600 disabled:text-gray-300 transition-colors">
                     {loadingComment ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
                   </button>
                 </div>
@@ -316,13 +281,8 @@ function PostCard({ post, currentUser, onDelete }: {
             )}
             <div className="px-4 pb-4 space-y-3 max-h-64 overflow-y-auto scrollbar-hide">
               {comments.map((comment, i) => (
-                <motion.div
-                  key={comment._id}
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: i * 0.04 }}
-                  className="flex gap-2.5"
-                >
+                <motion.div key={comment._id} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.04 }}
+                  className="flex gap-2.5">
                   <Avatar src={comment.authorImage} name={comment.authorName} size={26} />
                   <div className="flex-1 bg-gray-50 dark:bg-gray-800 rounded-xl px-3 py-2 border border-black/5 dark:border-white/5">
                     <div className="text-xs font-semibold text-gray-900 dark:text-white">{comment.authorName}</div>
@@ -343,17 +303,10 @@ function PostCard({ post, currentUser, onDelete }: {
 
 function RecommendedCard({ user, isFollowing, onFollow }: { user: RecommendedUser; isFollowing: boolean; onFollow: () => void }) {
   const [loading, setLoading] = useState(false);
-  const handleClick = async () => {
-    setLoading(true);
-    await onFollow();
-    setLoading(false);
-  };
+  const handleClick = async () => { setLoading(true); await onFollow(); setLoading(false); };
   return (
-    <motion.div
-      initial={{ opacity: 0, x: 20 }}
-      animate={{ opacity: 1, x: 0 }}
-      className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800/60 transition-colors"
-    >
+    <motion.div initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }}
+      className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800/60 transition-colors">
       <Link href={`/dashboard/profile/${user._id}`} className="flex-shrink-0">
         <Avatar src={user.profileImage} name={user.name} size={40} />
       </Link>
@@ -366,14 +319,8 @@ function RecommendedCard({ user, isFollowing, onFollow }: { user: RecommendedUse
           <p className="text-[10px] text-gray-400 mt-0.5">{user.followers?.length} followers</p>
         )}
       </div>
-      <motion.button
-        whileTap={{ scale: 0.95 }}
-        onClick={handleClick}
-        disabled={loading}
-        className={`flex-shrink-0 flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-xl border border-black/10 transition-all ${
-          isFollowing ? "bg-gray-100 dark:bg-gray-800 text-gray-600" : "bg-blue-600 text-white hover:bg-blue-700"
-        }`}
-      >
+      <motion.button whileTap={{ scale: 0.95 }} onClick={handleClick} disabled={loading}
+        className={`flex-shrink-0 flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-xl border border-black/10 transition-all ${isFollowing ? "bg-gray-100 dark:bg-gray-800 text-gray-600" : "bg-blue-600 text-white hover:bg-blue-700"}`}>
         {loading ? <Loader2 size={11} className="animate-spin" /> : isFollowing ? <UserCheck size={11} /> : <UserPlus size={11} />}
         {isFollowing ? "Following" : "Follow"}
       </motion.button>
@@ -391,7 +338,7 @@ export default function DashboardHome() {
   const [activeCategory, setActiveCategory] = useState("all");
   const [recommendations, setRecommendations] = useState<RecommendedUser[]>([]);
   const [following, setFollowing] = useState<Set<string>>(new Set());
-  const filterRef = useRef<HTMLDivElement>(null);
+  const filterScrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setLoading(true);
@@ -425,7 +372,6 @@ export default function DashboardHome() {
 
   const handleCategoryChange = (cat: string) => {
     setActiveCategory(cat);
-    setPage(1);
     loadPosts(1, cat);
   };
 
@@ -437,32 +383,32 @@ export default function DashboardHome() {
   const handleFollow = async (userId: string) => {
     const res = await fetch(`/api/users/${userId}/follow`, { method: "POST" });
     const data = await res.json();
-    if (data.following) {
-      setFollowing((prev) => new Set([...prev, userId]));
-    } else {
-      setFollowing((prev) => { const s = new Set(prev); s.delete(userId); return s; });
-    }
+    if (data.following) setFollowing((prev) => new Set([...prev, userId]));
+    else setFollowing((prev) => { const s = new Set(prev); s.delete(userId); return s; });
   };
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-4">
-      {/* Category Filter */}
-      <div className="sticky top-12 z-30 -mx-4 px-4 py-2 bg-white/90 dark:bg-gray-950/90 backdrop-blur-sm border-b border-black/5 dark:border-white/5 mb-4">
-        <div ref={filterRef} className="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
-          {CATEGORIES.map((cat) => (
-            <motion.button
-              key={cat.id}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => handleCategoryChange(cat.id)}
-              className={`flex-shrink-0 text-xs font-semibold px-3.5 py-1.5 rounded-full transition-all whitespace-nowrap ${
-                activeCategory === cat.id
-                  ? "bg-blue-600 text-white shadow-btn"
-                  : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700"
-              }`}
-            >
-              {cat.label}
-            </motion.button>
-          ))}
+      {/* Category Filter Strip */}
+      <div className="sticky top-12 z-30 -mx-4 px-4 py-2 bg-white/90 dark:bg-gray-950/90 backdrop-blur-md border-b border-black/5 dark:border-white/5 mb-4">
+        <div ref={filterScrollRef} className="flex gap-2 overflow-x-auto scrollbar-hide pb-0.5">
+          {CATEGORIES.map((cat) => {
+            const { Icon } = cat;
+            const isActive = activeCategory === cat.id;
+            return (
+              <motion.button key={cat.id} whileTap={{ scale: 0.93 }}
+                onClick={() => handleCategoryChange(cat.id)}
+                className={`flex-shrink-0 flex items-center gap-1.5 text-xs font-semibold px-3.5 py-1.5 rounded-full transition-all whitespace-nowrap ${
+                  isActive
+                    ? "bg-blue-600 text-white shadow-btn"
+                    : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700"
+                }`}
+              >
+                <Icon size={12} />
+                {cat.label}
+              </motion.button>
+            );
+          })}
         </div>
       </div>
 
@@ -472,29 +418,25 @@ export default function DashboardHome() {
         ) : (
           <>
             {posts.length === 0 ? (
-              <motion.div
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="bg-white dark:bg-gray-900 rounded-2xl border border-black/10 dark:border-white/10 shadow-card p-12 text-center"
-              >
-                <div className="text-4xl mb-3">✨</div>
-                <h3 className="font-semibold text-gray-800 dark:text-white mb-2">No posts yet</h3>
+              <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
+                className="bg-white dark:bg-gray-900 rounded-2xl border border-black/10 dark:border-white/10 shadow-card p-12 text-center">
+                <div className="w-14 h-14 rounded-2xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center mx-auto mb-4">
+                  <Sparkles size={24} className="text-blue-500" />
+                </div>
+                <h3 className="font-semibold text-gray-800 dark:text-white mb-2">Nothing here yet</h3>
                 <p className="text-gray-500 dark:text-gray-400 text-sm">
                   {activeCategory === "all"
-                    ? <>Tap the <span className="font-semibold text-blue-600">+</span> button below to share something!</>
-                    : `No posts in the "${CATEGORIES.find(c => c.id === activeCategory)?.label}" category yet.`
-                  }
+                    ? "Tap the + button below to share something!"
+                    : `No posts in the "${CATEGORIES.find((c) => c.id === activeCategory)?.label}" category yet.`}
                 </p>
               </motion.div>
             ) : (
               <AnimatePresence>
                 {posts.map((post, i) => (
-                  <motion.div
-                    key={post._id}
-                    initial={{ opacity: 0, y: 30 }}
+                  <motion.div key={post._id}
+                    initial={{ opacity: 0, y: 28 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: Math.min(i * 0.04, 0.3), duration: 0.35 }}
-                  >
+                    transition={{ delay: Math.min(i * 0.05, 0.25), duration: 0.35, ease: [0.22, 1, 0.36, 1] }}>
                     <PostCard post={post} currentUser={currentUser} onDelete={handleDeletePost} />
                   </motion.div>
                 ))}
@@ -503,29 +445,22 @@ export default function DashboardHome() {
 
             {/* Recommendations inline card */}
             {recommendations.length > 0 && posts.length > 2 && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
-                className="bg-white dark:bg-gray-900 rounded-2xl border border-black/10 dark:border-white/10 shadow-card p-4"
-              >
-                <div className="flex items-center gap-2 mb-3">
+              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
+                className="bg-white dark:bg-gray-900 rounded-2xl border border-black/10 dark:border-white/10 shadow-card p-4">
+                <div className="flex items-center gap-2 mb-2">
                   <UserPlus size={14} className="text-blue-600" />
                   <h3 className="text-sm font-bold text-gray-900 dark:text-white">People you may know</h3>
                 </div>
                 <div className="space-y-1">
                   {recommendations.slice(0, 4).map((user) => (
-                    <RecommendedCard
-                      key={user._id}
-                      user={user}
+                    <RecommendedCard key={user._id} user={user}
                       isFollowing={following.has(user._id)}
-                      onFollow={() => handleFollow(user._id)}
-                    />
+                      onFollow={() => handleFollow(user._id)} />
                   ))}
                 </div>
                 <Link href="/dashboard/connect"
                   className="block text-center text-xs text-blue-600 hover:text-blue-700 font-medium mt-3 py-2 rounded-xl hover:bg-blue-50 transition-colors">
-                  See all suggestions →
+                  See all suggestions
                 </Link>
               </motion.div>
             )}
@@ -533,14 +468,10 @@ export default function DashboardHome() {
         )}
 
         {hasMore && !loading && (
-          <div className="flex justify-center pt-2">
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={() => loadPosts(page + 1)}
-              disabled={loadingMore}
-              className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300 font-medium px-6 py-2.5 rounded-xl border border-black/10 dark:border-white/10 bg-white dark:bg-gray-900 shadow-card hover:shadow-card-hover transition-all"
-            >
+          <div className="flex justify-center pt-2 pb-2">
+            <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
+              onClick={() => loadPosts(page + 1)} disabled={loadingMore}
+              className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300 font-medium px-6 py-2.5 rounded-xl border border-black/10 dark:border-white/10 bg-white dark:bg-gray-900 shadow-card hover:shadow-card-hover transition-all">
               {loadingMore ? <Loader2 size={14} className="animate-spin" /> : <ChevronDown size={14} />}
               Load more
             </motion.button>
