@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect, useRef, useCallback } from "react";
+import { cache } from "@/lib/cache";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Send, Loader2, ArrowLeft, MessageCircle, Users,
@@ -370,9 +371,19 @@ export default function MessagesPage() {
     if (val) sendTypingSignal();
   };
 
-  const loadConversations = async () => {
+  const loadConversations = async (silent = false) => {
+    if (!silent) {
+      const cached = cache.get<any[]>("conversations");
+      if (cached) {
+        setConversations(cached);
+        setLoading(false);
+      } else {
+        setLoading(true);
+      }
+    }
     const res = await fetch("/api/messages");
     const data = await res.json();
+    cache.set("conversations", data.conversations || [], 60);
     setConversations(data.conversations || []);
     setLoading(false);
   };
@@ -521,7 +532,8 @@ export default function MessagesPage() {
       setMessageText("");
       setPendingMedia(null);
       setAudioBlob(null);
-      loadConversations();
+      cache.invalidate("conversations");
+      loadConversations(true);
     }
     setSendingMsg(false);
   };

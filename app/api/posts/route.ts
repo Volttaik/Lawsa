@@ -103,7 +103,7 @@ export async function POST(request: NextRequest) {
         const savedVideos: string[] = [];
         if (videos && Array.isArray(videos)) {
             for (const vid of videos) {
-                if (vid.startsWith("/uploads/")) {
+                if (vid.startsWith("/uploads/") || vid.startsWith("/api/files/")) {
                     savedVideos.push(vid);
                 } else if (vid.startsWith("data:")) {
                     const url = await saveBase64Media(vid, "posts");

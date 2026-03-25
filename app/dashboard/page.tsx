@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { cachedFetch, cache } from "@/lib/cache";
 import {
   Heart, MessageCircle, Share2, Trash2, Send, Loader2, ChevronDown, Play, UserPlus, UserCheck,
   LayoutGrid, Globe, Scale, Cpu, Trophy, Newspaper, BookOpen, Briefcase, CalendarDays, HeartPulse, Music, Palette, Sparkles, Plus, X,
@@ -354,13 +355,26 @@ export default function DashboardHome() {
   const filterScrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    setLoading(true);
+    const cached = cache.get<{ user: any; posts: any; recs: any; stories: any }>("dashboard:initial");
+    if (cached) {
+      setCurrentUser(cached.user || null);
+      setFollowing(new Set(cached.user?.following || []));
+      setPosts(cached.posts?.posts || []);
+      setHasMore(cached.posts?.hasMore || false);
+      setPage(1);
+      setRecommendations(cached.recs?.users || []);
+      setStories(cached.stories?.stories || []);
+      setLoading(false);
+    } else {
+      setLoading(true);
+    }
     Promise.all([
       fetch("/api/auth/me").then((r) => r.json()),
       fetch("/api/posts?page=1&limit=10&category=all").then((r) => r.json()),
       fetch("/api/users/recommendations").then((r) => r.json()).catch(() => ({ users: [] })),
-    fetch("/api/stories").then((r) => r.json()).catch(() => ({ stories: [] })),
+      fetch("/api/stories").then((r) => r.json()).catch(() => ({ stories: [] })),
     ]).then(([userData, postsData, recsData, storiesData]) => {
+      cache.set("dashboard:initial", { user: userData.user, posts: postsData, recs: recsData, stories: storiesData }, 120);
       setCurrentUser(userData.user || null);
       setFollowing(new Set(userData.user?.following || []));
       setPosts(postsData.posts || []);
@@ -373,12 +387,28 @@ export default function DashboardHome() {
   }, []);
 
   const loadPosts = async (p = 1, cat = activeCategory) => {
-    if (p === 1) setLoading(true);
-    else setLoadingMore(true);
+    const cacheKey = `posts:${cat}:${p}`;
+    if (p === 1) {
+      const cached = cache.get<any>(cacheKey);
+      if (cached) {
+        setPosts(cached.posts || []);
+        setHasMore(cached.hasMore || false);
+        setPage(p);
+        setLoading(false);
+      } else {
+        setLoading(true);
+      }
+    } else {
+      setLoadingMore(true);
+    }
     const res = await fetch(`/api/posts?page=${p}&limit=10&category=${cat}`);
     const data = await res.json();
-    if (p === 1) setPosts(data.posts || []);
-    else setPosts((prev) => [...prev, ...(data.posts || [])]);
+    if (p === 1) {
+      cache.set(cacheKey, data, 60);
+      setPosts(data.posts || []);
+    } else {
+      setPosts((prev) => [...prev, ...(data.posts || [])]);
+    }
     setHasMore(data.hasMore || false);
     setPage(p);
     setLoading(false);
@@ -393,6 +423,8 @@ export default function DashboardHome() {
   const handleDeletePost = async (postId: string) => {
     await fetch(`/api/posts/${postId}`, { method: "DELETE" });
     setPosts(posts.filter((p) => p._id !== postId));
+    cache.invalidate("posts:");
+    cache.invalidate("dashboard:initial");
   };
 
   const handleFollow = async (userId: string) => {

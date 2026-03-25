@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { cache } from "@/lib/cache";
 import {
   Shield, Plus, Users, Send, Loader2, X, ArrowLeft,
   Crown, LogOut, Trash2, Check, MessageSquare,
@@ -95,11 +96,24 @@ export default function ClansPage() {
   const selectedClanRef = useRef<Clan | null>(null);
   selectedClanRef.current = selectedClan;
 
-  const loadData = async () => {
+  const loadData = async (forceRefresh = false) => {
+    if (!forceRefresh) {
+      const cached = cache.get<{ clans: any[]; user: any }>("clans:initial");
+      if (cached) {
+        setClans(cached.clans || []);
+        setCurrentUser(cached.user || null);
+        setLoading(false);
+      } else {
+        setLoading(true);
+      }
+    } else {
+      setLoading(true);
+    }
     const [clansRes, meRes] = await Promise.all([
       fetch("/api/clans").then((r) => r.json()),
       fetch("/api/auth/me").then((r) => r.json()),
     ]);
+    cache.set("clans:initial", { clans: clansRes.clans || [], user: meRes.user || null }, 120);
     setClans(clansRes.clans || []);
     setCurrentUser(meRes.user || null);
     setLoading(false);
@@ -206,7 +220,8 @@ export default function ClansPage() {
     if (data.clan) {
       setShowCreate(false);
       setCreateForm({ name: "", description: "", logo: "" });
-      await loadData();
+      cache.invalidate("clans:");
+      await loadData(true);
     } else {
       setCreateError(data.error || "Failed to create clan");
     }

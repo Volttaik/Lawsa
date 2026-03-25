@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { cache } from "@/lib/cache";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Image as ImageIcon, Video, X, Send, Loader2, ArrowLeft, Film, ChevronDown, Play,
@@ -126,6 +127,8 @@ export default function CreatePostPage() {
       });
       const data = await res.json();
       if (res.ok && data.post) {
+        cache.invalidate("posts:");
+        cache.invalidate("dashboard:initial");
         router.refresh();
         router.push("/dashboard");
       } else {
