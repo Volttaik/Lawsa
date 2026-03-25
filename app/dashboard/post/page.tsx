@@ -2,22 +2,27 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Image as ImageIcon, Video, X, Send, Loader2, ArrowLeft, Film, ChevronDown } from "lucide-react";
+import {
+  Image as ImageIcon, Video, X, Send, Loader2, ArrowLeft, Film, ChevronDown,
+  Globe, Scale, Cpu, Trophy, Newspaper, BookOpen, Briefcase, CalendarDays, HeartPulse, Music, Palette,
+} from "lucide-react";
 
 type MediaItem = { type: "image" | "video"; data: string; name: string; uploading?: boolean };
 
-const CATEGORIES = [
-  { id: "general", label: "📢 General" },
-  { id: "law", label: "⚖️ Law" },
-  { id: "tech", label: "💻 Tech" },
-  { id: "sports", label: "🏆 Sports" },
-  { id: "news", label: "📰 News" },
-  { id: "lectures", label: "📚 Lectures" },
-  { id: "career", label: "💼 Career" },
-  { id: "events", label: "🎉 Events" },
-  { id: "health", label: "🏥 Health" },
-  { id: "music", label: "🎵 Music" },
-  { id: "art", label: "🎨 Art" },
+interface CategoryDef { id: string; label: string; Icon: React.FC<{ size?: number; className?: string }> }
+
+const CATEGORIES: CategoryDef[] = [
+  { id: "general",  label: "General",  Icon: Globe },
+  { id: "law",      label: "Law",      Icon: Scale },
+  { id: "tech",     label: "Tech",     Icon: Cpu },
+  { id: "sports",   label: "Sports",   Icon: Trophy },
+  { id: "news",     label: "News",     Icon: Newspaper },
+  { id: "lectures", label: "Lectures", Icon: BookOpen },
+  { id: "career",   label: "Career",   Icon: Briefcase },
+  { id: "events",   label: "Events",   Icon: CalendarDays },
+  { id: "health",   label: "Health",   Icon: HeartPulse },
+  { id: "music",    label: "Music",    Icon: Music },
+  { id: "art",      label: "Art",      Icon: Palette },
 ];
 
 const MAX_VIDEO_MB = 50;
@@ -37,10 +42,7 @@ export default function CreatePostPage() {
     formData.append("file", file);
     formData.append("subfolder", "posts");
     const res = await fetch("/api/upload", { method: "POST", body: formData });
-    if (!res.ok) {
-      const d = await res.json();
-      throw new Error(d.error || "Video upload failed");
-    }
+    if (!res.ok) { const d = await res.json(); throw new Error(d.error || "Video upload failed"); }
     const d = await res.json();
     return d.url as string;
   };
@@ -49,22 +51,15 @@ export default function CreatePostPage() {
     const files = e.target.files;
     if (!files) return;
     e.target.value = "";
-
     for (const file of Array.from(files)) {
       const maxMb = type === "video" ? MAX_VIDEO_MB : MAX_IMAGE_MB;
-      if (file.size > maxMb * 1024 * 1024) {
-        setError(`${file.name} is too large. Maximum size is ${maxMb}MB.`);
-        continue;
-      }
-
+      if (file.size > maxMb * 1024 * 1024) { setError(`${file.name} is too large. Maximum ${maxMb}MB.`); continue; }
       if (type === "video") {
         const placeholder: MediaItem = { type: "video", data: "", name: file.name, uploading: true };
         setMediaItems((prev) => [...prev, placeholder]);
         try {
           const url = await uploadVideoFile(file);
-          setMediaItems((prev) =>
-            prev.map((m) => (m.name === file.name && m.uploading ? { ...m, data: url, uploading: false } : m))
-          );
+          setMediaItems((prev) => prev.map((m) => (m.name === file.name && m.uploading ? { ...m, data: url, uploading: false } : m)));
         } catch (err: unknown) {
           const msg = err instanceof Error ? err.message : "Upload failed";
           setError(msg);
@@ -72,9 +67,7 @@ export default function CreatePostPage() {
         }
       } else {
         const reader = new FileReader();
-        reader.onloadend = () => {
-          setMediaItems((prev) => [...prev, { type, data: reader.result as string, name: file.name }]);
-        };
+        reader.onloadend = () => setMediaItems((prev) => [...prev, { type, data: reader.result as string, name: file.name }]);
         reader.readAsDataURL(file);
       }
     }
@@ -84,31 +77,23 @@ export default function CreatePostPage() {
 
   const handleSubmit = async () => {
     if (!text.trim()) return;
-    if (mediaItems.some((m) => m.uploading)) {
-      setError("Please wait for all uploads to finish.");
-      return;
-    }
+    if (mediaItems.some((m) => m.uploading)) { setError("Please wait for all uploads to finish."); return; }
     setSubmitting(true);
     setError("");
-
     const images = mediaItems.filter((m) => m.type === "image").map((m) => m.data);
     const videos = mediaItems.filter((m) => m.type === "video").map((m) => m.data);
-
     const res = await fetch("/api/posts", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
+      method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ content: text, images, videos, category }),
     });
     const data = await res.json();
-    if (data.post) {
-      router.push("/dashboard");
-    } else {
-      setError(data.error || "Failed to create post");
-    }
+    if (data.post) router.push("/dashboard");
+    else setError(data.error || "Failed to create post");
     setSubmitting(false);
   };
 
   const selectedCat = CATEGORIES.find((c) => c.id === category) || CATEGORIES[0];
+  const SelectedIcon = selectedCat.Icon;
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-6">
@@ -136,16 +121,11 @@ export default function CreatePostPage() {
           )}
         </AnimatePresence>
 
-        <textarea
-          value={text}
-          onChange={(e) => setText(e.target.value)}
+        <textarea value={text} onChange={(e) => setText(e.target.value)}
           placeholder="What's on your mind? Share a thought, project, or idea..."
           className="w-full resize-none text-gray-800 dark:text-gray-200 dark:bg-gray-900 text-base focus:outline-none min-h-[140px] leading-relaxed placeholder-gray-400 dark:placeholder-gray-600"
-          rows={5}
-          autoFocus
-        />
+          rows={5} autoFocus />
 
-        {/* Media Previews */}
         <AnimatePresence>
           {mediaItems.length > 0 && (
             <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}
@@ -156,11 +136,11 @@ export default function CreatePostPage() {
                   {item.type === "image" ? (
                     <img src={item.data} alt="" className="w-24 h-24 rounded-xl object-cover border border-black/10 dark:border-white/10" />
                   ) : (
-                    <div className="w-24 h-24 rounded-xl border border-black/10 dark:border-white/10 bg-gray-100 dark:bg-gray-800 flex flex-col items-center justify-center gap-1 overflow-hidden relative">
+                    <div className="w-24 h-24 rounded-xl border border-black/10 dark:border-white/10 bg-gray-100 dark:bg-gray-800 flex flex-col items-center justify-center gap-1 overflow-hidden">
                       {item.uploading ? (
                         <div className="flex flex-col items-center gap-1">
                           <Loader2 size={20} className="text-blue-500 animate-spin" />
-                          <span className="text-[9px] text-gray-500">Uploading…</span>
+                          <span className="text-[9px] text-gray-500">Uploading...</span>
                         </div>
                       ) : (
                         <>
@@ -195,14 +175,12 @@ export default function CreatePostPage() {
           </div>
 
           <div className="flex items-center gap-2">
-            {/* Category selector */}
             <div className="relative">
-              <button
-                onClick={() => setShowCatMenu(!showCatMenu)}
-                className="flex items-center gap-1.5 text-xs font-medium text-gray-600 dark:text-gray-400 px-3 py-2 rounded-xl border border-black/10 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all"
-              >
+              <button onClick={() => setShowCatMenu(!showCatMenu)}
+                className="flex items-center gap-1.5 text-xs font-medium text-gray-600 dark:text-gray-400 px-3 py-2 rounded-xl border border-black/10 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all">
+                <SelectedIcon size={12} />
                 <span>{selectedCat.label}</span>
-                <ChevronDown size={12} />
+                <ChevronDown size={11} />
               </button>
               <AnimatePresence>
                 {showCatMenu && (
@@ -213,14 +191,20 @@ export default function CreatePostPage() {
                     transition={{ duration: 0.15 }}
                     className="absolute bottom-full mb-2 right-0 bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-black/10 dark:border-white/10 overflow-hidden z-20 w-44 max-h-56 overflow-y-auto scrollbar-hide"
                   >
-                    {CATEGORIES.map((cat) => (
-                      <button key={cat.id} onClick={() => { setCategory(cat.id); setShowCatMenu(false); }}
-                        className={`flex items-center gap-2 w-full px-4 py-2.5 text-sm text-left transition-colors ${
-                          category === cat.id ? "bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 font-semibold" : "text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700"
-                        }`}>
-                        {cat.label}
-                      </button>
-                    ))}
+                    {CATEGORIES.map((cat) => {
+                      const { Icon } = cat;
+                      return (
+                        <button key={cat.id} onClick={() => { setCategory(cat.id); setShowCatMenu(false); }}
+                          className={`flex items-center gap-2.5 w-full px-4 py-2.5 text-sm text-left transition-colors ${
+                            category === cat.id
+                              ? "bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 font-semibold"
+                              : "text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700"
+                          }`}>
+                          <Icon size={14} />
+                          {cat.label}
+                        </button>
+                      );
+                    })}
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -229,14 +213,10 @@ export default function CreatePostPage() {
             <span className={`text-xs ${text.length > 2000 ? "text-red-500" : "text-gray-400"}`}>
               {text.length}/2000
             </span>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={handleSubmit}
+            <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={handleSubmit}
               disabled={submitting || !text.trim() || text.length > 2000 || mediaItems.some((m) => m.uploading)}
               className="w-9 h-9 bg-blue-600 text-white rounded-xl flex items-center justify-center hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed transition-all shadow-btn"
-              title="Publish"
-            >
+              title="Publish">
               {submitting ? <Loader2 size={15} className="animate-spin" /> : <Send size={15} />}
             </motion.button>
           </div>
