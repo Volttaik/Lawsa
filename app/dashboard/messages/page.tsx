@@ -210,30 +210,53 @@ function VoiceNotePlayer({ url, isMe }: { url: string; isMe: boolean }) {
 
 /* ---------- Media Preview ---------- */
 function MediaPreview({ url, type, isMe }: { url: string; type: string; isMe: boolean }) {
-  const meBubble = "bg-blue-600 text-white rounded-[18px] rounded-br-[4px]";
-  const themBubble = "bg-white/15 backdrop-blur-sm border border-white/20 text-white rounded-[18px] rounded-bl-[4px]";
-  const bubble = isMe ? meBubble : themBubble;
+  const [imgError, setImgError] = useState(false);
+  const [imgLoaded, setImgLoaded] = useState(false);
+  const [vidError, setVidError] = useState(false);
+  const bubble = isMe
+    ? "bg-blue-600 text-white rounded-[18px] rounded-br-[4px]"
+    : "bg-white/15 backdrop-blur-sm border border-white/20 text-white rounded-[18px] rounded-bl-[4px]";
+
+  if (!url) return null;
 
   if (type === "image") {
+    if (imgError) return (
+      <div className="mt-1 w-[220px] h-32 rounded-2xl bg-white/10 flex items-center justify-center">
+        <span className="text-white/40 text-xs">Image unavailable</span>
+      </div>
+    );
     return (
-      <div className="mt-1 max-w-[220px] overflow-hidden rounded-2xl">
+      <div className="mt-1 max-w-[220px] overflow-hidden rounded-2xl bg-white/5">
         <img
           src={url}
           alt="Image"
-          className="max-w-[220px] max-h-56 object-cover rounded-2xl w-full block"
-          loading="lazy"
+          className={`max-w-[220px] max-h-56 object-cover rounded-2xl w-full block transition-opacity duration-300 ${imgLoaded ? "opacity-100" : "opacity-0"}`}
+          onLoad={() => setImgLoaded(true)}
+          onError={() => setImgError(true)}
         />
+        {!imgLoaded && !imgError && (
+          <div className="w-[220px] h-32 flex items-center justify-center">
+            <Loader2 size={18} className="text-white/40 animate-spin" />
+          </div>
+        )}
       </div>
     );
   }
   if (type === "video") {
+    if (vidError) return (
+      <div className="mt-1 w-[260px] h-32 rounded-2xl bg-white/10 flex items-center justify-center">
+        <span className="text-white/40 text-xs">Video unavailable</span>
+      </div>
+    );
     return (
-      <div className="mt-1 max-w-[260px] rounded-2xl overflow-hidden">
+      <div className="mt-1 max-w-[260px] rounded-2xl overflow-hidden bg-black">
         <video
           src={url}
           controls
           preload="metadata"
+          playsInline
           className="rounded-2xl max-w-[260px] max-h-56 block w-full"
+          onError={() => setVidError(true)}
         />
       </div>
     );
@@ -266,7 +289,7 @@ export default function MessagesPage() {
   const [users, setUsers] = useState<ConnectedUser[]>([]);
   const [userSearch, setUserSearch] = useState("");
   const [showNewConv, setShowNewConv] = useState(false);
-  const [pendingMedia, setPendingMedia] = useState<{ data: string; type: string; name: string } | null>(null);
+  const [pendingMedia, setPendingMedia] = useState<{ data: string; serverUrl: string; type: string; name: string; uploading: boolean } | null>(null);
   const [showMediaMenu, setShowMediaMenu] = useState(false);
   const [otherUserOnline, setOtherUserOnline] = useState(false);
   const [otherUserLastOnline, setOtherUserLastOnline] = useState<string | null>(null);
@@ -318,6 +341,16 @@ export default function MessagesPage() {
     fetch("/api/auth/me").then((r) => r.json()).then((d) => setCurrentUserId(d.user?._id || d.user?.id || null));
     loadConversations();
     loadUsers();
+    const convPoll = setInterval(() => loadConversations(true), 10000);
+    const onVisible = () => {
+      if (document.visibilityState === "visible") loadConversations(true);
+    };
+    document.addEventListener("visibilitychange", onVisible);
+    return () => {
+      clearInterval(convPoll);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -430,13 +463,24 @@ export default function MessagesPage() {
     openConversation({ _id: "new", participants: [currentUserId || "", user._id], otherUser: user });
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, type: "image" | "video" | "file") => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>, type: "image" | "video" | "file") => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onloadend = () => setPendingMedia({ data: reader.result as string, type, name: file.name });
-    reader.readAsDataURL(file);
     e.target.value = "";
+    const blobUrl = URL.createObjectURL(file);
+    setPendingMedia({ data: blobUrl, serverUrl: "", type, name: file.name, uploading: true });
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("subfolder", "messages");
+      const res = await fetch("/api/upload", { method: "POST", body: formData });
+      if (!res.ok) throw new Error("Upload failed");
+      const { url } = await res.json();
+      setPendingMedia((prev) => prev ? { ...prev, serverUrl: url, uploading: false } : null);
+    } catch {
+      URL.revokeObjectURL(blobUrl);
+      setPendingMedia(null);
+    }
   };
 
   const handleCustomBgSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -507,23 +551,32 @@ export default function MessagesPage() {
     const hasMedia = pendingMedia || audioBlob;
     if (!hasText && !hasMedia) return;
     if (!selectedConv?.otherUser) return;
+    if (pendingMedia?.uploading) return;
     setSendingMsg(true);
 
-    let mediaDataToSend = pendingMedia?.data;
-    let mediaTypeToSend = pendingMedia?.type;
+    let mediaUrlToSend = pendingMedia?.serverUrl || "";
+    let mediaTypeToSend = pendingMedia?.type || "";
 
     if (audioBlob && !pendingMedia) {
-      const reader = new FileReader();
-      const dataUrl = await new Promise<string>((resolve) => {
-        reader.onloadend = () => resolve(reader.result as string);
-        reader.readAsDataURL(audioBlob);
-      });
-      mediaDataToSend = dataUrl;
-      mediaTypeToSend = "audio";
+      try {
+        const audioFile = new File([audioBlob], "voice-note.webm", { type: "audio/webm" });
+        const formData = new FormData();
+        formData.append("file", audioFile);
+        formData.append("subfolder", "messages");
+        const uploadRes = await fetch("/api/upload", { method: "POST", body: formData });
+        if (uploadRes.ok) {
+          const { url } = await uploadRes.json();
+          mediaUrlToSend = url;
+          mediaTypeToSend = "audio";
+        }
+      } catch {
+        setSendingMsg(false);
+        return;
+      }
     }
 
     const body: Record<string, string> = { recipientId: selectedConv.otherUser._id, content: messageText };
-    if (mediaDataToSend) { body.mediaData = mediaDataToSend; body.mediaType = mediaTypeToSend || "file"; }
+    if (mediaUrlToSend) { body.mediaUrl = mediaUrlToSend; body.mediaType = mediaTypeToSend || "file"; }
 
     const res = await fetch("/api/messages", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
     const data = await res.json();
@@ -960,7 +1013,7 @@ export default function MessagesPage() {
                       <motion.button key="send"
                         initial={{ scale: 0.5, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.5, opacity: 0 }}
                         transition={{ duration: 0.15 }} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.92 }}
-                        onClick={sendMessage} disabled={sendingMsg}
+                        onClick={sendMessage} disabled={sendingMsg || !!pendingMedia?.uploading}
                         className="w-9 h-9 bg-blue-600 text-white rounded-xl flex items-center justify-center hover:bg-blue-500 transition-colors shadow-btn disabled:opacity-50 flex-shrink-0">
                         {sendingMsg ? <Loader2 size={15} className="animate-spin" /> : <Send size={15} />}
                       </motion.button>

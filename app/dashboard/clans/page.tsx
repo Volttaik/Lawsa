@@ -77,7 +77,7 @@ export default function ClansPage() {
   const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [showCreate, setShowCreate] = useState(false);
-  const [createForm, setCreateForm] = useState({ name: "", description: "", logo: "" });
+  const [createForm, setCreateForm] = useState({ name: "", description: "", logo: "", logoPreview: "" });
   const [creating, setCreating] = useState(false);
   const [createError, setCreateError] = useState("");
   const [selectedClan, setSelectedClan] = useState<Clan | null>(null);
@@ -120,6 +120,14 @@ export default function ClansPage() {
   };
 
   useEffect(() => { loadData(); }, []);
+
+  useEffect(() => {
+    const onVisible = () => {
+      if (document.visibilityState === "visible") loadData(true);
+    };
+    document.addEventListener("visibilitychange", onVisible);
+    return () => document.removeEventListener("visibilitychange", onVisible);
+  }, []);
 
   useEffect(() => {
     if (chatMessages.length > 0) chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -199,12 +207,24 @@ export default function ClansPage() {
     setSendingChat(false);
   };
 
-  const handleCreateLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleCreateLogoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onloadend = () => setCreateForm((f) => ({ ...f, logo: reader.result as string }));
-    reader.readAsDataURL(file);
+    e.target.value = "";
+    const blobUrl = URL.createObjectURL(file);
+    setCreateForm((f) => ({ ...f, logoPreview: blobUrl, logo: "" }));
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("subfolder", "clans");
+      const res = await fetch("/api/upload", { method: "POST", body: formData });
+      if (!res.ok) throw new Error("Upload failed");
+      const { url } = await res.json();
+      setCreateForm((f) => ({ ...f, logo: url }));
+    } catch {
+      URL.revokeObjectURL(blobUrl);
+      setCreateForm((f) => ({ ...f, logoPreview: "", logo: "" }));
+    }
   };
 
   const handleCreateClan = async () => {
@@ -219,7 +239,7 @@ export default function ClansPage() {
     const data = await res.json();
     if (data.clan) {
       setShowCreate(false);
-      setCreateForm({ name: "", description: "", logo: "" });
+      setCreateForm({ name: "", description: "", logo: "", logoPreview: "" });
       cache.invalidate("clans:");
       await loadData(true);
     } else {
@@ -389,8 +409,8 @@ export default function ClansPage() {
               {/* Logo preview */}
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-16 h-16 rounded-2xl overflow-hidden bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-900/40 dark:to-purple-900/40 flex items-center justify-center">
-                  {createForm.logo
-                    ? <img src={createForm.logo} alt="" className="w-full h-full object-cover" />
+                  {(createForm.logoPreview || createForm.logo)
+                    ? <img src={createForm.logoPreview || createForm.logo} alt="" className="w-full h-full object-cover" />
                     : <Shield size={24} className="text-indigo-400" />
                   }
                 </div>
