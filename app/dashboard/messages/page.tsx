@@ -6,7 +6,7 @@ import {
   Send, Loader2, ArrowLeft, MessageCircle, Users,
   Image as ImageIcon, Film, Paperclip, X, Play, FileText,
   Plus, Mic, StopCircle, Check, CheckCheck, Palette, Upload,
-  Pause,
+  Pause, ChevronDown,
 } from "lucide-react";
 
 interface Conversation {
@@ -332,6 +332,10 @@ export default function MessagesPage() {
   const recordingTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const chatScrollRef = useRef<HTMLDivElement>(null);
+  const [showScrollBtn, setShowScrollBtn] = useState(false);
+  const [newMsgCount, setNewMsgCount] = useState(0);
+  const prevMsgCountRef = useRef(0);
   const imageInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -384,9 +388,40 @@ export default function MessagesPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const isNearBottom = useCallback(() => {
+    const el = chatScrollRef.current;
+    if (!el) return true;
+    return el.scrollHeight - el.scrollTop - el.clientHeight < 120;
+  }, []);
+
+  const scrollToBottom = useCallback((smooth = true) => {
+    messagesEndRef.current?.scrollIntoView({ behavior: smooth ? "smooth" : "auto" });
+    setShowScrollBtn(false);
+    setNewMsgCount(0);
+  }, []);
+
+  const handleChatScroll = useCallback(() => {
+    const near = isNearBottom();
+    setShowScrollBtn(!near);
+    if (near) setNewMsgCount(0);
+  }, [isNearBottom]);
+
   useEffect(() => {
-    if (messages.length > 0) messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+    const prev = prevMsgCountRef.current;
+    const curr = messages.length;
+    if (curr === 0) { prevMsgCountRef.current = 0; return; }
+    if (prev === 0) {
+      scrollToBottom(false);
+    } else if (curr > prev) {
+      if (isNearBottom()) {
+        scrollToBottom(true);
+      } else {
+        setNewMsgCount((n) => n + (curr - prev));
+        setShowScrollBtn(true);
+      }
+    }
+    prevMsgCountRef.current = curr;
+  }, [messages, isNearBottom, scrollToBottom]);
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -510,6 +545,9 @@ export default function MessagesPage() {
     setAudioBlob(null);
     setShowBgPicker(false);
     setIsClanChat(false);
+    setShowScrollBtn(false);
+    setNewMsgCount(0);
+    prevMsgCountRef.current = 0;
     stopRecording();
   };
 
@@ -655,18 +693,32 @@ export default function MessagesPage() {
       }
     }
 
-    const body: Record<string, string> = { recipientId: selectedConv?.otherUser?._id || "", content: messageText };
+    const tempId = `temp-${Date.now()}`;
+    const optimisticMsg: Message = {
+      _id: tempId,
+      senderId: currentUserId || "",
+      senderName: "",
+      content: messageText,
+      mediaUrl: mediaUrlToSend || undefined,
+      mediaType: mediaTypeToSend || undefined,
+      createdAt: new Date().toISOString(),
+    };
+    setMessages((prev) => [...prev, optimisticMsg]);
+    setMessageText("");
+    setPendingMedia(null);
+    setAudioBlob(null);
+
+    const body: Record<string, string> = { recipientId: selectedConv?.otherUser?._id || "", content: optimisticMsg.content };
     if (mediaUrlToSend) { body.mediaUrl = mediaUrlToSend; body.mediaType = mediaTypeToSend || "file"; }
 
     const res = await fetch("/api/messages", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
     const data = await res.json();
     if (data.message) {
-      setMessages((prev) => [...prev, data.message]);
-      setMessageText("");
-      setPendingMedia(null);
-      setAudioBlob(null);
+      setMessages((prev) => prev.map((m) => m._id === tempId ? data.message : m));
       cache.invalidate("conversations");
       loadConversations(true);
+    } else {
+      setMessages((prev) => prev.filter((m) => m._id !== tempId));
     }
     setSendingMsg(false);
   };
@@ -932,7 +984,9 @@ export default function MessagesPage() {
             </div>
 
             {/* Messages area */}
-            <div className="flex-1 overflow-y-auto scrollbar-hide px-4 py-4 space-y-3"
+            <div className="relative flex-1 overflow-hidden">
+            <div ref={chatScrollRef} onScroll={handleChatScroll}
+              className="h-full overflow-y-auto scrollbar-hide px-4 py-4 space-y-3"
               style={chatAreaStyle}>
               {loadingMessages ? (
                 <div className="space-y-4">
@@ -1033,6 +1087,24 @@ export default function MessagesPage() {
                   <div ref={messagesEndRef} />
                 </>
               )}
+            </div>
+
+            {/* Scroll-to-bottom floating button */}
+            <AnimatePresence>
+              {showScrollBtn && (
+                <motion.button
+                  initial={{ opacity: 0, y: 12, scale: 0.85 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 12, scale: 0.85 }}
+                  transition={{ duration: 0.18 }}
+                  onClick={() => scrollToBottom(true)}
+                  className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-1.5 px-3 py-2 rounded-full bg-gray-900/90 backdrop-blur-sm border border-white/15 text-white text-xs font-medium shadow-lg z-10 hover:bg-gray-800/90 transition-colors"
+                >
+                  <ChevronDown size={13} />
+                  {newMsgCount > 0 ? `${newMsgCount} new message${newMsgCount > 1 ? "s" : ""}` : "Scroll to bottom"}
+                </motion.button>
+              )}
+            </AnimatePresence>
             </div>
 
             {/* Pending media/audio preview */}
