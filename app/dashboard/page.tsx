@@ -1,12 +1,13 @@
 "use client";
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, Suspense } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useSearchParams } from "next/navigation";
 import { cache } from "@/lib/cache";
 import {
   Heart, MessageCircle, Share2, Trash2, Send, Loader2, ChevronDown, Play,
   UserPlus, UserCheck, LayoutGrid, Globe, Scale, Cpu, Trophy, Newspaper,
   BookOpen, Briefcase, CalendarDays, HeartPulse, Music, Palette, Sparkles,
-  Plus, X, ArrowUp, RefreshCw,
+  Plus, X, ArrowUp, RefreshCw, Check, ExternalLink,
 } from "lucide-react";
 import Link from "next/link";
 import ReactTimeago from "react-timeago";
@@ -187,7 +188,33 @@ function PostCard({ post, currentUser, onDelete }: {
     post.likes?.includes(currentUser?._id || currentUser?.id || "") || false
   );
   const [likesCount, setLikesCount] = useState(post.likes?.length || 0);
+  const [copied, setCopied] = useState(false);
   const isOwner = currentUser && (post.authorId === currentUser._id || post.authorId === currentUser.id);
+
+  const handleShare = () => {
+    const url = `${window.location.origin}/?post=${post._id}`;
+    const copy = (text: string) => {
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(text).catch(() => fallback(text));
+      } else {
+        fallback(text);
+      }
+    };
+    const fallback = (text: string) => {
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      ta.style.position = "fixed";
+      ta.style.opacity = "0";
+      document.body.appendChild(ta);
+      ta.focus();
+      ta.select();
+      document.execCommand("copy");
+      document.body.removeChild(ta);
+    };
+    copy(url);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2200);
+  };
 
   const validImages = (post.images || []).filter(Boolean);
   const validVideos = (post.videos || []).filter(Boolean);
@@ -293,10 +320,16 @@ function PostCard({ post, currentUser, onDelete }: {
           {(post.comments?.length || 0) > 0 && <span>{post.comments?.length}</span>}
           <span className="hidden sm:block">Comment</span>
         </motion.button>
-        <motion.button whileTap={{ scale: 0.82 }}
-          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all ml-auto">
-          <Share2 size={14} />
-          <span className="hidden sm:block">Share</span>
+        <motion.button whileTap={{ scale: 0.82 }} onClick={handleShare}
+          className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all ml-auto ${
+            copied
+              ? "text-green-600 bg-green-50 dark:bg-green-900/20"
+              : "text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800"
+          }`}>
+          <motion.div animate={copied ? { scale: [1, 1.4, 1] } : {}} transition={{ duration: 0.25 }}>
+            {copied ? <Check size={14} /> : <Share2 size={14} />}
+          </motion.div>
+          <span className="hidden sm:block">{copied ? "Copied!" : "Share"}</span>
         </motion.button>
       </div>
 
@@ -375,6 +408,16 @@ function RecommendedCard({ user, isFollowing, onFollow }: {
 
 /* ── Main Page ── */
 
+function SharedPostLoader({ onPostId }: { onPostId: (id: string) => void }) {
+  const searchParams = useSearchParams();
+  const postId = searchParams.get("post");
+  useEffect(() => {
+    if (postId) onPostId(postId);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [postId]);
+  return null;
+}
+
 export default function DashboardHome() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
@@ -389,6 +432,8 @@ export default function DashboardHome() {
   const [viewingStory, setViewingStory] = useState<number | null>(null);
   const [newPostsAvailable, setNewPostsAvailable] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [sharedPost, setSharedPost] = useState<Post | null>(null);
+  const [sharedPostLoading, setSharedPostLoading] = useState(false);
 
   const filterScrollRef = useRef<HTMLDivElement>(null);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -532,8 +577,103 @@ export default function DashboardHome() {
     else setFollowing((prev) => { const s = new Set(prev); s.delete(userId); return s; });
   };
 
+  const handleSharedPost = useCallback(async (postId: string) => {
+    setSharedPostLoading(true);
+    try {
+      const res = await fetch(`/api/posts/${postId}`);
+      const data = await res.json();
+      if (data.post) setSharedPost(data.post);
+    } catch {}
+    setSharedPostLoading(false);
+  }, []);
+
   return (
     <div className="max-w-2xl mx-auto px-4 py-4">
+
+      {/* Shared post param reader */}
+      <Suspense fallback={null}>
+        <SharedPostLoader onPostId={handleSharedPost} />
+      </Suspense>
+
+      {/* Shared post modal */}
+      <AnimatePresence>
+        {(sharedPost || sharedPostLoading) && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[400] flex items-center justify-center bg-black/60 backdrop-blur-sm px-4"
+            onClick={() => setSharedPost(null)}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.92, y: 24 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.92, y: 24 }}
+              transition={{ type: "spring", damping: 22, stiffness: 320 }}
+              className="bg-white dark:bg-gray-900 rounded-2xl border border-black/10 dark:border-white/10 shadow-2xl w-full max-w-lg overflow-hidden"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {sharedPostLoading ? (
+                <div className="flex items-center justify-center h-48">
+                  <Loader2 size={28} className="animate-spin text-blue-500" />
+                </div>
+              ) : sharedPost && (
+                <>
+                  <div className="flex items-center justify-between px-4 pt-4 pb-2 border-b border-black/5 dark:border-white/5">
+                    <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 font-medium">
+                      <ExternalLink size={13} className="text-blue-500" />
+                      Shared post
+                    </div>
+                    <button onClick={() => setSharedPost(null)}
+                      className="w-7 h-7 rounded-lg flex items-center justify-center text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all">
+                      <X size={15} />
+                    </button>
+                  </div>
+                  {(sharedPost.images || []).filter(Boolean).length > 0 && (
+                    <img src={(sharedPost.images || [])[0]} alt="Post" className="w-full max-h-56 object-cover" />
+                  )}
+                  <div className="p-4">
+                    <div className="flex items-center gap-3 mb-3">
+                      {sharedPost.authorImage
+                        ? <img src={sharedPost.authorImage} alt={sharedPost.authorName} className="w-10 h-10 rounded-full object-cover flex-shrink-0" />
+                        : <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-bold flex-shrink-0">{sharedPost.authorName?.[0]?.toUpperCase()}</div>
+                      }
+                      <div>
+                        <Link href={`/dashboard/profile/${sharedPost.authorId}`} onClick={() => setSharedPost(null)}
+                          className="font-semibold text-sm text-gray-900 dark:text-white hover:text-blue-600 transition-colors">
+                          @{sharedPost.authorUsername || sharedPost.authorName}
+                        </Link>
+                        <div className="text-xs text-gray-400 mt-0.5">
+                          <ReactTimeago date={sharedPost.createdAt} />
+                        </div>
+                      </div>
+                    </div>
+                    <p className="text-sm text-gray-800 dark:text-gray-200 leading-relaxed whitespace-pre-wrap break-words line-clamp-6">
+                      {sharedPost.content}
+                    </p>
+                    {((sharedPost.likes?.length || 0) > 0 || (sharedPost.comments?.length || 0) > 0) && (
+                      <div className="flex items-center gap-4 mt-3 pt-3 border-t border-black/5 dark:border-white/5 text-xs text-gray-400">
+                        {(sharedPost.likes?.length || 0) > 0 && (
+                          <span className="flex items-center gap-1"><Heart size={12} className="fill-red-400 text-red-400" /> {sharedPost.likes?.length}</span>
+                        )}
+                        {(sharedPost.comments?.length || 0) > 0 && (
+                          <span className="flex items-center gap-1"><MessageCircle size={12} /> {sharedPost.comments?.length}</span>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                  <div className="px-4 pb-4">
+                    <button onClick={() => setSharedPost(null)}
+                      className="w-full py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold transition-all">
+                      View in Feed
+                    </button>
+                  </div>
+                </>
+              )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* New posts banner */}
       <AnimatePresence>
