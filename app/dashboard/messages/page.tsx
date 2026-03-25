@@ -25,6 +25,8 @@ interface Message {
   mediaUrl?: string;
   mediaType?: string;
   read?: boolean;
+  edited?: boolean;
+  isDeleted?: boolean;
   createdAt: string;
 }
 
@@ -119,9 +121,15 @@ function TypingIndicator() {
 }
 
 /* ---------- Voice Note Player ---------- */
+const WAVEFORM_BARS = 36;
+const waveformHeights = Array.from({ length: WAVEFORM_BARS }, (_, i) =>
+  Math.max(0.15, Math.abs(Math.sin(i * 1.9 + 0.8)) * 0.7 + Math.sin(i * 3.7 + 1.2) * 0.25 + 0.15)
+);
+
 function VoiceNotePlayer({ url, isMe }: { url: string; isMe: boolean }) {
   const audioRef = useRef<HTMLAudioElement>(null);
   const rafRef = useRef<number | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const [playing, setPlaying] = useState(false);
   const [duration, setDuration] = useState(0);
   const [current, setCurrent] = useState(0);
@@ -154,11 +162,12 @@ function VoiceNotePlayer({ url, isMe }: { url: string; isMe: boolean }) {
     }
   };
 
-  const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!audioRef.current) return;
-    const val = Number(e.target.value);
-    audioRef.current.currentTime = val;
-    setCurrent(val);
+  const handleWaveformClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!audioRef.current || !duration) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const pct = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+    audioRef.current.currentTime = pct * duration;
+    setCurrent(pct * duration);
   };
 
   const handleEnded = () => {
@@ -175,7 +184,7 @@ function VoiceNotePlayer({ url, isMe }: { url: string; isMe: boolean }) {
   const progress = knownDuration ? current / duration : 0;
 
   return (
-    <div className={`flex items-center gap-3 px-3.5 py-2.5 rounded-2xl min-w-[230px] max-w-[280px] ${
+    <div className={`flex items-center gap-3 px-3.5 py-3 rounded-2xl min-w-[230px] max-w-[290px] ${
       isMe ? "rounded-br-sm bg-blue-600" : "rounded-bl-sm bg-gray-800/70 backdrop-blur-md"
     }`}>
       <audio ref={audioRef} src={url} preload="metadata"
@@ -190,22 +199,37 @@ function VoiceNotePlayer({ url, isMe }: { url: string; isMe: boolean }) {
           : <Play size={15} className="text-white ml-0.5" />}
       </button>
 
-      <div className="flex-1 min-w-0 flex flex-col gap-1.5">
-        <div className="relative w-full h-1.5 rounded-full bg-white/20">
-          <div className="absolute inset-y-0 left-0 rounded-full bg-white transition-none"
-            style={{ width: `${progress * 100}%` }} />
-          <input
-            type="range" min={0} max={knownDuration ? duration : 1} step={0.01} value={current}
-            onChange={handleSeek}
-            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-          />
+      <div className="flex-1 min-w-0 flex flex-col gap-1">
+        {/* Waveform visualizer */}
+        <div ref={containerRef}
+          className="flex items-center gap-[2px] h-9 cursor-pointer select-none"
+          onClick={handleWaveformClick}>
+          {waveformHeights.map((h, i) => {
+            const barProgress = i / WAVEFORM_BARS;
+            const isActive = barProgress <= progress;
+            const isNearCursor = Math.abs(barProgress - progress) < 0.04;
+            return (
+              <motion.div
+                key={i}
+                className="flex-1 rounded-full"
+                style={{ backgroundColor: isActive ? "rgba(255,255,255,0.95)" : "rgba(255,255,255,0.25)" }}
+                animate={{
+                  height: playing && isActive
+                    ? [`${h * 100}%`, `${Math.min(1, h * 1.3) * 100}%`, `${h * 100}%`]
+                    : `${h * 100}%`,
+                  scaleX: isNearCursor ? 1.5 : 1,
+                }}
+                transition={playing && isActive
+                  ? { duration: 0.5 + i * 0.015, repeat: Infinity, ease: "easeInOut", delay: i * 0.018 }
+                  : { duration: 0.1 }}
+              />
+            );
+          })}
         </div>
+        {/* Time */}
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-1">
-            <Mic size={9} className="text-white/50" />
-            <span className="text-[9px] text-white/50 font-medium uppercase tracking-wide">Voice</span>
-          </div>
-          <span className="text-[10px] text-white/60 tabular-nums">
+          <span className="text-[9px] text-white/50 font-medium uppercase tracking-wide">Voice</span>
+          <span className="text-[10px] text-white/70 tabular-nums font-medium">
             {playing ? fmt(current) : knownDuration ? fmt(duration) : "0:00"}
           </span>
         </div>
@@ -299,6 +323,11 @@ export default function MessagesPage() {
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const selectedConvRef = useRef<Conversation | null>(null);
   selectedConvRef.current = selectedConv;
+
+  const [contextMsg, setContextMsg] = useState<Message | null>(null);
+  const [editingMsgId, setEditingMsgId] = useState<string | null>(null);
+  const [editText, setEditText] = useState("");
+  const longPressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   /* ---- Load persisted chat background ---- */
   useEffect(() => {
@@ -528,6 +557,45 @@ export default function MessagesPage() {
     setSendingMsg(false);
   };
 
+  const startLongPress = (msg: Message) => {
+    longPressTimerRef.current = setTimeout(() => {
+      if (msg.senderId === currentUserId && !msg.isDeleted) setContextMsg(msg);
+    }, 480);
+  };
+
+  const cancelLongPress = () => {
+    if (longPressTimerRef.current) clearTimeout(longPressTimerRef.current);
+  };
+
+  const openEdit = (msg: Message) => {
+    setContextMsg(null);
+    setEditingMsgId(msg._id);
+    setEditText(msg.content);
+  };
+
+  const submitEdit = async (msgId: string) => {
+    if (!editText.trim()) return;
+    const res = await fetch(`/api/messages/message/${msgId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ content: editText.trim() }),
+    });
+    const data = await res.json();
+    if (data.message) {
+      setMessages((prev) => prev.map((m) => m._id === msgId ? { ...m, content: data.message.content, edited: true } : m));
+    }
+    setEditingMsgId(null);
+    setEditText("");
+  };
+
+  const deleteMessage = async (msgId: string) => {
+    setContextMsg(null);
+    const res = await fetch(`/api/messages/message/${msgId}`, { method: "DELETE" });
+    if (res.ok) {
+      setMessages((prev) => prev.map((m) => m._id === msgId ? { ...m, isDeleted: true, content: "", mediaUrl: "", mediaType: "" } : m));
+    }
+  };
+
   const filteredUsers = users.filter((u) =>
     u.name.toLowerCase().includes(userSearch.toLowerCase()) || u.username.toLowerCase().includes(userSearch.toLowerCase())
   );
@@ -737,32 +805,62 @@ export default function MessagesPage() {
                   <AnimatePresence initial={false}>
                     {messages.map((msg) => {
                       const isMe = msg.senderId === currentUserId;
+                      const isEditing = editingMsgId === msg._id;
                       return (
                         <motion.div key={msg._id}
                           initial={{ opacity: 0, y: 14, scale: 0.94 }}
                           animate={{ opacity: 1, y: 0, scale: 1 }}
                           transition={{ duration: 0.22 }}
                           className={`flex items-end gap-1.5 ${isMe ? "flex-row-reverse" : ""}`}
+                          onMouseDown={() => startLongPress(msg)}
+                          onMouseUp={cancelLongPress}
+                          onMouseLeave={cancelLongPress}
+                          onTouchStart={() => startLongPress(msg)}
+                          onTouchEnd={cancelLongPress}
+                          onTouchMove={cancelLongPress}
                         >
                           {!isMe && <Avatar src={msg.senderImage} name={msg.senderName} size={30} />}
                           <div className={`max-w-[75%] flex flex-col ${isMe ? "items-end" : "items-start"}`}>
-                            {msg.mediaUrl && (
-                              <MediaPreview
-                                url={msg.mediaUrl}
-                                type={msg.mediaType || "file"}
-                                isMe={isMe}
-                              />
-                            )}
-                            {msg.content && (
-                              <div className={`px-4 py-2.5 text-sm leading-relaxed ${msg.mediaUrl ? "mt-1" : ""} ${
-                                isMe
-                                  ? "bg-blue-600 text-white rounded-[18px] rounded-br-[4px]"
-                                  : "bg-white/15 backdrop-blur-sm border border-white/15 text-white rounded-[18px] rounded-bl-[4px]"
+                            {msg.isDeleted ? (
+                              <div className={`px-4 py-2.5 text-sm italic opacity-50 rounded-[18px] ${
+                                isMe ? "bg-blue-600/60 text-white rounded-br-[4px]" : "bg-white/10 text-white rounded-bl-[4px]"
                               }`}>
-                                {msg.content}
+                                Message deleted
                               </div>
+                            ) : (
+                              <>
+                                {msg.mediaUrl && (
+                                  <MediaPreview url={msg.mediaUrl} type={msg.mediaType || "file"} isMe={isMe} />
+                                )}
+                                {isEditing ? (
+                                  <div className="flex gap-2 items-center mt-1">
+                                    <input
+                                      autoFocus
+                                      value={editText}
+                                      onChange={(e) => setEditText(e.target.value)}
+                                      onKeyDown={(e) => { if (e.key === "Enter") submitEdit(msg._id); if (e.key === "Escape") setEditingMsgId(null); }}
+                                      className="px-3 py-2 text-sm rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-blue-400/50 min-w-[160px]"
+                                    />
+                                    <button onClick={() => submitEdit(msg._id)}
+                                      className="px-3 py-2 text-xs bg-blue-500 text-white rounded-xl hover:bg-blue-400 transition-colors">Save</button>
+                                    <button onClick={() => setEditingMsgId(null)}
+                                      className="p-2 text-white/50 hover:text-white transition-colors"><X size={14} /></button>
+                                  </div>
+                                ) : (
+                                  msg.content && (
+                                    <div className={`px-4 py-2.5 text-sm leading-relaxed ${msg.mediaUrl ? "mt-1" : ""} ${
+                                      isMe
+                                        ? "bg-blue-600 text-white rounded-[18px] rounded-br-[4px]"
+                                        : "bg-white/15 backdrop-blur-sm border border-white/15 text-white rounded-[18px] rounded-bl-[4px]"
+                                    }`}>
+                                      {msg.content}
+                                      {msg.edited && <span className="text-[9px] opacity-50 ml-1">edited</span>}
+                                    </div>
+                                  )
+                                )}
+                              </>
                             )}
-                            {isMe && (
+                            {isMe && !msg.isDeleted && (
                               <div className="flex items-center gap-1 mt-0.5 pr-1">
                                 <ReadReceipt isMe={isMe} read={msg.read} />
                               </div>
@@ -900,6 +998,53 @@ export default function MessagesPage() {
               )}
             </div>
           </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Long-press context menu */}
+      <AnimatePresence>
+        {contextMsg && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              className="fixed inset-0 z-[300] bg-black/40"
+              onClick={() => setContextMsg(null)}
+            />
+            <motion.div
+              initial={{ y: 80, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 80, opacity: 0 }}
+              transition={{ type: "spring", damping: 28, stiffness: 300 }}
+              className="fixed bottom-0 left-0 right-0 z-[301] bg-gray-900 rounded-t-3xl border-t border-white/10 p-4 pb-8"
+            >
+              <div className="w-10 h-1 bg-white/20 rounded-full mx-auto mb-5" />
+              <p className="text-[11px] text-white/40 uppercase tracking-wider font-semibold px-1 mb-3">Message</p>
+              {contextMsg.content && (
+                <button
+                  onClick={() => openEdit(contextMsg)}
+                  className="flex items-center gap-3 w-full px-4 py-3.5 rounded-2xl hover:bg-white/8 transition-colors text-left mb-1"
+                >
+                  <div className="w-9 h-9 rounded-xl bg-blue-500/20 flex items-center justify-center">
+                    <MessageCircle size={16} className="text-blue-400" />
+                  </div>
+                  <div>
+                    <div className="text-sm font-semibold text-white">Edit</div>
+                    <div className="text-[11px] text-white/40">Change message text</div>
+                  </div>
+                </button>
+              )}
+              <button
+                onClick={() => deleteMessage(contextMsg._id)}
+                className="flex items-center gap-3 w-full px-4 py-3.5 rounded-2xl hover:bg-red-500/10 transition-colors text-left"
+              >
+                <div className="w-9 h-9 rounded-xl bg-red-500/20 flex items-center justify-center">
+                  <X size={16} className="text-red-400" />
+                </div>
+                <div>
+                  <div className="text-sm font-semibold text-red-400">Delete</div>
+                  <div className="text-[11px] text-white/40">Remove for everyone</div>
+                </div>
+              </button>
+            </motion.div>
+          </>
         )}
       </AnimatePresence>
     </>

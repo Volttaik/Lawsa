@@ -10,6 +10,8 @@ export interface IMessage {
     mediaUrl?: string;
     mediaType?: string;
     read?: boolean;
+    edited?: boolean;
+    isDeleted?: boolean;
     createdAt?: Date;
     updatedAt?: Date;
 }
@@ -29,6 +31,8 @@ const messageSchema = new mongoose.Schema<IMessageDocument>({
     mediaUrl: { type: String, default: "" },
     mediaType: { type: String, default: "" },
     read: { type: Boolean, default: false },
+    edited: { type: Boolean, default: false },
+    isDeleted: { type: Boolean, default: false },
 }, { timestamps: true });
 
 export const Message: Model<IMessageDocument> =
