@@ -2,7 +2,7 @@
 import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { UserPlus, UserCheck, Search, Loader2, Users } from "lucide-react";
+import { UserPlus, UserCheck, Search, Loader2, Users, SearchX } from "lucide-react";
 import Link from "next/link";
 
 interface UserCard {
@@ -212,7 +212,9 @@ function ConnectPageContent() {
               animate={{ opacity: 1 }}
               className="bg-white dark:bg-gray-900 rounded-2xl border border-black/10 dark:border-white/10 shadow-card p-12 text-center"
             >
-              <div className="text-4xl mb-3">🔍</div>
+              <div className="w-14 h-14 rounded-2xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center mx-auto mb-4">
+                <SearchX size={24} className="text-gray-400 dark:text-gray-500" />
+              </div>
               <p className="text-gray-500 dark:text-gray-400 text-sm">No users found{search ? ` for "${search}"` : ""}.</p>
             </motion.div>
           ) : others.length > 0 ? (
