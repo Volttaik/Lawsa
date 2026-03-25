@@ -2,9 +2,26 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Image as ImageIcon, Video, X, Send, Loader2, ArrowLeft, Film } from "lucide-react";
+import { Image as ImageIcon, Video, X, Send, Loader2, ArrowLeft, Film, ChevronDown } from "lucide-react";
 
-type MediaItem = { type: "image" | "video"; data: string; name: string };
+type MediaItem = { type: "image" | "video"; data: string; name: string; uploading?: boolean };
+
+const CATEGORIES = [
+  { id: "general", label: "📢 General" },
+  { id: "law", label: "⚖️ Law" },
+  { id: "tech", label: "💻 Tech" },
+  { id: "sports", label: "🏆 Sports" },
+  { id: "news", label: "📰 News" },
+  { id: "lectures", label: "📚 Lectures" },
+  { id: "career", label: "💼 Career" },
+  { id: "events", label: "🎉 Events" },
+  { id: "health", label: "🏥 Health" },
+  { id: "music", label: "🎵 Music" },
+  { id: "art", label: "🎨 Art" },
+];
+
+const MAX_VIDEO_MB = 50;
+const MAX_IMAGE_MB = 10;
 
 export default function CreatePostPage() {
   const router = useRouter();
@@ -12,24 +29,65 @@ export default function CreatePostPage() {
   const [mediaItems, setMediaItems] = useState<MediaItem[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [category, setCategory] = useState("general");
+  const [showCatMenu, setShowCatMenu] = useState(false);
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>, type: "image" | "video") => {
+  const uploadVideoFile = async (file: File): Promise<string> => {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("subfolder", "posts");
+    const res = await fetch("/api/upload", { method: "POST", body: formData });
+    if (!res.ok) {
+      const d = await res.json();
+      throw new Error(d.error || "Video upload failed");
+    }
+    const d = await res.json();
+    return d.url as string;
+  };
+
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>, type: "image" | "video") => {
     const files = e.target.files;
     if (!files) return;
-    Array.from(files).forEach((file) => {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setMediaItems((prev) => [...prev, { type, data: reader.result as string, name: file.name }]);
-      };
-      reader.readAsDataURL(file);
-    });
     e.target.value = "";
+
+    for (const file of Array.from(files)) {
+      const maxMb = type === "video" ? MAX_VIDEO_MB : MAX_IMAGE_MB;
+      if (file.size > maxMb * 1024 * 1024) {
+        setError(`${file.name} is too large. Maximum size is ${maxMb}MB.`);
+        continue;
+      }
+
+      if (type === "video") {
+        const placeholder: MediaItem = { type: "video", data: "", name: file.name, uploading: true };
+        setMediaItems((prev) => [...prev, placeholder]);
+        try {
+          const url = await uploadVideoFile(file);
+          setMediaItems((prev) =>
+            prev.map((m) => (m.name === file.name && m.uploading ? { ...m, data: url, uploading: false } : m))
+          );
+        } catch (err: unknown) {
+          const msg = err instanceof Error ? err.message : "Upload failed";
+          setError(msg);
+          setMediaItems((prev) => prev.filter((m) => !(m.name === file.name && m.uploading)));
+        }
+      } else {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setMediaItems((prev) => [...prev, { type, data: reader.result as string, name: file.name }]);
+        };
+        reader.readAsDataURL(file);
+      }
+    }
   };
 
   const removeMedia = (i: number) => setMediaItems((prev) => prev.filter((_, j) => j !== i));
 
   const handleSubmit = async () => {
     if (!text.trim()) return;
+    if (mediaItems.some((m) => m.uploading)) {
+      setError("Please wait for all uploads to finish.");
+      return;
+    }
     setSubmitting(true);
     setError("");
 
@@ -39,7 +97,7 @@ export default function CreatePostPage() {
     const res = await fetch("/api/posts", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ content: text, images, videos }),
+      body: JSON.stringify({ content: text, images, videos, category }),
     });
     const data = await res.json();
     if (data.post) {
@@ -49,6 +107,8 @@ export default function CreatePostPage() {
     }
     setSubmitting(false);
   };
+
+  const selectedCat = CATEGORIES.find((c) => c.id === category) || CATEGORIES[0];
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-6">
@@ -65,12 +125,16 @@ export default function CreatePostPage() {
 
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}
         className="bg-white dark:bg-gray-900 rounded-2xl border border-black/10 dark:border-white/10 shadow-card p-6">
-        {error && (
-          <motion.div initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }}
-            className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 text-sm rounded-xl p-3 mb-4">
-            {error}
-          </motion.div>
-        )}
+
+        <AnimatePresence>
+          {error && (
+            <motion.div initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -5 }}
+              className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 text-sm rounded-xl p-3 mb-4 flex items-center justify-between gap-2">
+              <span>{error}</span>
+              <button onClick={() => setError("")} className="flex-shrink-0 text-red-400 hover:text-red-600"><X size={14} /></button>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         <textarea
           value={text}
@@ -93,22 +157,32 @@ export default function CreatePostPage() {
                     <img src={item.data} alt="" className="w-24 h-24 rounded-xl object-cover border border-black/10 dark:border-white/10" />
                   ) : (
                     <div className="w-24 h-24 rounded-xl border border-black/10 dark:border-white/10 bg-gray-100 dark:bg-gray-800 flex flex-col items-center justify-center gap-1 overflow-hidden relative">
-                      <video src={item.data} className="absolute inset-0 w-full h-full object-cover opacity-60" />
-                      <Film size={20} className="relative z-10 text-white drop-shadow" />
-                      <span className="relative z-10 text-[9px] text-white font-medium drop-shadow truncate px-1 max-w-full">{item.name}</span>
+                      {item.uploading ? (
+                        <div className="flex flex-col items-center gap-1">
+                          <Loader2 size={20} className="text-blue-500 animate-spin" />
+                          <span className="text-[9px] text-gray-500">Uploading…</span>
+                        </div>
+                      ) : (
+                        <>
+                          <Film size={20} className="text-purple-500" />
+                          <span className="text-[9px] text-gray-500 truncate px-1 max-w-full">{item.name}</span>
+                        </>
+                      )}
                     </div>
                   )}
-                  <button onClick={() => removeMedia(i)}
-                    className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center text-white shadow-sm hover:bg-red-600 transition-colors">
-                    <X size={11} />
-                  </button>
+                  {!item.uploading && (
+                    <button onClick={() => removeMedia(i)}
+                      className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center text-white shadow-sm hover:bg-red-600 transition-colors">
+                      <X size={11} />
+                    </button>
+                  )}
                 </motion.div>
               ))}
             </motion.div>
           )}
         </AnimatePresence>
 
-        <div className="flex items-center justify-between mt-4 pt-4 border-t border-black/5 dark:border-white/5">
+        <div className="flex items-center justify-between mt-4 pt-4 border-t border-black/5 dark:border-white/5 flex-wrap gap-3">
           <div className="flex items-center gap-1">
             <label className="flex items-center gap-2 text-gray-600 dark:text-gray-400 cursor-pointer hover:text-blue-600 transition-colors px-3 py-2 rounded-xl hover:bg-blue-50 dark:hover:bg-blue-900/20 text-sm font-medium">
               <ImageIcon size={17} /> Photo
@@ -119,7 +193,39 @@ export default function CreatePostPage() {
               <input type="file" accept="video/*" multiple className="hidden" onChange={(e) => handleFileSelect(e, "video")} />
             </label>
           </div>
-          <div className="flex items-center gap-3">
+
+          <div className="flex items-center gap-2">
+            {/* Category selector */}
+            <div className="relative">
+              <button
+                onClick={() => setShowCatMenu(!showCatMenu)}
+                className="flex items-center gap-1.5 text-xs font-medium text-gray-600 dark:text-gray-400 px-3 py-2 rounded-xl border border-black/10 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all"
+              >
+                <span>{selectedCat.label}</span>
+                <ChevronDown size={12} />
+              </button>
+              <AnimatePresence>
+                {showCatMenu && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.9, y: -4 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.9, y: -4 }}
+                    transition={{ duration: 0.15 }}
+                    className="absolute bottom-full mb-2 right-0 bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-black/10 dark:border-white/10 overflow-hidden z-20 w-44 max-h-56 overflow-y-auto scrollbar-hide"
+                  >
+                    {CATEGORIES.map((cat) => (
+                      <button key={cat.id} onClick={() => { setCategory(cat.id); setShowCatMenu(false); }}
+                        className={`flex items-center gap-2 w-full px-4 py-2.5 text-sm text-left transition-colors ${
+                          category === cat.id ? "bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 font-semibold" : "text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700"
+                        }`}>
+                        {cat.label}
+                      </button>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
             <span className={`text-xs ${text.length > 2000 ? "text-red-500" : "text-gray-400"}`}>
               {text.length}/2000
             </span>
@@ -127,7 +233,7 @@ export default function CreatePostPage() {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={handleSubmit}
-              disabled={submitting || !text.trim() || text.length > 2000}
+              disabled={submitting || !text.trim() || text.length > 2000 || mediaItems.some((m) => m.uploading)}
               className="w-9 h-9 bg-blue-600 text-white rounded-xl flex items-center justify-center hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed transition-all shadow-btn"
               title="Publish"
             >
