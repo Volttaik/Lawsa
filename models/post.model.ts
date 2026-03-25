@@ -12,6 +12,7 @@ export interface IPost {
     comments?: mongoose.Types.ObjectId[];
     shares?: string[];
     reshares?: number;
+    category?: string;
     createdAt?: Date;
     updatedAt?: Date;
 }
@@ -33,6 +34,7 @@ const postSchema = new mongoose.Schema<IPostDocument>({
     comments: [{ type: mongoose.Schema.Types.ObjectId, ref: "Comment" }],
     shares: [{ type: String }],
     reshares: { type: Number, default: 0 },
+    category: { type: String, default: "general" },
 }, { timestamps: true });
 
 export const Post: Model<IPostDocument> =
