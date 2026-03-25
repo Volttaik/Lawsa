@@ -35,6 +35,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [loading, setLoading] = useState(true);
   const [notifCount, setNotifCount] = useState(0);
 
+  const sendHeartbeat = useCallback(async () => {
+    try { await fetch("/api/users/heartbeat", { method: "POST" }); } catch {}
+  }, []);
+
   const fetchNotifCount = useCallback(async () => {
     try {
       const res = await fetch("/api/notifications/count");
@@ -46,23 +50,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   useEffect(() => {
     fetch("/api/auth/me", { credentials: "include" })
       .then((r) => {
-        if (r.status === 401) {
-          window.location.href = "/login";
-          return null;
-        }
+        if (r.status === 401) { window.location.href = "/login"; return null; }
         return r.json();
       })
       .then((data) => {
         if (!data) return;
-        if (data.user) {
-          setUser(data.user);
-        } else {
-          window.location.href = "/login";
-        }
+        if (data.user) { setUser(data.user); }
+        else { window.location.href = "/login"; }
       })
-      .catch(() => {
-        window.location.href = "/login";
-      })
+      .catch(() => { window.location.href = "/login"; })
       .finally(() => setLoading(false));
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -74,9 +70,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }, [fetchNotifCount]);
 
   useEffect(() => {
-    if (pathname === "/dashboard/notifications") {
-      setNotifCount(0);
-    }
+    sendHeartbeat();
+    const interval = setInterval(sendHeartbeat, 30000);
+    return () => clearInterval(interval);
+  }, [sendHeartbeat]);
+
+  useEffect(() => {
+    if (pathname === "/dashboard/notifications") setNotifCount(0);
   }, [pathname]);
 
   const userId = user?._id || user?.id || "";
@@ -106,7 +106,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <Logo size={28} textClass="font-bold text-sm text-gray-900 dark:text-white hidden sm:block" />
           </Link>
 
-          {/* Search */}
           <div className="flex-1 max-w-md">
             <div className="relative">
               <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
