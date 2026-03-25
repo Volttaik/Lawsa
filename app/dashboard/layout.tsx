@@ -3,8 +3,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
-import { Home, MessageCircle, PlusSquare, Users, User, Bell, Loader2 } from "lucide-react";
+import { Home, MessageCircle, PlusSquare, Users, User, Bell, Loader2, Shield } from "lucide-react";
 import { Logo } from "@/components/Logo";
 
 interface CurrentUser {
@@ -85,7 +84,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     { href: "/dashboard", icon: Home, label: "Home" },
     { href: "/dashboard/messages", icon: MessageCircle, label: "Chats" },
     { href: "/dashboard/post", icon: PlusSquare, label: "Post" },
-    { href: "/dashboard/connect", icon: Users, label: "Connect" },
+    { href: "/dashboard/clans", icon: Shield, label: "Clans" },
     { href: `/dashboard/profile/${userId}`, icon: User, label: "Profile" },
   ];
 
@@ -130,13 +129,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               className="relative w-8 h-8 rounded-xl border border-black/10 dark:border-white/10 flex items-center justify-center text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-blue-600 transition-all shadow-soft">
               <Bell size={16} />
               {notifCount > 0 && (
-                <motion.span
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  className="absolute -top-1 -right-1 min-w-[16px] h-4 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center px-0.5 leading-none"
-                >
+                <span className="absolute -top-1 -right-1 min-w-[16px] h-4 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center px-0.5 leading-none animate-pop-in">
                   {notifCount > 99 ? "99+" : notifCount}
-                </motion.span>
+                </span>
               )}
             </Link>
             <Link href="/dashboard/settings" className="relative w-8 h-8 rounded-xl border border-black/10 dark:border-white/10 flex items-center justify-center text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-blue-600 transition-all shadow-soft">
@@ -154,43 +149,31 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </div>
       </header>
 
-      {/* Main Content */}
+      {/* Main Content — no AnimatePresence wrapper so pages render instantly */}
       <main className="pt-12 pb-16">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={pathname}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            transition={{ duration: 0.2 }}
-          >
-            {children}
-          </motion.div>
-        </AnimatePresence>
+        {children}
       </main>
 
       {/* Bottom Navigation */}
       <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-gray-900 border-t border-black/10 dark:border-white/10 shadow-soft">
-        <div className="max-w-md mx-auto px-2 h-14 flex items-center justify-around">
+        <div className="max-w-md mx-auto px-1 h-14 flex items-center justify-around">
           {navItems.map(({ href, icon: Icon, label }) => {
             const isActive = label === "Profile"
               ? pathname.includes("/profile/")
+              : label === "Clans"
+              ? pathname.includes("/clans")
               : pathname === href;
 
             return (
               <Link key={label} href={href}>
-                <motion.div
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.92 }}
-                  className={`flex flex-col items-center gap-0.5 px-2.5 py-1 rounded-xl transition-all ${isActive ? "text-blue-600" : "text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"}`}
-                >
+                <div className={`flex flex-col items-center gap-0.5 px-2 py-1 rounded-xl transition-all duration-200 ${isActive ? "text-blue-600" : "text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"}`}>
                   {label === "Post" ? (
-                    <div className={`w-8 h-8 rounded-xl flex items-center justify-center transition-all ${isActive ? "bg-blue-600" : "bg-gray-100 dark:bg-gray-800 hover:bg-blue-50"}`}>
+                    <div className={`w-8 h-8 rounded-xl flex items-center justify-center transition-all duration-200 ${isActive ? "bg-blue-600" : "bg-gray-100 dark:bg-gray-800 hover:bg-blue-50"}`}>
                       <Icon size={17} className={isActive ? "text-white" : "text-gray-600 dark:text-gray-300"} />
                     </div>
                   ) : label === "Profile" && user ? (
                     <>
-                      <div className={`w-6 h-6 rounded-full overflow-hidden border-2 transition-all ${isActive ? "border-blue-600" : "border-transparent"}`}>
+                      <div className={`w-6 h-6 rounded-full overflow-hidden border-2 transition-all duration-200 ${isActive ? "border-blue-600" : "border-transparent"}`}>
                         <Avatar src={user.profileImage} name={user.name} size={24} />
                       </div>
                       <span className="text-[10px] font-medium">{label}</span>
@@ -206,7 +189,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                       <span className="text-[10px] font-medium">{label}</span>
                     </>
                   )}
-                </motion.div>
+                </div>
               </Link>
             );
           })}

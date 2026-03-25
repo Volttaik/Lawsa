@@ -32,7 +32,7 @@ export async function GET(request: NextRequest, { params }: { params: { conversa
                 const otherUser = await User.findById(otherId).select("lastOnline");
                 if (otherUser?.lastOnline) {
                     otherUserLastOnline = otherUser.lastOnline;
-                    otherUserOnline = (Date.now() - new Date(otherUser.lastOnline).getTime()) < 5 * 60 * 1000;
+                    otherUserOnline = (Date.now() - new Date(otherUser.lastOnline).getTime()) < 90 * 1000;
                 }
                 const typingMap = conversation.typingUsers as Map<string, Date> | undefined;
                 if (typingMap) {

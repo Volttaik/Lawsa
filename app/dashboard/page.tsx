@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Heart, MessageCircle, Share2, Trash2, Send, Loader2, ChevronDown, Play, UserPlus, UserCheck,
-  LayoutGrid, Globe, Scale, Cpu, Trophy, Newspaper, BookOpen, Briefcase, CalendarDays, HeartPulse, Music, Palette, Sparkles,
+  LayoutGrid, Globe, Scale, Cpu, Trophy, Newspaper, BookOpen, Briefcase, CalendarDays, HeartPulse, Music, Palette, Sparkles, Plus, X,
 } from "lucide-react";
 import Link from "next/link";
 import ReactTimeago from "react-timeago";
@@ -37,6 +37,16 @@ interface Post {
   likes?: string[];
   comments?: Comment[];
   category?: string;
+  createdAt: string;
+}
+
+interface Story {
+  _id: string;
+  authorId: string;
+  authorName: string;
+  authorImage?: string;
+  content: string;
+  image?: string;
   createdAt: string;
 }
 
@@ -338,6 +348,9 @@ export default function DashboardHome() {
   const [activeCategory, setActiveCategory] = useState("all");
   const [recommendations, setRecommendations] = useState<RecommendedUser[]>([]);
   const [following, setFollowing] = useState<Set<string>>(new Set());
+  const [stories, setStories] = useState<Story[]>([]);
+  const [viewingStory, setViewingStory] = useState<number | null>(null);
+  const [storyProgress, setStoryProgress] = useState(0);
   const filterScrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -346,13 +359,15 @@ export default function DashboardHome() {
       fetch("/api/auth/me").then((r) => r.json()),
       fetch("/api/posts?page=1&limit=10&category=all").then((r) => r.json()),
       fetch("/api/users/recommendations").then((r) => r.json()).catch(() => ({ users: [] })),
-    ]).then(([userData, postsData, recsData]) => {
+    fetch("/api/stories").then((r) => r.json()).catch(() => ({ stories: [] })),
+    ]).then(([userData, postsData, recsData, storiesData]) => {
       setCurrentUser(userData.user || null);
       setFollowing(new Set(userData.user?.following || []));
       setPosts(postsData.posts || []);
       setHasMore(postsData.hasMore || false);
       setPage(1);
       setRecommendations(recsData.users || []);
+      setStories(storiesData.stories || []);
       setLoading(false);
     });
   }, []);
@@ -411,6 +426,84 @@ export default function DashboardHome() {
           })}
         </div>
       </div>
+
+      {/* Stories Bar */}
+      {stories.length > 0 && (
+        <div className="mb-4">
+          <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-1">
+            {currentUser && (
+              <Link href={`/dashboard/profile/${currentUser._id}`} className="flex flex-col items-center gap-1.5 flex-shrink-0">
+                <div className="w-14 h-14 rounded-full border-2 border-dashed border-blue-400 flex items-center justify-center bg-blue-50 dark:bg-blue-900/20">
+                  <Plus size={18} className="text-blue-500" />
+                </div>
+                <span className="text-[10px] text-gray-500 dark:text-gray-400 truncate max-w-[56px]">Your Story</span>
+              </Link>
+            )}
+            {stories.map((story, i) => (
+              <button key={story._id} onClick={() => setViewingStory(i)} className="flex flex-col items-center gap-1.5 flex-shrink-0">
+                <div className="w-14 h-14 rounded-full border-2 border-blue-500 p-0.5 overflow-hidden">
+                  {story.image
+                    ? <img src={story.image} alt={story.authorName} className="w-full h-full rounded-full object-cover" />
+                    : (
+                      <div className="w-full h-full rounded-full bg-gradient-to-br from-blue-400 to-purple-600 flex items-center justify-center">
+                        {story.authorImage
+                          ? <img src={story.authorImage} alt={story.authorName} className="w-full h-full rounded-full object-cover" />
+                          : <span className="text-white font-bold text-lg">{story.authorName?.[0]?.toUpperCase()}</span>
+                        }
+                      </div>
+                    )
+                  }
+                </div>
+                <span className="text-[10px] text-gray-600 dark:text-gray-400 truncate max-w-[56px]">{story.authorName.split(" ")[0]}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Story Viewer */}
+      <AnimatePresence>
+        {viewingStory !== null && stories.length > 0 && (() => {
+          const story = stories[viewingStory];
+          return (
+            <motion.div
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              className="fixed inset-0 z-[300] bg-black flex flex-col"
+              onClick={() => setViewingStory(null)}
+            >
+              <div className="flex gap-1 p-3" style={{ paddingTop: "max(0.75rem, env(safe-area-inset-top))" }}>
+                {stories.map((_, i) => (
+                  <div key={i} className="flex-1 h-0.5 bg-white/30 rounded-full overflow-hidden">
+                    <div className="h-full bg-white rounded-full" style={{ width: i < viewingStory ? "100%" : i === viewingStory ? "50%" : "0%" }} />
+                  </div>
+                ))}
+              </div>
+              <div className="flex items-center gap-3 px-4 py-2">
+                <div className="w-9 h-9 rounded-full overflow-hidden border-2 border-white flex-shrink-0">
+                  {story.authorImage
+                    ? <img src={story.authorImage} alt={story.authorName} className="w-full h-full object-cover" />
+                    : <div className="w-full h-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-bold">{story.authorName?.[0]?.toUpperCase()}</div>
+                  }
+                </div>
+                <span className="text-white font-semibold text-sm">{story.authorName}</span>
+                <button onClick={(e) => { e.stopPropagation(); setViewingStory(null); }} className="ml-auto text-white/70 hover:text-white p-1">
+                  <X size={20} />
+                </button>
+              </div>
+              <div className="flex-1 flex flex-col items-center justify-center px-6 gap-6" onClick={(e) => e.stopPropagation()}>
+                {story.image && <img src={story.image} alt="" className="max-w-full max-h-[55vh] rounded-2xl object-contain" />}
+                {story.content && <p className="text-white text-xl font-semibold text-center leading-relaxed drop-shadow-lg max-w-sm">{story.content}</p>}
+              </div>
+              <div className="flex justify-between px-8 pb-10">
+                <button onClick={(e) => { e.stopPropagation(); setViewingStory(Math.max(0, viewingStory - 1)); }}
+                  className="text-white/60 hover:text-white text-sm px-4 py-2 rounded-xl bg-white/10">‹ Prev</button>
+                <button onClick={(e) => { e.stopPropagation(); if (viewingStory < stories.length - 1) setViewingStory(viewingStory + 1); else setViewingStory(null); }}
+                  className="text-white/60 hover:text-white text-sm px-4 py-2 rounded-xl bg-white/10">Next ›</button>
+              </div>
+            </motion.div>
+          );
+        })()}
+      </AnimatePresence>
 
       <div className="space-y-4">
         {loading ? (

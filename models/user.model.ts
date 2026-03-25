@@ -16,6 +16,9 @@ export interface IUser {
     connections?: string[];
     pendingConnections?: string[];
     lastOnline?: Date;
+    clanId?: string;
+    clanName?: string;
+    clanLogo?: string;
     createdAt?: Date;
     updatedAt?: Date;
 }
@@ -41,6 +44,9 @@ const userSchema = new mongoose.Schema<IUserDocument>({
     connections: [{ type: String }],
     pendingConnections: [{ type: String }],
     lastOnline: { type: Date, default: Date.now },
+    clanId: { type: String, default: "" },
+    clanName: { type: String, default: "" },
+    clanLogo: { type: String, default: "" },
 }, { timestamps: true });
 
 export const User: Model<IUserDocument> =

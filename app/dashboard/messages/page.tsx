@@ -5,6 +5,7 @@ import {
   Send, Loader2, ArrowLeft, MessageCircle, Users,
   Image as ImageIcon, Film, Paperclip, X, Play, FileText,
   Plus, Mic, StopCircle, Check, CheckCheck, Palette, Upload,
+  Pause,
 } from "lucide-react";
 
 interface Conversation {
@@ -56,7 +57,7 @@ const CHAT_BACKGROUNDS: ChatBg[] = [
   { id: "custom",   label: "Custom",    imgValue: null, bgColor: "#0f0c29", isCustom: true },
 ];
 
-const DEFAULT_BG = CHAT_BACKGROUNDS[0]; // Midnight
+const DEFAULT_BG = CHAT_BACKGROUNDS[0];
 
 function Avatar({ src, name, size = 40 }: { src?: string; name: string; size?: number }) {
   if (src) return <img src={src} alt={name} className="rounded-full object-cover flex-shrink-0" style={{ width: size, height: size }} />;
@@ -117,55 +118,109 @@ function TypingIndicator() {
   );
 }
 
-function FadeImg({ src, alt, className, style }: { src: string; alt: string; className?: string; style?: React.CSSProperties }) {
-  const [loaded, setLoaded] = useState(false);
+/* ---------- Voice Note Player ---------- */
+function VoiceNotePlayer({ url, isMe }: { url: string; isMe: boolean }) {
+  const audioRef = useRef<HTMLAudioElement>(null);
+  const [playing, setPlaying] = useState(false);
+  const [duration, setDuration] = useState(0);
+  const [current, setCurrent] = useState(0);
+  const [ready, setReady] = useState(false);
+
+  const BARS = 28;
+  const heights = useRef<number[]>(
+    Array.from({ length: BARS }, (_, i) => {
+      const t = i / BARS;
+      return 0.25 + Math.abs(Math.sin(i * 1.7 + 0.5)) * 0.55 + Math.sin(i * 3.3) * 0.2;
+    })
+  );
+
+  const fmt = (s: number) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
+
+  const toggle = () => {
+    if (!audioRef.current) return;
+    if (playing) { audioRef.current.pause(); setPlaying(false); }
+    else { audioRef.current.play(); setPlaying(true); }
+  };
+
+  const seek = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!audioRef.current || !duration) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const pct = (e.clientX - rect.left) / rect.width;
+    audioRef.current.currentTime = pct * duration;
+  };
+
+  const progress = duration > 0 ? current / duration : 0;
+
   return (
-    <img src={src} alt={alt} className={`transition-all duration-500 ${loaded ? "opacity-100 blur-0" : "opacity-0 blur-sm"} ${className || ""}`}
-      style={style} onLoad={() => setLoaded(true)} />
+    <div className={`flex items-center gap-2.5 px-3 py-2.5 rounded-[18px] min-w-[220px] max-w-[270px] ${
+      isMe ? "rounded-br-[4px] bg-blue-600" : "rounded-bl-[4px] bg-white/15 backdrop-blur-sm border border-white/15"
+    }`}>
+      <audio ref={audioRef} src={url} preload="metadata"
+        onLoadedMetadata={() => { setDuration(audioRef.current?.duration || 0); setReady(true); }}
+        onTimeUpdate={() => setCurrent(audioRef.current?.currentTime || 0)}
+        onEnded={() => { setPlaying(false); setCurrent(0); }} />
+
+      <button onClick={toggle}
+        className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 transition-all ${
+          isMe ? "bg-white/20 hover:bg-white/30" : "bg-white/20 hover:bg-white/30"
+        }`}>
+        {playing ? <Pause size={14} className="text-white" /> : <Play size={14} className="text-white ml-0.5" />}
+      </button>
+
+      <div className="flex-1 min-w-0">
+        <div className="flex items-end gap-[2px] h-8 cursor-pointer" onClick={seek}>
+          {heights.current.map((h, i) => {
+            const isActive = i / BARS <= progress;
+            return (
+              <div key={i}
+                className={`flex-1 rounded-full transition-all duration-75 ${
+                  isActive ? "bg-white" : "bg-white/30"
+                }`}
+                style={{ height: `${h * 100}%` }}
+              />
+            );
+          })}
+        </div>
+        <div className="text-[10px] text-white/70 mt-0.5 tabular-nums">
+          {playing ? fmt(current) : fmt(duration)}
+        </div>
+      </div>
+    </div>
   );
 }
 
+/* ---------- Media Preview ---------- */
 function MediaPreview({ url, type, isMe }: { url: string; type: string; isMe: boolean }) {
-  const [loaded, setLoaded] = useState(false);
   const meBubble = "bg-blue-600 text-white rounded-[18px] rounded-br-[4px]";
   const themBubble = "bg-white/15 backdrop-blur-sm border border-white/20 text-white rounded-[18px] rounded-bl-[4px]";
   const bubble = isMe ? meBubble : themBubble;
 
   if (type === "image") {
     return (
-      <div className="relative mt-1 max-w-[220px] overflow-hidden rounded-2xl">
-        {!loaded && <div className="skeleton w-[220px] h-32 rounded-2xl" />}
-        <FadeImg src={url} alt="Image"
-          className={`max-w-[220px] max-h-56 object-cover rounded-2xl ${loaded ? "block" : "hidden"}`} />
+      <div className="mt-1 max-w-[220px] overflow-hidden rounded-2xl">
+        <img
+          src={url}
+          alt="Image"
+          className="max-w-[220px] max-h-56 object-cover rounded-2xl w-full block"
+          loading="lazy"
+        />
       </div>
     );
   }
   if (type === "video") {
     return (
-      <div className="relative mt-1 max-w-[260px]">
-        {!loaded && (
-          <div className="skeleton w-[260px] h-40 rounded-2xl flex items-center justify-center">
-            <div className="w-10 h-10 rounded-full bg-white/30 flex items-center justify-center">
-              <Play size={18} className="text-white ml-0.5" />
-            </div>
-          </div>
-        )}
-        <video src={url} controls preload="metadata" onLoadedData={() => setLoaded(true)}
-          className={`rounded-2xl max-w-[260px] max-h-56 ${loaded ? "block" : "hidden"}`} />
+      <div className="mt-1 max-w-[260px] rounded-2xl overflow-hidden">
+        <video
+          src={url}
+          controls
+          preload="metadata"
+          className="rounded-2xl max-w-[260px] max-h-56 block w-full"
+        />
       </div>
     );
   }
   if (type === "audio") {
-    return (
-      <div className={`mt-1 px-3 py-2.5 min-w-[200px] max-w-[260px] flex items-center gap-3 ${bubble}`}>
-        <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${isMe ? "bg-white/20" : "bg-white/20"}`}>
-          <Mic size={14} className="text-white" />
-        </div>
-        <div className="flex-1 min-w-0">
-          <audio src={url} controls className="w-full h-8 rounded-lg" />
-        </div>
-      </div>
-    );
+    return <VoiceNotePlayer url={url} isMe={isMe} />;
   }
   if (type === "file") {
     const filename = url.split("/").pop() || "File";
@@ -219,6 +274,21 @@ export default function MessagesPage() {
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const selectedConvRef = useRef<Conversation | null>(null);
   selectedConvRef.current = selectedConv;
+
+  /* ---- Load persisted chat background ---- */
+  useEffect(() => {
+    try {
+      const savedId = localStorage.getItem("chatBgId");
+      const savedCustomUrl = localStorage.getItem("chatBgCustomUrl");
+      if (savedId === "custom" && savedCustomUrl) {
+        setCustomBgUrl(savedCustomUrl);
+        setChatBg({ ...CHAT_BACKGROUNDS[CHAT_BACKGROUNDS.length - 1], imgValue: null, isCustom: true });
+      } else if (savedId) {
+        const bg = CHAT_BACKGROUNDS.find((b) => b.id === savedId);
+        if (bg) setChatBg(bg);
+      }
+    } catch {}
+  }, []);
 
   useEffect(() => {
     fetch("/api/auth/me").then((r) => r.json()).then((d) => setCurrentUserId(d.user?._id || d.user?.id || null));
@@ -338,11 +408,28 @@ export default function MessagesPage() {
   const handleCustomBgSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const url = URL.createObjectURL(file);
-    setCustomBgUrl(url);
-    setChatBg({ ...CHAT_BACKGROUNDS[CHAT_BACKGROUNDS.length - 1], imgValue: null, isCustom: true });
-    setShowBgPicker(false);
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const dataUrl = reader.result as string;
+      setCustomBgUrl(dataUrl);
+      setChatBg({ ...CHAT_BACKGROUNDS[CHAT_BACKGROUNDS.length - 1], imgValue: null, isCustom: true });
+      try {
+        localStorage.setItem("chatBgId", "custom");
+        localStorage.setItem("chatBgCustomUrl", dataUrl);
+      } catch {}
+      setShowBgPicker(false);
+    };
+    reader.readAsDataURL(file);
     e.target.value = "";
+  };
+
+  const selectBg = (bg: ChatBg) => {
+    setChatBg(bg);
+    try {
+      localStorage.setItem("chatBgId", bg.id);
+      localStorage.removeItem("chatBgCustomUrl");
+    } catch {}
+    setShowBgPicker(false);
   };
 
   const handleMediaMenuSelect = (type: "image" | "video" | "file") => {
@@ -423,15 +510,12 @@ export default function MessagesPage() {
   const formatRecording = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
   const skeletonRows = [false, true, false, true, true, false];
 
-  // Resolve background style — uses only non-shorthand properties to avoid React warning
-  const activeBgImgValue = chatBg.isCustom && customBgUrl ? null : chatBg.imgValue;
-  const activeBgColor = chatBg.bgColor;
   const chatAreaStyle: React.CSSProperties = {
-    backgroundColor: activeBgColor,
+    backgroundColor: chatBg.bgColor,
     backgroundImage: chatBg.isCustom && customBgUrl
       ? `url(${customBgUrl})`
-      : (activeBgImgValue ?? undefined),
-    backgroundSize: chatBg.isCustom && customBgUrl ? "cover" : (chatBg.bgSize ?? (activeBgImgValue ? "cover" : undefined)),
+      : (chatBg.imgValue ?? undefined),
+    backgroundSize: chatBg.isCustom && customBgUrl ? "cover" : (chatBg.bgSize ?? (chatBg.imgValue ? "cover" : undefined)),
     backgroundPosition: "center",
   };
 
@@ -523,7 +607,7 @@ export default function MessagesPage() {
           >
             {/* Header */}
             <div className="flex-shrink-0 flex items-center gap-3 px-4 bg-white/10 dark:bg-black/20 backdrop-blur-xl border-b border-white/10"
-              style={{ paddingTop: "max(0.75rem, env(safe-area-inset-top))", paddingBottom: "0.75rem" }}>
+              style={{ ...chatAreaStyle, paddingTop: "max(0.75rem, env(safe-area-inset-top))", paddingBottom: "0.75rem" }}>
               <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.9 }}
                 onClick={closeChat}
                 className="w-9 h-9 rounded-xl flex items-center justify-center text-white hover:bg-white/10 transition-colors flex-shrink-0">
@@ -568,7 +652,7 @@ export default function MessagesPage() {
                       <div className="grid grid-cols-5 gap-2 mb-3">
                         {CHAT_BACKGROUNDS.filter((b) => !b.isCustom).map((bg) => (
                           <button key={bg.id}
-                            onClick={() => { setChatBg(bg); setShowBgPicker(false); }}
+                            onClick={() => selectBg(bg)}
                             className={`relative h-10 w-10 rounded-xl border-2 transition-all overflow-hidden ${chatBg.id === bg.id ? "border-blue-400 scale-110" : "border-white/10 hover:border-white/30"}`}
                             style={{
                               backgroundColor: bg.bgColor,
@@ -601,7 +685,7 @@ export default function MessagesPage() {
               </div>
             </div>
 
-            {/* Messages area — uses backgroundImage + backgroundColor (not shorthand) */}
+            {/* Messages area */}
             <div className="flex-1 overflow-y-auto scrollbar-hide px-4 py-4 space-y-3"
               style={chatAreaStyle}>
               {loadingMessages ? (
@@ -637,14 +721,15 @@ export default function MessagesPage() {
                         >
                           {!isMe && <Avatar src={msg.senderImage} name={msg.senderName} size={30} />}
                           <div className={`max-w-[75%] flex flex-col ${isMe ? "items-end" : "items-start"}`}>
-                            {msg.mediaUrl && msg.mediaType !== "audio" && (
-                              <MediaPreview url={msg.mediaUrl} type={msg.mediaType || "file"} isMe={isMe} />
-                            )}
-                            {msg.mediaUrl && msg.mediaType === "audio" && (
-                              <MediaPreview url={msg.mediaUrl} type="audio" isMe={isMe} />
+                            {msg.mediaUrl && (
+                              <MediaPreview
+                                url={msg.mediaUrl}
+                                type={msg.mediaType || "file"}
+                                isMe={isMe}
+                              />
                             )}
                             {msg.content && (
-                              <div className={`px-4 py-2.5 text-sm leading-relaxed ${msg.mediaUrl && msg.mediaType !== "audio" ? "mt-1" : ""} ${
+                              <div className={`px-4 py-2.5 text-sm leading-relaxed ${msg.mediaUrl ? "mt-1" : ""} ${
                                 isMe
                                   ? "bg-blue-600 text-white rounded-[18px] rounded-br-[4px]"
                                   : "bg-white/15 backdrop-blur-sm border border-white/15 text-white rounded-[18px] rounded-bl-[4px]"

@@ -3,11 +3,17 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Image as ImageIcon, Video, X, Send, Loader2, ArrowLeft, Film, ChevronDown,
+  Image as ImageIcon, Video, X, Send, Loader2, ArrowLeft, Film, ChevronDown, Play,
   Globe, Scale, Cpu, Trophy, Newspaper, BookOpen, Briefcase, CalendarDays, HeartPulse, Music, Palette,
 } from "lucide-react";
 
-type MediaItem = { type: "image" | "video"; data: string; name: string; uploading?: boolean };
+type MediaItem = {
+  type: "image" | "video";
+  data: string;
+  previewUrl?: string;
+  name: string;
+  uploading?: boolean;
+};
 
 interface CategoryDef { id: string; label: string; Icon: React.FC<{ size?: number; className?: string }> }
 
@@ -55,11 +61,16 @@ export default function CreatePostPage() {
       const maxMb = type === "video" ? MAX_VIDEO_MB : MAX_IMAGE_MB;
       if (file.size > maxMb * 1024 * 1024) { setError(`${file.name} is too large. Maximum ${maxMb}MB.`); continue; }
       if (type === "video") {
-        const placeholder: MediaItem = { type: "video", data: "", name: file.name, uploading: true };
+        const previewUrl = URL.createObjectURL(file);
+        const placeholder: MediaItem = { type: "video", data: "", previewUrl, name: file.name, uploading: true };
         setMediaItems((prev) => [...prev, placeholder]);
         try {
           const url = await uploadVideoFile(file);
-          setMediaItems((prev) => prev.map((m) => (m.name === file.name && m.uploading ? { ...m, data: url, uploading: false } : m)));
+          setMediaItems((prev) => prev.map((m) =>
+            m.name === file.name && m.uploading
+              ? { ...m, data: url, previewUrl: url, uploading: false }
+              : m
+          ));
         } catch (err: unknown) {
           const msg = err instanceof Error ? err.message : "Upload failed";
           setError(msg);
@@ -97,7 +108,7 @@ export default function CreatePostPage() {
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-6">
-      <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="flex items-center gap-3 mb-6">
+      <div className="flex items-center gap-3 mb-6">
         <button onClick={() => router.back()}
           className="w-9 h-9 rounded-xl border border-black/10 dark:border-white/10 flex items-center justify-center text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all shadow-soft">
           <ArrowLeft size={18} />
@@ -106,10 +117,9 @@ export default function CreatePostPage() {
           <h1 className="text-xl font-bold text-gray-900 dark:text-white">Create Post</h1>
           <p className="text-gray-500 dark:text-gray-400 text-sm">Share something with your network</p>
         </div>
-      </motion.div>
+      </div>
 
-      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}
-        className="bg-white dark:bg-gray-900 rounded-2xl border border-black/10 dark:border-white/10 shadow-card p-6">
+      <div className="bg-white dark:bg-gray-900 rounded-2xl border border-black/10 dark:border-white/10 shadow-card p-6">
 
         <AnimatePresence>
           {error && (
@@ -136,17 +146,31 @@ export default function CreatePostPage() {
                   {item.type === "image" ? (
                     <img src={item.data} alt="" className="w-24 h-24 rounded-xl object-cover border border-black/10 dark:border-white/10" />
                   ) : (
-                    <div className="w-24 h-24 rounded-xl border border-black/10 dark:border-white/10 bg-gray-100 dark:bg-gray-800 flex flex-col items-center justify-center gap-1 overflow-hidden">
-                      {item.uploading ? (
-                        <div className="flex flex-col items-center gap-1">
-                          <Loader2 size={20} className="text-blue-500 animate-spin" />
-                          <span className="text-[9px] text-gray-500">Uploading...</span>
-                        </div>
+                    <div className="relative w-24 h-24 rounded-xl border border-black/10 dark:border-white/10 overflow-hidden bg-gray-900">
+                      {item.previewUrl ? (
+                        <video
+                          src={item.previewUrl}
+                          className="w-full h-full object-cover"
+                          muted
+                          playsInline
+                        />
                       ) : (
-                        <>
-                          <Film size={20} className="text-purple-500" />
-                          <span className="text-[9px] text-gray-500 truncate px-1 max-w-full">{item.name}</span>
-                        </>
+                        <div className="w-full h-full flex items-center justify-center">
+                          <Film size={24} className="text-gray-400" />
+                        </div>
+                      )}
+                      {item.uploading && (
+                        <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center gap-1">
+                          <Loader2 size={18} className="text-white animate-spin" />
+                          <span className="text-[9px] text-white/80">Uploading...</span>
+                        </div>
+                      )}
+                      {!item.uploading && (
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <div className="w-8 h-8 rounded-full bg-black/40 flex items-center justify-center">
+                            <Play size={14} className="text-white ml-0.5" />
+                          </div>
+                        </div>
                       )}
                     </div>
                   )}
@@ -221,7 +245,7 @@ export default function CreatePostPage() {
             </motion.button>
           </div>
         </div>
-      </motion.div>
+      </div>
     </div>
   );
 }
