@@ -124,15 +124,6 @@ function VoiceNotePlayer({ url, isMe }: { url: string; isMe: boolean }) {
   const [playing, setPlaying] = useState(false);
   const [duration, setDuration] = useState(0);
   const [current, setCurrent] = useState(0);
-  const [ready, setReady] = useState(false);
-
-  const BARS = 28;
-  const heights = useRef<number[]>(
-    Array.from({ length: BARS }, (_, i) => {
-      const t = i / BARS;
-      return 0.25 + Math.abs(Math.sin(i * 1.7 + 0.5)) * 0.55 + Math.sin(i * 3.3) * 0.2;
-    })
-  );
 
   const fmt = (s: number) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
 
@@ -142,47 +133,48 @@ function VoiceNotePlayer({ url, isMe }: { url: string; isMe: boolean }) {
     else { audioRef.current.play(); setPlaying(true); }
   };
 
-  const seek = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!audioRef.current || !duration) return;
-    const rect = e.currentTarget.getBoundingClientRect();
-    const pct = (e.clientX - rect.left) / rect.width;
-    audioRef.current.currentTime = pct * duration;
+  const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!audioRef.current) return;
+    audioRef.current.currentTime = Number(e.target.value);
+    setCurrent(Number(e.target.value));
   };
 
   const progress = duration > 0 ? current / duration : 0;
 
   return (
-    <div className={`flex items-center gap-2.5 px-3 py-2.5 rounded-[18px] min-w-[220px] max-w-[270px] ${
-      isMe ? "rounded-br-[4px] bg-blue-600" : "rounded-bl-[4px] bg-white/10 backdrop-blur-md"
+    <div className={`flex items-center gap-3 px-3.5 py-2.5 rounded-2xl min-w-[230px] max-w-[280px] ${
+      isMe ? "rounded-br-sm bg-blue-600" : "rounded-bl-sm bg-gray-800/70 backdrop-blur-md"
     }`}>
       <audio ref={audioRef} src={url} preload="metadata"
-        onLoadedMetadata={() => { setDuration(audioRef.current?.duration || 0); setReady(true); }}
+        onLoadedMetadata={() => setDuration(audioRef.current?.duration || 0)}
         onTimeUpdate={() => setCurrent(audioRef.current?.currentTime || 0)}
         onEnded={() => { setPlaying(false); setCurrent(0); }} />
 
       <button onClick={toggle}
-        className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 transition-all ${
-          isMe ? "bg-white/20 hover:bg-white/30" : "bg-white/20 hover:bg-white/30"
-        }`}>
-        {playing ? <Pause size={14} className="text-white" /> : <Play size={14} className="text-white ml-0.5" />}
+        className="w-9 h-9 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center flex-shrink-0 transition-all">
+        {playing
+          ? <Pause size={15} className="text-white" />
+          : <Play size={15} className="text-white ml-0.5" />}
       </button>
 
-      <div className="flex-1 min-w-0">
-        <div className="flex items-end gap-[2px] h-8 cursor-pointer" onClick={seek}>
-          {heights.current.map((h, i) => {
-            const isActive = i / BARS <= progress;
-            return (
-              <div key={i}
-                className={`flex-1 rounded-full transition-all duration-75 ${
-                  isActive ? "bg-white" : "bg-white/30"
-                }`}
-                style={{ height: `${h * 100}%` }}
-              />
-            );
-          })}
+      <div className="flex-1 min-w-0 flex flex-col gap-1">
+        <div className="relative w-full h-1 rounded-full bg-white/20 overflow-hidden">
+          <div className="absolute inset-y-0 left-0 rounded-full bg-white transition-all"
+            style={{ width: `${progress * 100}%` }} />
+          <input
+            type="range" min={0} max={duration || 1} step={0.1} value={current}
+            onChange={handleSeek}
+            className="absolute inset-0 w-full opacity-0 cursor-pointer"
+          />
         </div>
-        <div className="text-[10px] text-white/70 mt-0.5 tabular-nums">
-          {playing ? fmt(current) : fmt(duration)}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-1">
+            <Mic size={9} className="text-white/50" />
+            <span className="text-[9px] text-white/50 font-medium uppercase tracking-wide">Voice</span>
+          </div>
+          <span className="text-[10px] text-white/60 tabular-nums">
+            {playing ? fmt(current) : fmt(duration)}
+          </span>
         </div>
       </div>
     </div>

@@ -8,7 +8,7 @@ import {
 import Link from "next/link";
 import ReactTimeago from "react-timeago";
 
-interface CategoryDef { id: string; label: string; Icon: React.FC<{ size?: number; className?: string }> }
+interface CategoryDef { id: string; label: string; Icon: React.ElementType }
 
 const CATEGORIES: CategoryDef[] = [
   { id: "all",      label: "All",      Icon: LayoutGrid },
