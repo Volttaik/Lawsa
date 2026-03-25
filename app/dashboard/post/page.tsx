@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -9,8 +9,10 @@ import {
 
 type MediaItem = {
   type: "image" | "video";
+  /** base64 data URL for images, server path for videos */
   data: string;
-  previewUrl?: string;
+  /** local blob URL for instant preview – always set immediately */
+  blobUrl: string;
   name: string;
   uploading?: boolean;
 };
@@ -42,53 +44,67 @@ export default function CreatePostPage() {
   const [error, setError] = useState("");
   const [category, setCategory] = useState("general");
   const [showCatMenu, setShowCatMenu] = useState(false);
+  const blobUrlsRef = useRef<string[]>([]);
 
-  const uploadVideoFile = async (file: File): Promise<string> => {
+  useEffect(() => {
+    return () => { blobUrlsRef.current.forEach((u) => URL.revokeObjectURL(u)); };
+  }, []);
+
+  const uploadFile = async (file: File): Promise<string> => {
     const formData = new FormData();
     formData.append("file", file);
     formData.append("subfolder", "posts");
     const res = await fetch("/api/upload", { method: "POST", body: formData });
-    if (!res.ok) { const d = await res.json(); throw new Error(d.error || "Video upload failed"); }
-    const d = await res.json();
-    return d.url as string;
+    if (!res.ok) { const d = await res.json(); throw new Error(d.error || "Upload failed"); }
+    return (await res.json()).url as string;
   };
+
+  const readAsBase64 = (file: File): Promise<string> =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => resolve(e.target?.result as string);
+      reader.onerror = () => reject(new Error("Failed to read file"));
+      reader.readAsDataURL(file);
+    });
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>, type: "image" | "video") => {
     const files = e.target.files;
     if (!files) return;
     e.target.value = "";
+
     for (const file of Array.from(files)) {
       const maxMb = type === "video" ? MAX_VIDEO_MB : MAX_IMAGE_MB;
-      if (file.size > maxMb * 1024 * 1024) { setError(`${file.name} is too large. Maximum ${maxMb}MB.`); continue; }
+      if (file.size > maxMb * 1024 * 1024) {
+        setError(`${file.name} is too large. Max ${maxMb}MB.`);
+        continue;
+      }
+
+      const blobUrl = URL.createObjectURL(file);
+      blobUrlsRef.current.push(blobUrl);
+      const tempId = `${type}-${Date.now()}-${Math.random()}`;
+
       if (type === "video") {
-        const previewUrl = URL.createObjectURL(file);
-        const tempId = `${file.name}-${Date.now()}`;
-        const placeholder: MediaItem = { type: "video", data: "", previewUrl, name: tempId, uploading: true };
-        setMediaItems((prev) => [...prev, placeholder]);
+        setMediaItems((prev) => [...prev, { type: "video", data: "", blobUrl, name: tempId, uploading: true }]);
         try {
-          const url = await uploadVideoFile(file);
-          setMediaItems((prev) => prev.map((m) =>
-            m.name === tempId && m.uploading
-              ? { ...m, data: url, uploading: false }
-              : m
-          ));
-        } catch (err: unknown) {
-          const msg = err instanceof Error ? err.message : "Upload failed";
-          setError(msg);
+          const serverUrl = await uploadFile(file);
+          setMediaItems((prev) =>
+            prev.map((m) => m.name === tempId ? { ...m, data: serverUrl, uploading: false } : m)
+          );
+        } catch (err) {
+          setError(err instanceof Error ? err.message : "Upload failed");
           setMediaItems((prev) => prev.filter((m) => m.name !== tempId));
         }
       } else {
-        const reader = new FileReader();
-        reader.onload = (ev) => {
-          const result = ev.target?.result as string;
-          if (result) {
-            setMediaItems((prev) => [
-              ...prev,
-              { type, data: result, previewUrl: result, name: `${file.name}-${Date.now()}` },
-            ]);
-          }
-        };
-        reader.readAsDataURL(file);
+        setMediaItems((prev) => [...prev, { type: "image", data: "", blobUrl, name: tempId, uploading: true }]);
+        try {
+          const base64 = await readAsBase64(file);
+          setMediaItems((prev) =>
+            prev.map((m) => m.name === tempId ? { ...m, data: base64, uploading: false } : m)
+          );
+        } catch (err) {
+          setError(err instanceof Error ? err.message : "Failed to read image");
+          setMediaItems((prev) => prev.filter((m) => m.name !== tempId));
+        }
       }
     }
   };
@@ -97,7 +113,7 @@ export default function CreatePostPage() {
 
   const handleSubmit = async () => {
     if (!text.trim()) return;
-    if (mediaItems.some((m) => m.uploading)) { setError("Please wait for all uploads to finish."); return; }
+    if (mediaItems.some((m) => m.uploading)) { setError("Please wait for uploads to finish."); return; }
     setSubmitting(true);
     setError("");
     try {
@@ -115,8 +131,7 @@ export default function CreatePostPage() {
       } else {
         setError(data.error || "Failed to create post");
       }
-    } catch (err) {
-      console.error("Post submit error:", err);
+    } catch {
       setError("Network error — please try again.");
     } finally {
       setSubmitting(false);
@@ -146,7 +161,7 @@ export default function CreatePostPage() {
             <motion.div initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -5 }}
               className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 text-sm rounded-xl p-3 mb-4 flex items-center justify-between gap-2">
               <span>{error}</span>
-              <button onClick={() => setError("")} className="flex-shrink-0 text-red-400 hover:text-red-600"><X size={14} /></button>
+              <button onClick={() => setError("")} className="flex-shrink-0"><X size={14} /></button>
             </motion.div>
           )}
         </AnimatePresence>
@@ -156,64 +171,56 @@ export default function CreatePostPage() {
           className="w-full resize-none text-gray-800 dark:text-gray-200 dark:bg-gray-900 text-base focus:outline-none min-h-[140px] leading-relaxed placeholder-gray-400 dark:placeholder-gray-600"
           rows={5} autoFocus />
 
-        <AnimatePresence>
-          {mediaItems.length > 0 && (
-            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}
-              className="flex flex-wrap gap-3 mt-4">
-              {mediaItems.map((item, i) => (
-                <motion.div key={item.name} initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.8 }}
-                  className="relative">
-                  {item.type === "image" ? (
-                    <div className="w-24 h-24 rounded-xl overflow-hidden border border-black/10 dark:border-white/10 bg-gray-100 dark:bg-gray-800">
-                      {item.previewUrl && (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
-                          src={item.previewUrl}
-                          alt=""
-                          className="w-full h-full object-cover"
-                        />
-                      )}
-                    </div>
-                  ) : (
-                    <div className="relative w-24 h-24 rounded-xl border border-black/10 dark:border-white/10 overflow-hidden bg-gray-900">
-                      {item.previewUrl ? (
-                        <video
-                          src={item.previewUrl}
-                          className="w-full h-full object-cover"
-                          muted
-                          playsInline
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <Film size={24} className="text-gray-400" />
+        {mediaItems.length > 0 && (
+          <div className="flex flex-wrap gap-3 mt-4">
+            {mediaItems.map((item, i) => (
+              <div key={item.name} className="relative">
+                {item.type === "image" ? (
+                  <div className="w-24 h-24 rounded-xl overflow-hidden border border-black/10 dark:border-white/10 bg-gray-100 dark:bg-gray-800">
+                    <img
+                      src={item.blobUrl}
+                      alt=""
+                      className="w-full h-full object-cover"
+                    />
+                    {item.uploading && (
+                      <div className="absolute inset-0 bg-black/40 flex items-center justify-center rounded-xl">
+                        <Loader2 size={18} className="text-white animate-spin" />
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="relative w-24 h-24 rounded-xl overflow-hidden border border-black/10 dark:border-white/10 bg-gray-900">
+                    <video
+                      src={item.blobUrl}
+                      className="w-full h-full object-cover"
+                      muted
+                      playsInline
+                      preload="metadata"
+                    />
+                    {item.uploading ? (
+                      <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center gap-1">
+                        <Loader2 size={18} className="text-white animate-spin" />
+                        <span className="text-[9px] text-white/80">Uploading…</span>
+                      </div>
+                    ) : (
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="w-8 h-8 rounded-full bg-black/40 flex items-center justify-center">
+                          <Play size={14} className="text-white ml-0.5" />
                         </div>
-                      )}
-                      {item.uploading && (
-                        <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center gap-1">
-                          <Loader2 size={18} className="text-white animate-spin" />
-                          <span className="text-[9px] text-white/80">Uploading...</span>
-                        </div>
-                      )}
-                      {!item.uploading && (
-                        <div className="absolute inset-0 flex items-center justify-center">
-                          <div className="w-8 h-8 rounded-full bg-black/40 flex items-center justify-center">
-                            <Play size={14} className="text-white ml-0.5" />
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                  {!item.uploading && (
-                    <button onClick={() => removeMedia(i)}
-                      className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center text-white shadow-sm hover:bg-red-600 transition-colors">
-                      <X size={11} />
-                    </button>
-                  )}
-                </motion.div>
-              ))}
-            </motion.div>
-          )}
-        </AnimatePresence>
+                      </div>
+                    )}
+                  </div>
+                )}
+                {!item.uploading && (
+                  <button onClick={() => removeMedia(i)}
+                    className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center text-white shadow-sm hover:bg-red-600 transition-colors">
+                    <X size={11} />
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
 
         <div className="flex items-center justify-between mt-4 pt-4 border-t border-black/5 dark:border-white/5 flex-wrap gap-3">
           <div className="flex items-center gap-1">
