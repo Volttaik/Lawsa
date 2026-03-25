@@ -1,11 +1,13 @@
 "use client";
+import { useState, useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Users, MessageCircle, Globe, Star, ArrowRight,
   BookOpen, TrendingUp, Heart, Share2, Bell, CheckCircle2,
-  Briefcase, Scale
+  Briefcase, Scale, X, Loader2,
 } from "lucide-react";
 import { LogoIcon } from "@/components/Logo";
 
@@ -18,9 +20,142 @@ const stagger = {
   visible: { transition: { staggerChildren: 0.1 } },
 };
 
+interface GuestPost {
+  _id: string;
+  authorName: string;
+  authorUsername?: string;
+  authorImage?: string;
+  content: string;
+  images?: string[];
+  likes?: string[];
+  comments?: unknown[];
+  createdAt: string;
+}
+
+function GuestPostViewerInner() {
+  const searchParams = useSearchParams();
+  const postId = searchParams.get("post");
+  const [post, setPost] = useState<GuestPost | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    if (!postId) return;
+    setOpen(true);
+    setLoading(true);
+    fetch(`/api/posts/${postId}`)
+      .then((r) => r.json())
+      .then((data) => { if (data.post) setPost(data.post); })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, [postId]);
+
+  if (!open) return null;
+
+  return (
+    <AnimatePresence>
+      {open && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-[500] flex items-center justify-center bg-black/65 backdrop-blur-sm px-4"
+          onClick={() => setOpen(false)}
+        >
+          <motion.div
+            initial={{ opacity: 0, scale: 0.91, y: 28 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.91, y: 28 }}
+            transition={{ type: "spring", damping: 22, stiffness: 300 }}
+            className="bg-white rounded-2xl shadow-2xl border border-black/8 w-full max-w-md overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-black/6">
+              <div className="flex items-center gap-2">
+                <LogoIcon size={22} />
+                <span className="font-bold text-gray-900 text-sm">Lawsa Socials</span>
+              </div>
+              <button onClick={() => setOpen(false)}
+                className="w-7 h-7 rounded-lg flex items-center justify-center text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-all">
+                <X size={15} />
+              </button>
+            </div>
+
+            {loading ? (
+              <div className="flex items-center justify-center h-44">
+                <Loader2 size={28} className="animate-spin text-blue-500" />
+              </div>
+            ) : post ? (
+              <>
+                {(post.images || []).filter(Boolean).length > 0 && (
+                  <img src={(post.images || [])[0]} alt="Post" className="w-full max-h-52 object-cover" />
+                )}
+                <div className="p-4">
+                  <div className="flex items-center gap-3 mb-3">
+                    {post.authorImage
+                      ? <img src={post.authorImage} alt={post.authorName} className="w-10 h-10 rounded-full object-cover flex-shrink-0" />
+                      : <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-bold flex-shrink-0">{post.authorName?.[0]?.toUpperCase()}</div>
+                    }
+                    <div>
+                      <p className="font-semibold text-sm text-gray-900">@{post.authorUsername || post.authorName}</p>
+                      <p className="text-xs text-gray-400">
+                        {new Date(post.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                      </p>
+                    </div>
+                  </div>
+                  <p className="text-sm text-gray-800 leading-relaxed whitespace-pre-wrap break-words line-clamp-6">
+                    {post.content}
+                  </p>
+                  {((post.likes?.length || 0) > 0 || (post.comments?.length || 0) > 0) && (
+                    <div className="flex items-center gap-4 mt-3 pt-3 border-t border-black/5 text-xs text-gray-400">
+                      {(post.likes?.length || 0) > 0 && (
+                        <span className="flex items-center gap-1"><Heart size={12} className="fill-red-400 text-red-400" /> {post.likes?.length}</span>
+                      )}
+                      {(post.comments?.length || 0) > 0 && (
+                        <span className="flex items-center gap-1"><MessageCircle size={12} /> {post.comments?.length} {post.comments?.length === 1 ? "reply" : "replies"}</span>
+                      )}
+                    </div>
+                  )}
+                </div>
+                <div className="px-4 pb-4 space-y-2.5">
+                  <p className="text-xs text-center text-gray-400 mb-1">Join Lawsa Socials to like, comment and connect</p>
+                  <Link href="/register" className="block w-full py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold text-center transition-all">
+                    Create Account to Continue
+                  </Link>
+                  <Link href="/login" className="block w-full py-2 rounded-xl border border-black/10 text-gray-700 text-sm font-medium text-center hover:border-blue-500 hover:text-blue-600 transition-all">
+                    Already have an account? Sign in
+                  </Link>
+                </div>
+              </>
+            ) : (
+              <div className="p-8 text-center text-gray-400 text-sm">
+                <p>This post is no longer available.</p>
+                <Link href="/register" className="block mt-4 py-2.5 rounded-xl bg-blue-600 text-white text-sm font-semibold">
+                  Join Lawsa Socials
+                </Link>
+              </div>
+            )}
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+}
+
+function GuestPostViewer() {
+  return (
+    <Suspense fallback={null}>
+      <GuestPostViewerInner />
+    </Suspense>
+  );
+}
+
 export default function LandingPage() {
   return (
     <div className="min-h-screen bg-white">
+      <GuestPostViewer />
+
       {/* Header */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-black/8 shadow-soft">
         <div className="max-w-6xl mx-auto px-5 h-14 flex items-center justify-between">
