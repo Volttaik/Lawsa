@@ -15,7 +15,7 @@ type MediaItem = {
   uploading?: boolean;
 };
 
-interface CategoryDef { id: string; label: string; Icon: React.FC<{ size?: number; className?: string }> }
+interface CategoryDef { id: string; label: string; Icon: React.ElementType }
 
 const CATEGORIES: CategoryDef[] = [
   { id: "general",  label: "General",  Icon: Globe },
@@ -62,23 +62,32 @@ export default function CreatePostPage() {
       if (file.size > maxMb * 1024 * 1024) { setError(`${file.name} is too large. Maximum ${maxMb}MB.`); continue; }
       if (type === "video") {
         const previewUrl = URL.createObjectURL(file);
-        const placeholder: MediaItem = { type: "video", data: "", previewUrl, name: file.name, uploading: true };
+        const tempId = `${file.name}-${Date.now()}`;
+        const placeholder: MediaItem = { type: "video", data: "", previewUrl, name: tempId, uploading: true };
         setMediaItems((prev) => [...prev, placeholder]);
         try {
           const url = await uploadVideoFile(file);
           setMediaItems((prev) => prev.map((m) =>
-            m.name === file.name && m.uploading
-              ? { ...m, data: url, previewUrl: url, uploading: false }
+            m.name === tempId && m.uploading
+              ? { ...m, data: url, uploading: false }
               : m
           ));
         } catch (err: unknown) {
           const msg = err instanceof Error ? err.message : "Upload failed";
           setError(msg);
-          setMediaItems((prev) => prev.filter((m) => !(m.name === file.name && m.uploading)));
+          setMediaItems((prev) => prev.filter((m) => m.name !== tempId));
         }
       } else {
         const reader = new FileReader();
-        reader.onloadend = () => setMediaItems((prev) => [...prev, { type, data: reader.result as string, name: file.name }]);
+        reader.onload = (ev) => {
+          const result = ev.target?.result as string;
+          if (result) {
+            setMediaItems((prev) => [
+              ...prev,
+              { type, data: result, previewUrl: result, name: `${file.name}-${Date.now()}` },
+            ]);
+          }
+        };
         reader.readAsDataURL(file);
       }
     }
@@ -91,16 +100,27 @@ export default function CreatePostPage() {
     if (mediaItems.some((m) => m.uploading)) { setError("Please wait for all uploads to finish."); return; }
     setSubmitting(true);
     setError("");
-    const images = mediaItems.filter((m) => m.type === "image").map((m) => m.data);
-    const videos = mediaItems.filter((m) => m.type === "video").map((m) => m.data);
-    const res = await fetch("/api/posts", {
-      method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ content: text, images, videos, category }),
-    });
-    const data = await res.json();
-    if (data.post) router.push("/dashboard");
-    else setError(data.error || "Failed to create post");
-    setSubmitting(false);
+    try {
+      const images = mediaItems.filter((m) => m.type === "image").map((m) => m.data);
+      const videos = mediaItems.filter((m) => m.type === "video").map((m) => m.data);
+      const res = await fetch("/api/posts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content: text, images, videos, category }),
+      });
+      const data = await res.json();
+      if (res.ok && data.post) {
+        router.refresh();
+        router.push("/dashboard");
+      } else {
+        setError(data.error || "Failed to create post");
+      }
+    } catch (err) {
+      console.error("Post submit error:", err);
+      setError("Network error — please try again.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const selectedCat = CATEGORIES.find((c) => c.id === category) || CATEGORIES[0];
@@ -141,10 +161,19 @@ export default function CreatePostPage() {
             <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}
               className="flex flex-wrap gap-3 mt-4">
               {mediaItems.map((item, i) => (
-                <motion.div key={i} initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.8 }}
+                <motion.div key={item.name} initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.8 }}
                   className="relative">
                   {item.type === "image" ? (
-                    <img src={item.data} alt="" className="w-24 h-24 rounded-xl object-cover border border-black/10 dark:border-white/10" />
+                    <div className="w-24 h-24 rounded-xl overflow-hidden border border-black/10 dark:border-white/10 bg-gray-100 dark:bg-gray-800">
+                      {item.previewUrl && (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={item.previewUrl}
+                          alt=""
+                          className="w-full h-full object-cover"
+                        />
+                      )}
+                    </div>
                   ) : (
                     <div className="relative w-24 h-24 rounded-xl border border-black/10 dark:border-white/10 overflow-hidden bg-gray-900">
                       {item.previewUrl ? (
