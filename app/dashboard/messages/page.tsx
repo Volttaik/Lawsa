@@ -121,15 +121,8 @@ function TypingIndicator() {
 }
 
 /* ---------- Voice Note Player ---------- */
-const WAVEFORM_BARS = 36;
-const waveformHeights = Array.from({ length: WAVEFORM_BARS }, (_, i) =>
-  Math.max(0.15, Math.abs(Math.sin(i * 1.9 + 0.8)) * 0.7 + Math.sin(i * 3.7 + 1.2) * 0.25 + 0.15)
-);
-
 function VoiceNotePlayer({ url, isMe }: { url: string; isMe: boolean }) {
   const audioRef = useRef<HTMLAudioElement>(null);
-  const rafRef = useRef<number | null>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
   const [playing, setPlaying] = useState(false);
   const [duration, setDuration] = useState(0);
   const [current, setCurrent] = useState(0);
@@ -137,11 +130,6 @@ function VoiceNotePlayer({ url, isMe }: { url: string; isMe: boolean }) {
   const fmt = (s: number) => {
     if (!s || !isFinite(s)) return "0:00";
     return `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
-  };
-
-  const tick = () => {
-    if (audioRef.current) setCurrent(audioRef.current.currentTime);
-    rafRef.current = requestAnimationFrame(tick);
   };
 
   const handleDuration = () => {
@@ -154,83 +142,64 @@ function VoiceNotePlayer({ url, isMe }: { url: string; isMe: boolean }) {
     if (playing) {
       audioRef.current.pause();
       setPlaying(false);
-      if (rafRef.current) cancelAnimationFrame(rafRef.current);
     } else {
       audioRef.current.play();
       setPlaying(true);
-      rafRef.current = requestAnimationFrame(tick);
     }
   };
 
-  const handleWaveformClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!audioRef.current || !duration) return;
-    const rect = e.currentTarget.getBoundingClientRect();
-    const pct = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
-    audioRef.current.currentTime = pct * duration;
-    setCurrent(pct * duration);
+  const handleTimeUpdate = () => {
+    if (audioRef.current) setCurrent(audioRef.current.currentTime);
   };
 
   const handleEnded = () => {
     setPlaying(false);
     setCurrent(0);
-    if (rafRef.current) cancelAnimationFrame(rafRef.current);
   };
 
-  useEffect(() => {
-    return () => { if (rafRef.current) cancelAnimationFrame(rafRef.current); };
-  }, []);
+  const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = Number(e.target.value);
+    if (audioRef.current) audioRef.current.currentTime = val;
+    setCurrent(val);
+  };
 
   const knownDuration = duration > 0 && isFinite(duration);
   const progress = knownDuration ? current / duration : 0;
 
   return (
-    <div className={`flex items-center gap-3 px-3.5 py-3 rounded-2xl min-w-[230px] max-w-[290px] ${
+    <div className={`flex items-center gap-3 px-3.5 py-2.5 rounded-2xl min-w-[220px] max-w-[280px] ${
       isMe ? "rounded-br-sm bg-blue-600" : "rounded-bl-sm bg-gray-800/70 backdrop-blur-md"
     }`}>
       <audio ref={audioRef} src={url} preload="metadata"
         onLoadedMetadata={handleDuration}
         onDurationChange={handleDuration}
+        onTimeUpdate={handleTimeUpdate}
         onEnded={handleEnded} />
 
       <button onClick={toggle}
-        className="w-9 h-9 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center flex-shrink-0 transition-all">
+        className="w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center flex-shrink-0 transition-all">
         {playing
-          ? <Pause size={15} className="text-white" />
-          : <Play size={15} className="text-white ml-0.5" />}
+          ? <Pause size={14} className="text-white" />
+          : <Play size={14} className="text-white ml-0.5" />}
       </button>
 
-      <div className="flex-1 min-w-0 flex flex-col gap-1">
-        {/* Waveform visualizer */}
-        <div ref={containerRef}
-          className="flex items-center gap-[2px] h-9 cursor-pointer select-none"
-          onClick={handleWaveformClick}>
-          {waveformHeights.map((h, i) => {
-            const barProgress = i / WAVEFORM_BARS;
-            const isActive = barProgress <= progress;
-            const isNearCursor = Math.abs(barProgress - progress) < 0.04;
-            return (
-              <motion.div
-                key={i}
-                className="flex-1 rounded-full"
-                style={{ backgroundColor: isActive ? "rgba(255,255,255,0.95)" : "rgba(255,255,255,0.25)" }}
-                animate={{
-                  height: playing && isActive
-                    ? [`${h * 100}%`, `${Math.min(1, h * 1.3) * 100}%`, `${h * 100}%`]
-                    : `${h * 100}%`,
-                  scaleX: isNearCursor ? 1.5 : 1,
-                }}
-                transition={playing && isActive
-                  ? { duration: 0.5 + i * 0.015, repeat: Infinity, ease: "easeInOut", delay: i * 0.018 }
-                  : { duration: 0.1 }}
-              />
-            );
-          })}
-        </div>
-        {/* Time */}
+      <div className="flex-1 min-w-0 flex flex-col gap-1.5">
+        <input
+          type="range"
+          min={0}
+          max={knownDuration ? duration : 100}
+          step={0.01}
+          value={knownDuration ? current : 0}
+          onChange={handleSeek}
+          className="w-full h-1 rounded-full appearance-none cursor-pointer"
+          style={{
+            background: `linear-gradient(to right, rgba(255,255,255,0.9) ${progress * 100}%, rgba(255,255,255,0.25) ${progress * 100}%)`,
+          }}
+        />
         <div className="flex items-center justify-between">
           <span className="text-[9px] text-white/50 font-medium uppercase tracking-wide">Voice</span>
-          <span className="text-[10px] text-white/70 tabular-nums font-medium">
-            {playing ? fmt(current) : knownDuration ? fmt(duration) : "0:00"}
+          <span className="text-[10px] text-white/70 tabular-nums">
+            {playing || current > 0 ? fmt(current) : knownDuration ? fmt(duration) : "0:00"}
           </span>
         </div>
       </div>
