@@ -44,3 +44,4 @@ externalPort = 3003
 [userenv]
 
 [userenv.shared]
+MONGO_URI = "mongodb+srv://Dev:0DCVQfc00TpRQ6d2@cluster0.moflf.mongodb.net/lawsa?appName=Cluster0"
