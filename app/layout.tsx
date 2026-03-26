@@ -36,7 +36,7 @@ export default function RootLayout({
       <head>
         <link rel="icon" href="/icon.jpg" type="image/jpeg" />
         <link rel="manifest" href="/manifest.json" />
-        <meta name="theme-color" content="#2563eb" />
+        <meta name="theme-color" content="#0f0c29" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <meta name="apple-mobile-web-app-title" content="Lawsa" />
