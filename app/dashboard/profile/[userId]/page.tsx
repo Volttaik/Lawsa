@@ -1,11 +1,12 @@
 "use client";
 import { useState, useEffect } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Camera, Edit3, UserPlus, UserCheck, Loader2, X, Save,
-  Shield, ChevronRight, Plus, BookOpen,
+  Shield, ChevronRight, Plus, BookOpen, MessageCircle,
 } from "lucide-react";
+import { uploadFile } from "@/lib/uploadClient";
 
 interface UserProfile {
   _id: string;
@@ -209,6 +210,7 @@ function CreateStoryModal({ onClose, onCreated }: { onClose: () => void; onCreat
 
 export default function ProfilePage() {
   const { userId } = useParams<{ userId: string }>();
+  const router = useRouter();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
@@ -218,6 +220,8 @@ export default function ProfilePage() {
   const [followLoading, setFollowLoading] = useState(false);
   const [editing, setEditing] = useState(false);
   const [editForm, setEditForm] = useState({ name: "", bio: "", skills: "" });
+  const [profileImageFile, setProfileImageFile] = useState<File | null>(null);
+  const [bannerImageFile, setBannerImageFile] = useState<File | null>(null);
   const [profileImagePreview, setProfileImagePreview] = useState<string | null>(null);
   const [bannerPreview, setBannerPreview] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -266,25 +270,37 @@ export default function ProfilePage() {
   const handleSaveProfile = async () => {
     if (!currentUser || !profile) return;
     setSaving(true);
-    const updates: Record<string, any> = {
-      name: editForm.name,
-      bio: editForm.bio,
-      skills: editForm.skills.split(",").map((s) => s.trim()).filter(Boolean),
-    };
-    if (profileImagePreview) updates.profileImage = profileImagePreview;
-    if (bannerPreview) updates.bannerImage = bannerPreview;
+    try {
+      const updates: Record<string, any> = {
+        name: editForm.name,
+        bio: editForm.bio,
+        skills: editForm.skills.split(",").map((s) => s.trim()).filter(Boolean),
+      };
+      if (profileImageFile) {
+        const url = await uploadFile(profileImageFile, "profiles");
+        updates.profileImage = url;
+      }
+      if (bannerImageFile) {
+        const url = await uploadFile(bannerImageFile, "banners");
+        updates.bannerImage = url;
+      }
 
-    const res = await fetch(`/api/users/${profile._id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(updates),
-    });
-    const data = await res.json();
-    if (data.user) {
-      setProfile(data.user);
-      setEditing(false);
-      setProfileImagePreview(null);
-      setBannerPreview(null);
+      const res = await fetch(`/api/users/${profile._id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updates),
+      });
+      const data = await res.json();
+      if (data.user) {
+        setProfile(data.user);
+        setEditing(false);
+        setProfileImagePreview(null);
+        setBannerPreview(null);
+        setProfileImageFile(null);
+        setBannerImageFile(null);
+      }
+    } catch (err) {
+      console.error("Save profile error:", err);
     }
     setSaving(false);
   };
@@ -292,6 +308,8 @@ export default function ProfilePage() {
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>, type: "profile" | "banner") => {
     const file = e.target.files?.[0];
     if (!file) return;
+    if (type === "profile") setProfileImageFile(file);
+    else setBannerImageFile(file);
     const reader = new FileReader();
     reader.onloadend = () => {
       if (type === "profile") setProfileImagePreview(reader.result as string);
@@ -375,16 +393,27 @@ export default function ProfilePage() {
                   </button>
                 )
               ) : (
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={handleFollow}
-                  disabled={followLoading}
-                  className={`flex items-center gap-1.5 text-sm font-semibold px-5 py-2 rounded-xl border border-black/10 shadow-btn transition-all ${isFollowing ? "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200" : "bg-blue-600 text-white hover:bg-blue-700"}`}
-                >
-                  {followLoading ? <Loader2 size={15} className="animate-spin" /> : isFollowing ? <UserCheck size={15} /> : <UserPlus size={15} />}
-                  {isFollowing ? "Following" : "Follow"}
-                </motion.button>
+                <div className="flex gap-2">
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={handleFollow}
+                    disabled={followLoading}
+                    className={`flex items-center gap-1.5 text-sm font-semibold px-4 py-2 rounded-[8px] border border-black/10 shadow-[0_1px_4px_0_rgba(0,0,0,0.08)] transition-all ${isFollowing ? "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200" : "bg-blue-600 text-white hover:bg-blue-700"}`}
+                  >
+                    {followLoading ? <Loader2 size={15} className="animate-spin" /> : isFollowing ? <UserCheck size={15} /> : <UserPlus size={15} />}
+                    {isFollowing ? "Following" : "Follow"}
+                  </motion.button>
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => router.push(`/dashboard/messages?userId=${profile._id}`)}
+                    className="flex items-center gap-1.5 text-sm font-semibold px-4 py-2 rounded-[8px] border border-black/10 dark:border-white/10 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 shadow-[0_1px_4px_0_rgba(0,0,0,0.08)] transition-all"
+                  >
+                    <MessageCircle size={15} />
+                    Message
+                  </motion.button>
+                </div>
               )}
             </div>
           </div>
