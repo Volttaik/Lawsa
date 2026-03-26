@@ -20,6 +20,7 @@ export default function VideoPlayer({ src, onExpand }: VideoPlayerProps) {
   const [duration, setDuration] = useState(0);
   const [buffered, setBuffered] = useState(0);
   const [showControls, setShowControls] = useState(true);
+  const [aspectRatio, setAspectRatio] = useState<string>("16 / 9");
 
   const fmt = (s: number) => {
     if (!s || !isFinite(s)) return "0:00";
@@ -98,7 +99,8 @@ export default function VideoPlayer({ src, onExpand }: VideoPlayerProps) {
   return (
     <div
       ref={containerRef}
-      className="relative w-full bg-black overflow-hidden select-none"
+      className="relative w-full overflow-hidden select-none"
+      style={{ aspectRatio, background: "#000" }}
       onMouseMove={revealControls}
       onMouseLeave={() => playing && setShowControls(false)}
       onTouchStart={revealControls}
@@ -110,10 +112,16 @@ export default function VideoPlayer({ src, onExpand }: VideoPlayerProps) {
         preload="metadata"
         playsInline
         muted={muted}
-        className="w-full block max-h-[72vh] object-contain"
-        style={{ display: "block" }}
+        className="w-full h-full block object-cover"
         onError={() => setErrored(true)}
-        onLoadedMetadata={() => setDuration(videoRef.current?.duration || 0)}
+        onLoadedMetadata={() => {
+          const v = videoRef.current;
+          if (!v) return;
+          setDuration(v.duration || 0);
+          if (v.videoWidth && v.videoHeight) {
+            setAspectRatio(`${v.videoWidth} / ${v.videoHeight}`);
+          }
+        }}
         onTimeUpdate={handleTimeUpdate}
         onEnded={() => { setPlaying(false); setShowControls(true); setProgress(0); }}
         onPlay={() => setPlaying(true)}
