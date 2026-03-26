@@ -46,3 +46,4 @@ externalPort = 3003
 [userenv.shared]
 JWT_SECRET = "lawsa-socials-secret-key-2024-replit-production"
 MONGO_URI = "mongodb+srv://Dev:0DCVQfc00TpRQ6d2@cluster0.moflf.mongodb.net/lawsa?appName=Cluster0"
+MONGODB_URI = "mongodb+srv://Dev:0DCVQfc00TpRQ6d2@cluster0.moflf.mongodb.net/lawsa?appName=Cluster0"
