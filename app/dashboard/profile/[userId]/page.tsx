@@ -7,6 +7,7 @@ import {
   Shield, ChevronRight, Plus, BookOpen, MessageCircle,
 } from "lucide-react";
 import { uploadFile } from "@/lib/uploadClient";
+import VideoPlayer from "@/components/VideoPlayer";
 
 interface UserProfile {
   _id: string;
@@ -533,9 +534,9 @@ export default function ProfilePage() {
                     </div>
                   )}
                   {post.videos && post.videos.length > 0 && (
-                    <div className="mt-3 space-y-2">
+                    <div className="mt-3 space-y-2 overflow-hidden rounded-xl">
                       {post.videos.map((vid, j) => (
-                        <video key={j} src={vid} controls className="rounded-xl w-full max-h-64" />
+                        <VideoPlayer key={j} src={vid} />
                       ))}
                     </div>
                   )}
