@@ -12,7 +12,11 @@ export async function uploadFile(
         form.append("file", file);
         form.append("subfolder", subfolder);
         onProgress?.(30);
-        const res = await fetch("/api/upload", { method: "POST", body: form });
+        const res = await fetch("/api/upload", {
+            method: "POST",
+            body: form,
+            credentials: "include",
+        });
         if (!res.ok) {
             const err = await res.json().catch(() => ({}));
             throw new Error(err.error || `Upload failed (${res.status})`);
@@ -40,7 +44,11 @@ export async function uploadFile(
         form.append("mimeType", file.type);
         form.append("subfolder", subfolder);
 
-        const res = await fetch("/api/upload/chunk", { method: "POST", body: form });
+        const res = await fetch("/api/upload/chunk", {
+            method: "POST",
+            body: form,
+            credentials: "include",
+        });
         if (!res.ok) {
             const err = await res.json().catch(() => ({}));
             throw new Error(err.error || `Chunk ${i + 1} of ${totalChunks} failed`);
@@ -56,6 +64,7 @@ export async function uploadFile(
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ uploadId, filename: file.name, mimeType: file.type, subfolder }),
+        credentials: "include",
     });
 
     if (!res.ok) {
