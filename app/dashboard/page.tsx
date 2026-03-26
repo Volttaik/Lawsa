@@ -188,7 +188,6 @@ function VideoPlayer({ src, onClick }: { src: string; onClick?: () => void }) {
     <div
       ref={containerRef}
       className="relative w-full bg-black overflow-hidden select-none"
-      style={{ aspectRatio: "16/9" }}
       onMouseMove={revealControls}
       onMouseLeave={() => playing && setShowControls(false)}
       onTouchStart={revealControls}
@@ -201,7 +200,8 @@ function VideoPlayer({ src, onClick }: { src: string; onClick?: () => void }) {
         playsInline
         muted={muted}
         loop={false}
-        className="w-full h-full object-contain block"
+        className="w-full block max-h-[72vh] object-contain"
+        style={{ display: "block" }}
         onError={() => setErrored(true)}
         onLoadedMetadata={() => setDuration(videoRef.current?.duration || 0)}
         onTimeUpdate={handleTimeUpdate}
