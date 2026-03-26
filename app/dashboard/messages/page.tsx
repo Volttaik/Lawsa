@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { cache } from "@/lib/cache";
+import { uploadFile } from "@/lib/uploadClient";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Send, Loader2, ArrowLeft, MessageCircle, Users,
@@ -566,12 +567,7 @@ export default function MessagesPage() {
     const blobUrl = URL.createObjectURL(file);
     setPendingMedia({ data: blobUrl, serverUrl: "", type, name: file.name, uploading: true });
     try {
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("subfolder", "messages");
-      const res = await fetch("/api/upload", { method: "POST", body: formData });
-      if (!res.ok) throw new Error("Upload failed");
-      const { url } = await res.json();
+      const url = await uploadFile(file, "messages");
       setPendingMedia((prev) => prev ? { ...prev, serverUrl: url, uploading: false } : null);
     } catch {
       URL.revokeObjectURL(blobUrl);
@@ -678,15 +674,9 @@ export default function MessagesPage() {
     if (audioBlob && !pendingMedia) {
       try {
         const audioFile = new File([audioBlob], "voice-note.webm", { type: "audio/webm" });
-        const formData = new FormData();
-        formData.append("file", audioFile);
-        formData.append("subfolder", "messages");
-        const uploadRes = await fetch("/api/upload", { method: "POST", body: formData });
-        if (uploadRes.ok) {
-          const { url } = await uploadRes.json();
-          mediaUrlToSend = url;
-          mediaTypeToSend = "audio";
-        }
+        const url = await uploadFile(audioFile, "messages");
+        mediaUrlToSend = url;
+        mediaTypeToSend = "audio";
       } catch {
         setSendingMsg(false);
         return;
@@ -788,7 +778,7 @@ export default function MessagesPage() {
       {/* Conversation List */}
       <div className="flex h-[calc(100vh-112px)]">
         <div className="w-full flex flex-col bg-white dark:bg-gray-900">
-          <div className="px-4 pt-4 pb-3 border-b border-black/10 dark:border-white/10">
+          <div className="px-4 pt-4 pb-3 border-b border-black/10 dark:border-white/10 shadow-soft">
             <div className="flex items-center justify-between mb-3">
               <h2 className="font-bold text-gray-900 dark:text-white text-xl">Messages</h2>
               <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
@@ -867,10 +857,14 @@ export default function MessagesPage() {
                 ) : conversations.map((conv) => (
                   <motion.button key={conv._id} whileTap={{ scale: 0.98 }}
                     onClick={() => openConversation(conv)}
-                    className="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-gray-50 dark:hover:bg-gray-800/60 transition-colors text-left border-b border-black/5 dark:border-white/5">
-                    <Avatar src={conv.otherUser?.profileImage} name={conv.otherUser?.name || "?"} size={48} />
+                    className="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-gray-50 dark:hover:bg-gray-800/60 active:bg-gray-100 dark:active:bg-gray-800 transition-colors text-left border-b border-black/5 dark:border-white/5 group">
+                    <div className="relative flex-shrink-0">
+                      <Avatar src={conv.otherUser?.profileImage} name={conv.otherUser?.name || "?"} size={48} />
+                    </div>
                     <div className="flex-1 min-w-0">
-                      <div className="font-semibold text-sm text-gray-900 dark:text-white truncate">{conv.otherUser?.name}</div>
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="font-semibold text-sm text-gray-900 dark:text-white truncate">{conv.otherUser?.name}</span>
+                      </div>
                       <div className="text-xs text-gray-500 dark:text-gray-400 truncate mt-0.5">{conv.lastMessage || "Start a conversation"}</div>
                     </div>
                   </motion.button>
@@ -1060,10 +1054,10 @@ export default function MessagesPage() {
                                   </div>
                                 ) : (
                                   msg.content && (
-                                    <div className={`px-4 py-2.5 text-sm leading-relaxed ${msg.mediaUrl ? "mt-1" : ""} ${
+                                    <div className={`px-4 py-2.5 text-sm leading-relaxed shadow-sm ${msg.mediaUrl ? "mt-1" : ""} ${
                                       isMe
-                                        ? "bg-blue-600 text-white rounded-[18px] rounded-br-[4px]"
-                                        : "bg-white/15 backdrop-blur-sm border border-white/15 text-white rounded-[18px] rounded-bl-[4px]"
+                                        ? "bg-blue-600 text-white rounded-[18px] rounded-br-[4px] shadow-blue-600/20"
+                                        : "bg-white text-gray-900 border border-gray-100 rounded-[18px] rounded-bl-[4px]"
                                     }`}>
                                       {msg.content}
                                       {msg.edited && <span className="text-[9px] opacity-50 ml-1">edited</span>}
@@ -1141,7 +1135,7 @@ export default function MessagesPage() {
             </AnimatePresence>
 
             {/* Input Bar */}
-            <div className="flex-shrink-0 px-3 py-3 bg-black/20 backdrop-blur-xl border-t border-white/10"
+            <div className="flex-shrink-0 px-3 py-3 bg-black/30 backdrop-blur-xl border-t border-white/15 shadow-[0_-2px_16px_0_rgba(0,0,0,0.2)]"
               style={{ paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))" }}>
               {isRecording ? (
                 <div className="flex items-center gap-3">

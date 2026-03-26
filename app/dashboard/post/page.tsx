@@ -7,7 +7,9 @@ import {
   ImageIcon, Video, X, Send, Loader2, ArrowLeft, Play, ChevronDown,
   Globe, Scale, Cpu, Trophy, Newspaper, BookOpen, Briefcase,
   CalendarDays, HeartPulse, Music, Palette, CheckCircle2, AlertCircle,
+  Film, FileImage, RotateCcw, HardDrive,
 } from "lucide-react";
+import { uploadFile } from "@/lib/uploadClient";
 
 const CATEGORIES = [
   { id: "general",  label: "General",  Icon: Globe },
@@ -32,7 +34,109 @@ type MediaItem = {
   serverUrl: string;
   status: UploadStatus;
   filename: string;
+  fileSize: number;
+  progress: number;
 };
+
+function formatBytes(bytes: number): string {
+  if (bytes < 1024) return `${bytes}B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)}KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)}MB`;
+}
+
+function MediaCard({ item, onRemove, onRetry }: {
+  item: MediaItem;
+  onRemove: (id: string) => void;
+  onRetry: (id: string) => void;
+}) {
+  const isUploading = item.status === "uploading";
+  const isError = item.status === "error";
+  const isDone = item.status === "done";
+
+  return (
+    <motion.div
+      layout
+      initial={{ opacity: 0, scale: 0.88 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.88 }}
+      transition={{ duration: 0.2 }}
+      className={`relative rounded-2xl overflow-hidden border-2 transition-all ${
+        isError
+          ? "border-red-400 shadow-[0_0_0_3px_rgba(248,113,113,0.15)]"
+          : isDone
+          ? "border-green-400 shadow-[0_0_0_3px_rgba(74,222,128,0.15)]"
+          : "border-blue-400 shadow-[0_0_0_3px_rgba(96,165,250,0.15)]"
+      }`}
+    >
+      <div className="w-28 h-28 bg-gray-100 dark:bg-gray-800 relative">
+        {item.type === "image" ? (
+          <img src={item.preview} alt="" className="w-full h-full object-cover" />
+        ) : (
+          <>
+            <video src={item.preview} className="w-full h-full object-cover" muted playsInline preload="metadata" />
+            <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+              <div className="w-8 h-8 rounded-full bg-black/50 flex items-center justify-center">
+                <Play size={14} className="text-white ml-0.5" />
+              </div>
+            </div>
+          </>
+        )}
+
+        {isUploading && (
+          <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center gap-2">
+            <Loader2 size={20} className="text-white animate-spin" />
+            <span className="text-[10px] text-white/90 font-semibold">Uploading…</span>
+          </div>
+        )}
+
+        {isError && (
+          <div className="absolute inset-0 bg-red-900/80 flex flex-col items-center justify-center gap-1">
+            <AlertCircle size={18} className="text-red-200" />
+            <span className="text-[9px] text-red-200 font-semibold">Failed</span>
+          </div>
+        )}
+      </div>
+
+      {isUploading && (
+        <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/20">
+          <motion.div
+            className="h-full bg-blue-400 rounded-full"
+            animate={{ width: ["10%", "90%"] }}
+            transition={{ duration: 8, ease: "easeOut" }}
+          />
+        </div>
+      )}
+
+      <button
+        onClick={() => onRemove(item.id)}
+        className="absolute top-1 right-1 w-5 h-5 bg-red-500 hover:bg-red-600 rounded-full flex items-center justify-center text-white shadow-sm transition-colors z-10"
+      >
+        <X size={10} />
+      </button>
+
+      {isDone && (
+        <div className="absolute top-1 left-1 w-5 h-5 bg-green-500 rounded-full flex items-center justify-center shadow-sm z-10">
+          <CheckCircle2 size={11} className="text-white" />
+        </div>
+      )}
+
+      {isError && (
+        <button
+          onClick={() => onRetry(item.id)}
+          className="absolute top-1 left-1 w-5 h-5 bg-orange-500 hover:bg-orange-600 rounded-full flex items-center justify-center shadow-sm transition-colors z-10"
+          title="Retry upload"
+        >
+          <RotateCcw size={10} className="text-white" />
+        </button>
+      )}
+
+      <div className="px-1.5 py-1 bg-black/50 absolute bottom-0 left-0 right-0">
+        <p className="text-[9px] text-white/80 truncate">{item.filename}</p>
+        <p className="text-[9px] text-white/50">{formatBytes(item.fileSize)}</p>
+      </div>
+    </motion.div>
+  );
+}
 
 export default function CreatePostPage() {
   const router = useRouter();
@@ -52,21 +156,17 @@ export default function CreatePostPage() {
 
   const uploadToServer = async (file: File, id: string) => {
     try {
-      const form = new FormData();
-      form.append("file", file);
-      form.append("subfolder", "posts");
-      const res = await fetch("/api/upload", { method: "POST", body: form });
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.error || `Upload failed (${res.status})`);
-      }
-      const { url } = await res.json();
+      const url = await uploadFile(file, "posts", (progress) => {
+        setMedia((prev) =>
+          prev.map((m) => m.id === id ? { ...m, progress } : m)
+        );
+      });
       setMedia((prev) =>
-        prev.map((m) => m.id === id ? { ...m, serverUrl: url, status: "done" } : m)
+        prev.map((m) => m.id === id ? { ...m, serverUrl: url, status: "done", progress: 100 } : m)
       );
-    } catch (err) {
+    } catch {
       setMedia((prev) =>
-        prev.map((m) => m.id === id ? { ...m, status: "error" } : m)
+        prev.map((m) => m.id === id ? { ...m, status: "error", progress: 0 } : m)
       );
     }
   };
@@ -95,6 +195,8 @@ export default function CreatePostPage() {
         serverUrl: "",
         status: "uploading",
         filename: file.name,
+        fileSize: file.size,
+        progress: 0,
       };
 
       setMedia((prev) => [...prev, item]);
@@ -106,8 +208,8 @@ export default function CreatePostPage() {
     setMedia((prev) => prev.filter((m) => m.id !== id));
   };
 
-  const retryUpload = async (id: string) => {
-    setMedia((prev) => prev.map((m) => m.id === id ? { ...m, status: "uploading", serverUrl: "" } : m));
+  const retryUpload = (id: string) => {
+    setMedia((prev) => prev.map((m) => m.id === id ? { ...m, status: "uploading", serverUrl: "", progress: 0 } : m));
   };
 
   const canSubmit =
@@ -161,6 +263,8 @@ export default function CreatePostPage() {
   const selectedCat = CATEGORIES.find((c) => c.id === category) || CATEGORIES[0];
   const SelectedIcon = selectedCat.Icon;
   const uploadingCount = media.filter((m) => m.status === "uploading").length;
+  const doneCount = media.filter((m) => m.status === "done").length;
+  const totalSize = media.reduce((acc, m) => acc + m.fileSize, 0);
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-6">
@@ -203,68 +307,97 @@ export default function CreatePostPage() {
           autoFocus
         />
 
-        {uploadingCount > 0 && (
-          <div className="flex items-center gap-2 text-xs text-blue-600 dark:text-blue-400 mb-3">
-            <Loader2 size={12} className="animate-spin" />
-            <span>Uploading {uploadingCount} file{uploadingCount > 1 ? "s" : ""}…</span>
-          </div>
-        )}
-
-        {media.length > 0 && (
-          <div className="flex flex-wrap gap-3 mt-3 mb-1">
-            {media.map((item) => (
-              <div key={item.id} className="relative group">
-                <div className={`w-24 h-24 rounded-xl overflow-hidden border-2 transition-colors ${
-                  item.status === "error"
-                    ? "border-red-400"
-                    : item.status === "done"
-                    ? "border-green-400"
-                    : "border-black/10 dark:border-white/10"
-                } bg-gray-100 dark:bg-gray-800`}>
-                  {item.type === "image" ? (
-                    <img src={item.preview} alt="" className="w-full h-full object-cover" />
-                  ) : (
-                    <video src={item.preview} className="w-full h-full object-cover" muted playsInline preload="metadata" />
+        {/* Media Library */}
+        <AnimatePresence>
+          {media.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              className="mt-4 overflow-hidden"
+            >
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 font-medium">
+                  <HardDrive size={12} />
+                  <span>{media.length} file{media.length !== 1 ? "s" : ""} · {formatBytes(totalSize)}</span>
+                  {uploadingCount > 0 && (
+                    <span className="flex items-center gap-1 text-blue-600 dark:text-blue-400">
+                      <Loader2 size={11} className="animate-spin" />
+                      {uploadingCount} uploading…
+                    </span>
                   )}
-
-                  {item.status === "uploading" && (
-                    <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center gap-1 rounded-xl">
-                      <Loader2 size={18} className="text-white animate-spin" />
-                      <span className="text-[9px] text-white/80 font-medium">Uploading…</span>
-                    </div>
-                  )}
-
-                  {item.status === "done" && item.type === "video" && (
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="w-8 h-8 rounded-full bg-black/40 flex items-center justify-center">
-                        <Play size={14} className="text-white ml-0.5" />
-                      </div>
-                    </div>
-                  )}
-
-                  {item.status === "error" && (
-                    <div className="absolute inset-0 bg-red-900/70 flex flex-col items-center justify-center gap-1 rounded-xl">
-                      <AlertCircle size={16} className="text-red-300" />
-                      <span className="text-[9px] text-red-200 font-medium">Failed</span>
-                    </div>
+                  {uploadingCount === 0 && doneCount > 0 && hasFailedUploads === false && (
+                    <span className="flex items-center gap-1 text-green-600 dark:text-green-400">
+                      <CheckCircle2 size={11} />
+                      All uploaded
+                    </span>
                   )}
                 </div>
-
-                {item.status === "done" && (
-                  <div className="absolute -top-1.5 -left-1.5 w-5 h-5 bg-green-500 rounded-full flex items-center justify-center shadow-sm">
-                    <CheckCircle2 size={11} className="text-white" />
-                  </div>
-                )}
-
                 <button
-                  onClick={() => removeMedia(item.id)}
-                  className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 hover:bg-red-600 rounded-full flex items-center justify-center text-white shadow-sm transition-colors"
+                  onClick={() => setMedia([])}
+                  className="text-xs text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors"
                 >
-                  <X size={11} />
+                  Clear all
                 </button>
               </div>
-            ))}
-          </div>
+
+              <div className="flex flex-wrap gap-3">
+                <AnimatePresence>
+                  {media.map((item) => (
+                    <MediaCard
+                      key={item.id}
+                      item={item}
+                      onRemove={removeMedia}
+                      onRetry={retryUpload}
+                    />
+                  ))}
+                </AnimatePresence>
+              </div>
+
+              {hasFailedUploads && (
+                <motion.div
+                  initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                  className="mt-3 flex items-center gap-2 text-xs text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-xl px-3 py-2"
+                >
+                  <AlertCircle size={12} />
+                  Some uploads failed. Tap the orange retry button or remove the failed files.
+                </motion.div>
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Drop Zone (shown when no media) */}
+        {media.length === 0 && (
+          <label className="mt-4 w-full flex flex-col items-center gap-3 py-8 border-2 border-dashed border-black/10 dark:border-white/10 rounded-2xl cursor-pointer hover:border-blue-300 dark:hover:border-blue-700 hover:bg-blue-50/50 dark:hover:bg-blue-900/10 transition-all group">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center group-hover:scale-105 transition-transform">
+                <FileImage size={20} className="text-blue-500" />
+              </div>
+              <div className="w-10 h-10 rounded-xl bg-purple-50 dark:bg-purple-900/30 flex items-center justify-center group-hover:scale-105 transition-transform">
+                <Film size={20} className="text-purple-500" />
+              </div>
+            </div>
+            <div className="text-center">
+              <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">Add photos or videos</p>
+              <p className="text-xs text-gray-400 mt-0.5">Up to 10MB per image · Up to 100MB per video</p>
+            </div>
+            <input
+              type="file"
+              accept="image/*,video/*"
+              multiple
+              className="hidden"
+              onChange={(e) => {
+                const files = e.target.files;
+                if (!files) return;
+                const imgFiles = Array.from(files).filter((f) => f.type.startsWith("image/"));
+                const vidFiles = Array.from(files).filter((f) => f.type.startsWith("video/"));
+                if (imgFiles.length > 0) handleFiles(Object.assign(new DataTransfer(), { files: imgFiles.reduce((dt, f) => { dt.items.add(f); return dt; }, new DataTransfer()) }).files, "image");
+                if (vidFiles.length > 0) handleFiles(Object.assign(new DataTransfer(), { files: vidFiles.reduce((dt, f) => { dt.items.add(f); return dt; }, new DataTransfer()) }).files, "video");
+                e.target.value = "";
+              }}
+            />
+          </label>
         )}
 
         <div className="flex items-center justify-between mt-4 pt-4 border-t border-black/5 dark:border-white/5 flex-wrap gap-3">

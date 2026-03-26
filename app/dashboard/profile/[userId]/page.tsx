@@ -333,8 +333,8 @@ export default function ProfilePage() {
             <img src={bannerPreview || profile.bannerImage} alt="Banner" className="w-full h-full object-cover" />
           )}
           {isOwnProfile && editing && (
-            <label className="absolute inset-0 flex items-center justify-center bg-black/30 cursor-pointer hover:bg-black/40 transition-colors">
-              <div className="flex items-center gap-2 bg-white/90 text-gray-800 text-sm font-medium px-3 py-1.5 rounded-lg">
+            <label className="absolute inset-0 z-10 flex items-center justify-center bg-black/40 cursor-pointer hover:bg-black/50 transition-colors">
+              <div className="flex items-center gap-2 bg-white/95 text-gray-800 text-sm font-semibold px-4 py-2 rounded-xl shadow-lg">
                 <Camera size={16} /> Change Banner
               </div>
               <input type="file" accept="image/*" className="hidden" onChange={(e) => handleImageChange(e, "banner")} />

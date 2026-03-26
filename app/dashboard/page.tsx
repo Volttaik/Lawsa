@@ -7,7 +7,8 @@ import {
   Heart, MessageCircle, Share2, Trash2, Send, Loader2, ChevronDown, Play,
   UserPlus, UserCheck, LayoutGrid, Globe, Scale, Cpu, Trophy, Newspaper,
   BookOpen, Briefcase, CalendarDays, HeartPulse, Music, Palette, Sparkles,
-  Plus, X, ArrowUp, RefreshCw, Check, ExternalLink,
+  Plus, X, ArrowUp, RefreshCw, Check, ExternalLink, ChevronLeft, ChevronRight,
+  ZoomIn, Volume2,
 } from "lucide-react";
 import Link from "next/link";
 import ReactTimeago from "react-timeago";
@@ -84,9 +85,16 @@ interface RecommendedUser {
   followers?: string[];
 }
 
+interface LightboxItem {
+  url: string;
+  type: "image" | "video";
+}
+
 /* ── Helpers ── */
 
-function FadeImg({ src, alt, className }: { src: string; alt: string; className?: string }) {
+function FadeImg({
+  src, alt, className, onClick,
+}: { src: string; alt: string; className?: string; onClick?: () => void }) {
   const [loaded, setLoaded] = useState(false);
   const [errored, setErrored] = useState(false);
   if (!src || errored) return null;
@@ -94,18 +102,19 @@ function FadeImg({ src, alt, className }: { src: string; alt: string; className?
     <img
       src={src}
       alt={alt}
-      className={`transition-opacity duration-500 ${loaded ? "opacity-100" : "opacity-0"} ${className || ""}`}
+      className={`transition-opacity duration-500 ${loaded ? "opacity-100" : "opacity-0"} ${className || ""} ${onClick ? "cursor-zoom-in" : ""}`}
       onLoad={() => setLoaded(true)}
       onError={() => setErrored(true)}
+      onClick={onClick}
     />
   );
 }
 
-function VideoPlayer({ src }: { src: string }) {
+function VideoPlayer({ src, onClick }: { src: string; onClick?: () => void }) {
   const [errored, setErrored] = useState(false);
   if (!src || errored) return null;
   return (
-    <div className="relative w-full rounded-xl overflow-hidden bg-gray-900">
+    <div className="relative w-full rounded-xl overflow-hidden bg-gray-900 group">
       <video
         src={src}
         controls
@@ -114,14 +123,104 @@ function VideoPlayer({ src }: { src: string }) {
         className="w-full max-h-80 block"
         onError={() => setErrored(true)}
       />
+      {onClick && (
+        <button
+          onClick={onClick}
+          className="absolute top-2 right-2 w-8 h-8 rounded-lg bg-black/50 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/70"
+          title="View fullscreen"
+        >
+          <ZoomIn size={15} />
+        </button>
+      )}
     </div>
+  );
+}
+
+/* ── Lightbox ── */
+function Lightbox({
+  items, startIndex, onClose,
+}: { items: LightboxItem[]; startIndex: number; onClose: () => void }) {
+  const [idx, setIdx] = useState(startIndex);
+  const item = items[idx];
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+      if (e.key === "ArrowLeft" && idx > 0) setIdx(idx - 1);
+      if (e.key === "ArrowRight" && idx < items.length - 1) setIdx(idx + 1);
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [idx, items.length, onClose]);
+
+  useEffect(() => { document.body.style.overflow = "hidden"; return () => { document.body.style.overflow = ""; }; }, []);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-[500] bg-black/95 flex items-center justify-center"
+      onClick={onClose}
+    >
+      <button
+        onClick={onClose}
+        className="absolute top-4 right-4 w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors z-10"
+      >
+        <X size={20} />
+      </button>
+      {items.length > 1 && (
+        <div className="absolute top-4 left-1/2 -translate-x-1/2 text-white/60 text-sm font-medium z-10">
+          {idx + 1} / {items.length}
+        </div>
+      )}
+      {idx > 0 && (
+        <button
+          onClick={(e) => { e.stopPropagation(); setIdx(idx - 1); }}
+          className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors z-10"
+        >
+          <ChevronLeft size={22} />
+        </button>
+      )}
+      {idx < items.length - 1 && (
+        <button
+          onClick={(e) => { e.stopPropagation(); setIdx(idx + 1); }}
+          className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors z-10"
+        >
+          <ChevronRight size={22} />
+        </button>
+      )}
+      <motion.div
+        key={idx}
+        initial={{ opacity: 0, scale: 0.94 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.18 }}
+        className="max-w-[90vw] max-h-[90vh] flex items-center justify-center"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {item.type === "image" ? (
+          <img
+            src={item.url}
+            alt="Full view"
+            className="max-w-full max-h-[90vh] rounded-2xl object-contain shadow-2xl"
+          />
+        ) : (
+          <video
+            src={item.url}
+            controls
+            autoPlay
+            playsInline
+            className="max-w-full max-h-[90vh] rounded-2xl shadow-2xl"
+          />
+        )}
+      </motion.div>
+    </motion.div>
   );
 }
 
 function PostSkeleton() {
   return (
     <div className="bg-white dark:bg-gray-900 rounded-2xl border border-black/10 dark:border-white/10 shadow-card overflow-hidden">
-      <div className="skeleton w-full h-48" />
       <div className="p-4 space-y-3">
         <div className="flex items-start gap-3">
           <div className="skeleton rounded-full flex-shrink-0" style={{ width: 40, height: 40 }} />
@@ -130,6 +229,7 @@ function PostSkeleton() {
             <div className="skeleton h-3 w-1/4" />
           </div>
         </div>
+        <div className="skeleton w-full h-48 rounded-xl" />
         <div className="space-y-2">
           <div className="skeleton h-3.5 w-full" />
           <div className="skeleton h-3.5 w-5/6" />
@@ -175,10 +275,11 @@ function CategoryBadge({ category }: { category: string }) {
   );
 }
 
-function PostCard({ post, currentUser, onDelete }: {
+function PostCard({ post, currentUser, onDelete, onOpenLightbox }: {
   post: Post;
   currentUser: CurrentUser | null;
   onDelete: (id: string) => void;
+  onOpenLightbox: (items: LightboxItem[], index: number) => void;
 }) {
   const [showComments, setShowComments] = useState(false);
   const [comments, setComments] = useState<Comment[]>([]);
@@ -192,7 +293,7 @@ function PostCard({ post, currentUser, onDelete }: {
   const isOwner = currentUser && (post.authorId === currentUser._id || post.authorId === currentUser.id);
 
   const handleShare = () => {
-    const url = `${window.location.origin}/?post=${post._id}`;
+    const url = `${window.location.origin}/dashboard?post=${post._id}`;
     const copy = (text: string) => {
       if (navigator.clipboard) {
         navigator.clipboard.writeText(text).catch(() => fallback(text));
@@ -219,6 +320,11 @@ function PostCard({ post, currentUser, onDelete }: {
   const validImages = (post.images || []).filter(Boolean);
   const validVideos = (post.videos || []).filter(Boolean);
   const hasMedia = validImages.length > 0 || validVideos.length > 0;
+
+  const allMediaItems: LightboxItem[] = [
+    ...validImages.map((url) => ({ url, type: "image" as const })),
+    ...validVideos.map((url) => ({ url, type: "video" as const })),
+  ];
 
   const handleLike = async () => {
     setLiked(!liked);
@@ -256,25 +362,8 @@ function PostCard({ post, currentUser, onDelete }: {
       transition={{ duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] }}
       className="bg-white dark:bg-gray-900 rounded-2xl border border-black/10 dark:border-white/10 shadow-card overflow-hidden"
     >
-      {hasMedia && (
-        <div className="w-full">
-          {validImages.length > 0 && (
-            <div className={`grid gap-0.5 overflow-hidden ${validImages.length > 1 ? "grid-cols-2" : "grid-cols-1"}`}>
-              {validImages.map((img, i) => (
-                <FadeImg key={i} src={img} alt="Post"
-                  className={`w-full object-cover ${validImages.length === 1 ? "max-h-96 rounded-t-2xl" : "max-h-64"}`} />
-              ))}
-            </div>
-          )}
-          {validVideos.length > 0 && (
-            <div className="space-y-0.5">
-              {validVideos.map((vid, i) => <VideoPlayer key={i} src={vid} />)}
-            </div>
-          )}
-        </div>
-      )}
-
-      <div className="p-4 pb-0">
+      {/* ── Author header at TOP ── */}
+      <div className="px-4 pt-4 pb-3">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
             <Link href={`/dashboard/profile/${post.authorId}`}>
@@ -300,11 +389,46 @@ function PostCard({ post, currentUser, onDelete }: {
             </button>
           )}
         </div>
-        <p className="text-sm text-gray-800 dark:text-gray-200 mt-3 leading-relaxed whitespace-pre-wrap break-words">
+      </div>
+
+      {/* ── Media in CENTER ── */}
+      {hasMedia && (
+        <div className="w-full">
+          {validImages.length > 0 && (
+            <div className={`grid gap-0.5 overflow-hidden ${validImages.length > 1 ? "grid-cols-2" : "grid-cols-1"}`}>
+              {validImages.map((img, i) => (
+                <FadeImg
+                  key={i}
+                  src={img}
+                  alt="Post"
+                  className={`w-full object-cover ${validImages.length === 1 ? "max-h-96" : "max-h-64"}`}
+                  onClick={() => onOpenLightbox(allMediaItems, i)}
+                />
+              ))}
+            </div>
+          )}
+          {validVideos.length > 0 && (
+            <div className="space-y-0.5">
+              {validVideos.map((vid, i) => (
+                <VideoPlayer
+                  key={i}
+                  src={vid}
+                  onClick={() => onOpenLightbox(allMediaItems, validImages.length + i)}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── Text content UNDER media ── */}
+      <div className={`px-4 ${hasMedia ? "pt-3" : "pt-0"} pb-0`}>
+        <p className="text-sm text-gray-800 dark:text-gray-200 leading-relaxed whitespace-pre-wrap break-words">
           {post.content}
         </p>
       </div>
 
+      {/* ── Actions ── */}
       <div className="px-4 py-2.5 border-t border-black/5 dark:border-white/5 mt-3 flex items-center gap-1">
         <motion.button whileTap={{ scale: 0.82 }} onClick={handleLike}
           className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all ${liked ? "text-red-500 bg-red-50 dark:bg-red-900/20" : "text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800"}`}>
@@ -333,6 +457,7 @@ function PostCard({ post, currentUser, onDelete }: {
         </motion.button>
       </div>
 
+      {/* ── Comments ── */}
       <AnimatePresence>
         {showComments && (
           <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }}
@@ -344,10 +469,10 @@ function PostCard({ post, currentUser, onDelete }: {
                 <div className="flex-1 relative">
                   <input type="text" value={commentText} onChange={(e) => setCommentText(e.target.value)}
                     placeholder="Write a comment..."
-                    className="w-full pl-4 pr-10 py-2 text-sm rounded-xl border border-black/10 dark:border-white/10 bg-gray-50 dark:bg-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                    className="w-full pl-4 pr-10 py-2 text-sm rounded-xl border border-black/10 dark:border-white/10 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
                     onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleComment()} />
                   <button onClick={handleComment} disabled={loadingComment || !commentText.trim()}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 text-blue-600 disabled:text-gray-300 transition-colors">
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-blue-600 disabled:text-gray-300 dark:disabled:text-gray-600 transition-colors">
                     {loadingComment ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
                   </button>
                 </div>
@@ -398,7 +523,7 @@ function RecommendedCard({ user, isFollowing, onFollow }: {
         )}
       </div>
       <motion.button whileTap={{ scale: 0.95 }} onClick={handleClick} disabled={loading}
-        className={`flex-shrink-0 flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-xl border border-black/10 transition-all ${isFollowing ? "bg-gray-100 dark:bg-gray-800 text-gray-600" : "bg-blue-600 text-white hover:bg-blue-700"}`}>
+        className={`flex-shrink-0 flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-xl border border-black/10 transition-all ${isFollowing ? "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300" : "bg-blue-600 text-white hover:bg-blue-700"}`}>
         {loading ? <Loader2 size={11} className="animate-spin" /> : isFollowing ? <UserCheck size={11} /> : <UserPlus size={11} />}
         {isFollowing ? "Following" : "Follow"}
       </motion.button>
@@ -434,6 +559,8 @@ export default function DashboardHome() {
   const [refreshing, setRefreshing] = useState(false);
   const [sharedPost, setSharedPost] = useState<Post | null>(null);
   const [sharedPostLoading, setSharedPostLoading] = useState(false);
+  const [lightboxItems, setLightboxItems] = useState<LightboxItem[] | null>(null);
+  const [lightboxIndex, setLightboxIndex] = useState(0);
 
   const filterScrollRef = useRef<HTMLDivElement>(null);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -587,6 +714,11 @@ export default function DashboardHome() {
     setSharedPostLoading(false);
   }, []);
 
+  const openLightbox = (items: LightboxItem[], index: number) => {
+    setLightboxItems(items);
+    setLightboxIndex(index);
+  };
+
   return (
     <div className="max-w-2xl mx-auto px-4 py-4">
 
@@ -594,6 +726,17 @@ export default function DashboardHome() {
       <Suspense fallback={null}>
         <SharedPostLoader onPostId={handleSharedPost} />
       </Suspense>
+
+      {/* Lightbox */}
+      <AnimatePresence>
+        {lightboxItems && (
+          <Lightbox
+            items={lightboxItems}
+            startIndex={lightboxIndex}
+            onClose={() => setLightboxItems(null)}
+          />
+        )}
+      </AnimatePresence>
 
       {/* Shared post modal */}
       <AnimatePresence>
@@ -629,9 +772,6 @@ export default function DashboardHome() {
                       <X size={15} />
                     </button>
                   </div>
-                  {(sharedPost.images || []).filter(Boolean).length > 0 && (
-                    <img src={(sharedPost.images || [])[0]} alt="Post" className="w-full max-h-56 object-cover" />
-                  )}
                   <div className="p-4">
                     <div className="flex items-center gap-3 mb-3">
                       {sharedPost.authorImage
@@ -648,6 +788,9 @@ export default function DashboardHome() {
                         </div>
                       </div>
                     </div>
+                    {(sharedPost.images || []).filter(Boolean).length > 0 && (
+                      <img src={(sharedPost.images || [])[0]} alt="Post" className="w-full max-h-56 object-cover rounded-xl mb-3" />
+                    )}
                     <p className="text-sm text-gray-800 dark:text-gray-200 leading-relaxed whitespace-pre-wrap break-words line-clamp-6">
                       {sharedPost.content}
                     </p>
@@ -789,10 +932,15 @@ export default function DashboardHome() {
                 {story.content && <p className="text-white text-xl font-semibold text-center leading-relaxed drop-shadow-lg max-w-sm">{story.content}</p>}
               </div>
               <div className="flex justify-between px-8 pb-10">
-                <button onClick={(e) => { e.stopPropagation(); setViewingStory(Math.max(0, viewingStory - 1)); }}
-                  className="text-white/60 hover:text-white text-sm px-4 py-2 rounded-xl bg-white/10">‹ Prev</button>
+                <button onClick={(e) => { e.stopPropagation(); if (viewingStory > 0) setViewingStory(viewingStory - 1); }}
+                  disabled={viewingStory === 0}
+                  className="text-white/60 disabled:opacity-30 text-sm font-medium px-4 py-2 hover:text-white transition-colors">
+                  ← Prev
+                </button>
                 <button onClick={(e) => { e.stopPropagation(); if (viewingStory < stories.length - 1) setViewingStory(viewingStory + 1); else setViewingStory(null); }}
-                  className="text-white/60 hover:text-white text-sm px-4 py-2 rounded-xl bg-white/10">Next ›</button>
+                  className="text-white/60 text-sm font-medium px-4 py-2 hover:text-white transition-colors">
+                  {viewingStory < stories.length - 1 ? "Next →" : "Close"}
+                </button>
               </div>
             </motion.div>
           );
@@ -800,71 +948,64 @@ export default function DashboardHome() {
       </AnimatePresence>
 
       {/* Feed */}
-      <div className="space-y-4">
-        {loading ? (
-          [1, 2, 3].map((i) => <PostSkeleton key={i} />)
-        ) : (
-          <>
-            {posts.length === 0 ? (
-              <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
-                className="bg-white dark:bg-gray-900 rounded-2xl border border-black/10 dark:border-white/10 shadow-card p-12 text-center">
-                <div className="w-14 h-14 rounded-2xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center mx-auto mb-4">
-                  <Sparkles size={24} className="text-blue-500" />
-                </div>
-                <h3 className="font-semibold text-gray-800 dark:text-white mb-2">Nothing here yet</h3>
-                <p className="text-gray-500 dark:text-gray-400 text-sm">
-                  {activeCategory === "all"
-                    ? "Tap the + button below to share something!"
-                    : `No posts in the "${CATEGORIES.find((c) => c.id === activeCategory)?.label}" category yet.`}
-                </p>
-              </motion.div>
-            ) : (
-              <AnimatePresence>
-                {posts.map((post, i) => (
-                  <motion.div key={post._id}
-                    initial={{ opacity: 0, y: 28 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: Math.min(i * 0.04, 0.2), duration: 0.35, ease: [0.22, 1, 0.36, 1] }}>
-                    <PostCard post={post} currentUser={currentUser} onDelete={handleDeletePost} />
-                  </motion.div>
-                ))}
-              </AnimatePresence>
-            )}
+      {loading ? (
+        <div className="space-y-4">
+          {[1, 2, 3].map((i) => <PostSkeleton key={i} />)}
+        </div>
+      ) : posts.length === 0 ? (
+        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-black/10 dark:border-white/10 shadow-card p-12 text-center">
+          <Sparkles size={32} className="text-gray-300 dark:text-gray-600 mx-auto mb-3" />
+          <p className="text-gray-500 dark:text-gray-400 font-medium text-sm">No posts yet</p>
+          <p className="text-gray-400 dark:text-gray-500 text-xs mt-1">Be the first to share something!</p>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {posts.map((post, i) => (
+            <div key={post._id}>
+              <PostCard
+                post={post}
+                currentUser={currentUser}
+                onDelete={handleDeletePost}
+                onOpenLightbox={openLightbox}
+              />
+              {i === 3 && recommendations.length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="bg-white dark:bg-gray-900 rounded-2xl border border-black/10 dark:border-white/10 shadow-card overflow-hidden"
+                >
+                  <div className="px-4 pt-4 pb-2 border-b border-black/5 dark:border-white/5">
+                    <h3 className="font-bold text-gray-900 dark:text-white text-sm">People you may know</h3>
+                  </div>
+                  <div className="py-1 divide-y divide-black/5 dark:divide-white/5">
+                    {recommendations.slice(0, 4).map((rec) => (
+                      <RecommendedCard
+                        key={rec._id}
+                        user={rec}
+                        isFollowing={following.has(rec._id)}
+                        onFollow={() => handleFollow(rec._id)}
+                      />
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+            </div>
+          ))}
 
-            {recommendations.length > 0 && posts.length > 2 && (
-              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
-                className="bg-white dark:bg-gray-900 rounded-2xl border border-black/10 dark:border-white/10 shadow-card p-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <UserPlus size={14} className="text-blue-600" />
-                  <h3 className="text-sm font-bold text-gray-900 dark:text-white">People you may know</h3>
-                </div>
-                <div className="space-y-1">
-                  {recommendations.slice(0, 4).map((user) => (
-                    <RecommendedCard key={user._id} user={user}
-                      isFollowing={following.has(user._id)}
-                      onFollow={() => handleFollow(user._id)} />
-                  ))}
-                </div>
-                <Link href="/dashboard/connect"
-                  className="block text-center text-xs text-blue-600 hover:text-blue-700 font-medium mt-3 py-2 rounded-xl hover:bg-blue-50 transition-colors">
-                  See all suggestions
-                </Link>
-              </motion.div>
-            )}
-          </>
-        )}
-
-        {hasMore && !loading && (
-          <div className="flex justify-center pt-2 pb-2">
-            <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
-              onClick={() => loadPosts(page + 1)} disabled={loadingMore}
-              className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300 font-medium px-6 py-2.5 rounded-xl border border-black/10 dark:border-white/10 bg-white dark:bg-gray-900 shadow-card hover:shadow-card-hover transition-all">
-              {loadingMore ? <Loader2 size={14} className="animate-spin" /> : <ChevronDown size={14} />}
-              Load more
-            </motion.button>
-          </div>
-        )}
-      </div>
+          {hasMore && (
+            <div className="text-center pt-2 pb-4">
+              <button
+                onClick={() => loadPosts(page + 1)}
+                disabled={loadingMore}
+                className="flex items-center gap-2 text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 mx-auto px-6 py-2.5 rounded-xl border border-black/10 dark:border-white/10 hover:border-blue-300 dark:hover:border-blue-700 transition-all"
+              >
+                {loadingMore ? <Loader2 size={14} className="animate-spin" /> : <ChevronDown size={14} />}
+                {loadingMore ? "Loading…" : "Load more posts"}
+              </button>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

@@ -8,24 +8,31 @@ A modern professional social networking platform built for law students and prof
 /
 ├── app/                    # Next.js App Router pages
 │   ├── api/                # API routes (auth, posts, messages, notifications, users)
+│   │   ├── upload/         # Upload API with chunked upload support
+│   │   │   ├── route.ts        # Direct upload (small files)
+│   │   │   ├── chunk/route.ts  # Chunk receiver (stores chunks in MongoDB)
+│   │   │   └── assemble/route.ts # Assembles chunks → GridFS
+│   │   ├── files/[fileId]/ # GridFS file server
 │   │   ├── users/heartbeat/ # POST — updates lastOnline timestamp
 │   │   └── users/recommendations/ # GET — smart profile recommendations
 │   ├── dashboard/          # Protected dashboard pages
 │   │   ├── connect/        # User discovery & follow
 │   │   ├── messages/       # Real-time messaging with chat overlay
 │   │   ├── notifications/  # Notification feed
-│   │   ├── post/           # Create post (with category + video FormData upload)
+│   │   ├── post/           # Create post (media library rework with chunked uploads)
 │   │   ├── profile/[userId]/ # User profiles
 │   │   └── settings/       # Account settings
 │   ├── login/              # Login page
 │   ├── register/           # Multi-step registration
 │   ├── globals.css         # Global styles + animation utilities
-│   ├── layout.tsx          # Root layout
+│   ├── layout.tsx          # Root layout (favicon: /icon.jpg)
 │   └── page.tsx            # Landing page
 ├── components/             # Shared UI components
 ├── lib/                    # Utilities (db, auth, server actions)
 │   ├── db.ts               # MongoDB connection
-│   └── auth.ts             # JWT sign/verify helpers
+│   ├── auth.ts             # JWT sign/verify helpers
+│   ├── gridfs.ts           # MongoDB GridFS upload/download utilities
+│   └── uploadClient.ts     # Client-side chunked upload utility (3.5MB chunks)
 ├── models/                 # Mongoose schemas
 │   └── post.model.ts       # Post schema (includes `category` field)
 ├── middleware.ts            # Route protection (JWT verification)
@@ -51,10 +58,14 @@ A modern professional social networking platform built for law students and prof
 - **Profile recommendations** — inline "People you may know" card in the feed with follow/unfollow
 - Post cards with smooth fade-in media (blur → sharp), skeleton loaders, video players
 - Likes, comments, share buttons with animated counters
-- **Post creation** with category selector, video uploaded via FormData (`/api/upload`) before posting (fixes large video upload issues)
+- **Post creation** with category selector, media library with drag-drop zone, file size display, progress indicators, and chunked uploads (3.5MB per HTTP request) for Vercel compatibility
+- **Post cards** redesigned: author/avatar at TOP, media (image/video) in CENTER, text UNDER media, actions at bottom
+- **Lightbox viewer** — clicking any image/video in a post opens full-screen viewer with prev/next navigation and keyboard support
+- **Share links** — copy to clipboard generates `/dashboard?post=ID` URL that opens a shared post modal
 - **Chat** full-screen overlay (z-200) that properly hides bottom nav
 - **Voice note bubble** — styled audio player bubble matching the chat color scheme
 - **Chat background customization** — palette button in header with 9 gradient/pattern/dark themes
+- **Chat message bubbles** — received messages use solid white with dark text (readable on any background); sent messages use blue with white text
 - Real-time typing indicators, online/offline status from heartbeat
 - Heartbeat endpoint (`/api/users/heartbeat`) pinged every 30s from the dashboard layout to update `lastOnline`
 - Online status shows "Online" only if `lastOnline` is within 5 minutes
