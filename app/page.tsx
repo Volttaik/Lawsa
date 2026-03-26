@@ -10,6 +10,7 @@ import {
   Briefcase, Scale, X, Loader2,
 } from "lucide-react";
 import { LogoIcon } from "@/components/Logo";
+import PWAInstallBanner from "@/components/PWAInstallBanner";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 24 },
@@ -152,6 +153,12 @@ function GuestPostViewer() {
 }
 
 export default function LandingPage() {
+  useEffect(() => {
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("/sw.js").catch(() => {});
+    }
+  }, []);
+
   return (
     <div className="min-h-screen bg-white">
       <GuestPostViewer />
@@ -640,6 +647,8 @@ export default function LandingPage() {
           </div>
         </div>
       </footer>
+
+      <PWAInstallBanner />
     </div>
   );
 }
