@@ -36,15 +36,21 @@ export async function POST(request: NextRequest) {
         const authUser = await getUserFromRequest(request);
         if (!authUser) return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
         await connectDB();
-        const { recipientId, content, mediaData, mediaType } = await request.json();
-        if (!recipientId || (!content?.trim() && !mediaData)) {
+
+        const { recipientId, content, mediaUrl, mediaData, mediaType } = await request.json();
+
+        const hasContent = content?.trim();
+        const hasMedia = mediaUrl || mediaData;
+        if (!recipientId || (!hasContent && !hasMedia)) {
             return NextResponse.json({ error: "Recipient and content or media required" }, { status: 400 });
         }
 
         const participants = [authUser.userId, recipientId].sort();
 
         let savedMediaUrl = "";
-        if (mediaData && mediaData.startsWith("data:")) {
+        if (mediaUrl) {
+            savedMediaUrl = mediaUrl;
+        } else if (mediaData && mediaData.startsWith("data:")) {
             savedMediaUrl = await saveBase64Media(mediaData, "messages");
         }
 
@@ -74,7 +80,7 @@ export async function POST(request: NextRequest) {
             receiverId: recipientId,
             content: content?.trim() || "",
             mediaUrl: savedMediaUrl,
-            mediaType: savedMediaUrl ? mediaType : "",
+            mediaType: savedMediaUrl ? (mediaType || "file") : "",
         });
 
         await Notification.create({
