@@ -8,7 +8,7 @@ import {
   UserPlus, UserCheck, LayoutGrid, Globe, Scale, Cpu, Trophy, Newspaper,
   BookOpen, Briefcase, CalendarDays, HeartPulse, Music, Palette, Sparkles,
   Plus, X, ArrowUp, RefreshCw, Check, ExternalLink, ChevronLeft, ChevronRight,
-  ZoomIn, Volume2, VolumeX, Maximize, Pause,
+  ZoomIn, Maximize, Pause,
 } from "lucide-react";
 import Link from "next/link";
 import ReactTimeago from "react-timeago";
@@ -117,7 +117,7 @@ function VideoPlayer({ src, onClick }: { src: string; onClick?: () => void }) {
 
   const [errored, setErrored] = useState(false);
   const [playing, setPlaying] = useState(false);
-  const [muted, setMuted] = useState(true);
+  const [muted, setMuted] = useState(false);
   const [progress, setProgress] = useState(0);
   const [duration, setDuration] = useState(0);
   const [showControls, setShowControls] = useState(true);
@@ -290,19 +290,6 @@ function VideoPlayer({ src, onClick }: { src: string; onClick?: () => void }) {
                   style={{ left: `${progress * 100}%` }}
                 />
               </div>
-
-              {/* Time */}
-              <span className="text-[10px] text-white/80 tabular-nums flex-shrink-0 font-medium">
-                {fmt(progress * duration)} / {fmt(duration)}
-              </span>
-
-              {/* Mute */}
-              <button
-                onClick={toggleMute}
-                className="w-7 h-7 flex items-center justify-center text-white hover:text-white/80 transition-colors flex-shrink-0"
-              >
-                {muted ? <VolumeX size={15} /> : <Volume2 size={15} />}
-              </button>
 
               {/* Fullscreen / expand */}
               <button

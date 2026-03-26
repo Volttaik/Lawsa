@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect, useRef, useCallback, useMemo, Suspense } from "react";
+import { createPortal } from "react-dom";
 import { cache } from "@/lib/cache";
 import { uploadFile } from "@/lib/uploadClient";
 import { motion, AnimatePresence } from "framer-motion";
@@ -827,16 +828,18 @@ function MessagesContent() {
         </div>
       </div>
 
-      {/* Full-screen Chat Overlay */}
-      <AnimatePresence>
-        {selectedConv && (
-          <motion.div
-            initial={{ x: "100%" }}
-            animate={{ x: 0 }}
-            exit={{ x: "100%" }}
-            transition={{ type: "spring", damping: 28, stiffness: 260 }}
-            className="fixed inset-0 z-[200] flex flex-col"
-          >
+      {/* Full-screen Chat Overlay — rendered via portal so fixed positioning is viewport-relative */}
+      {typeof window !== "undefined" && createPortal(
+        <AnimatePresence>
+          {selectedConv && (
+            <motion.div
+              initial={{ x: "100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "100%" }}
+              transition={{ type: "spring", damping: 28, stiffness: 260 }}
+              className="fixed inset-0 z-[200] flex flex-col"
+              style={{ backgroundColor: chatBg.bgColor }}
+            >
             {/* Header */}
             <div className="flex-shrink-0 flex items-center gap-3 px-4 bg-white/10 dark:bg-black/20 backdrop-blur-xl border-b border-white/10"
               style={{ paddingTop: "max(0.75rem, env(safe-area-inset-top))", paddingBottom: "0.75rem" }}>
@@ -1141,12 +1144,15 @@ function MessagesContent() {
               )}
             </div>
           </motion.div>
-        )}
-      </AnimatePresence>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
 
-      {/* Long-press context menu */}
-      <AnimatePresence>
-        {contextMsg && (
+      {/* Long-press context menu — also portaled so fixed positioning works correctly */}
+      {typeof window !== "undefined" && createPortal(
+        <AnimatePresence>
+          {contextMsg && (
           <>
             <motion.div
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
@@ -1184,8 +1190,10 @@ function MessagesContent() {
               </button>
             </motion.div>
           </>
-        )}
-      </AnimatePresence>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
     </>
   );
 }

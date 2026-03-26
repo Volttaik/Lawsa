@@ -1,7 +1,7 @@
 "use client";
 import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Play, Pause, Volume2, VolumeX, Maximize } from "lucide-react";
+import { Play, Pause, Maximize } from "lucide-react";
 
 interface VideoPlayerProps {
   src: string;
@@ -15,7 +15,7 @@ export default function VideoPlayer({ src, onExpand }: VideoPlayerProps) {
 
   const [errored, setErrored] = useState(false);
   const [playing, setPlaying] = useState(false);
-  const [muted, setMuted] = useState(true);
+  const [muted, setMuted] = useState(false);
   const [progress, setProgress] = useState(0);
   const [duration, setDuration] = useState(0);
   const [buffered, setBuffered] = useState(0);
@@ -198,19 +198,6 @@ export default function VideoPlayer({ src, onExpand }: VideoPlayerProps) {
                   style={{ left: `${progress * 100}%` }}
                 />
               </div>
-
-              {/* Time */}
-              <span className="text-[10px] text-white/80 tabular-nums flex-shrink-0 font-medium">
-                {fmt(progress * duration)} / {fmt(duration)}
-              </span>
-
-              {/* Mute */}
-              <button
-                onClick={toggleMute}
-                className="w-7 h-7 flex items-center justify-center text-white hover:text-white/80 transition-colors flex-shrink-0"
-              >
-                {muted ? <VolumeX size={15} /> : <Volume2 size={15} />}
-              </button>
 
               {/* Expand / fullscreen */}
               <button

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Home, MessageCircle, PlusSquare, Users, User, Bell, Loader2 } from "lucide-react";
+
 import { Logo } from "@/components/Logo";
 
 interface CurrentUser {
@@ -150,26 +151,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </div>
       </header>
 
-      {/* Main Content with page transition */}
-      <main className="pt-12 pb-16">
-        <div style={{ overflowX: "clip" }}>
-          <AnimatePresence mode="wait" initial={false}>
-            <motion.div
-              key={pathname}
-              variants={{
-                hidden: { x: "100%", transition: { duration: 0 } },
-                enter:  { x: 0,      transition: { duration: 0.28, ease: [0.32, 0, 0.2, 1] } },
-                exit:   { x: "-100%",transition: { duration: 0.28, ease: [0.32, 0, 0.2, 1] } },
-              }}
-              initial="hidden"
-              animate="enter"
-              exit="exit"
-              style={{ willChange: "transform" }}
-            >
-              {children}
-            </motion.div>
-          </AnimatePresence>
-        </div>
+      {/* Main Content — animation is handled by template.tsx */}
+      <main className="pt-12 pb-16" style={{ overflowX: "clip" }}>
+        {children}
       </main>
 
       {/* Bottom Navigation */}
