@@ -6,10 +6,9 @@ import { Play, Pause, Volume2, VolumeX, Maximize } from "lucide-react";
 interface VideoPlayerProps {
   src: string;
   onExpand?: () => void;
-  aspectRatio?: string;
 }
 
-export default function VideoPlayer({ src, onExpand, aspectRatio = "16/9" }: VideoPlayerProps) {
+export default function VideoPlayer({ src, onExpand }: VideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const hideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -100,7 +99,6 @@ export default function VideoPlayer({ src, onExpand, aspectRatio = "16/9" }: Vid
     <div
       ref={containerRef}
       className="relative w-full bg-black overflow-hidden select-none"
-      style={{ aspectRatio }}
       onMouseMove={revealControls}
       onMouseLeave={() => playing && setShowControls(false)}
       onTouchStart={revealControls}
@@ -112,7 +110,8 @@ export default function VideoPlayer({ src, onExpand, aspectRatio = "16/9" }: Vid
         preload="metadata"
         playsInline
         muted={muted}
-        className="w-full h-full object-contain block"
+        className="w-full block max-h-[72vh] object-contain"
+        style={{ display: "block" }}
         onError={() => setErrored(true)}
         onLoadedMetadata={() => setDuration(videoRef.current?.duration || 0)}
         onTimeUpdate={handleTimeUpdate}
