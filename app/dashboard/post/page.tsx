@@ -402,8 +402,16 @@ export default function CreatePostPage() {
                 if (!files) return;
                 const imgFiles = Array.from(files).filter((f) => f.type.startsWith("image/"));
                 const vidFiles = Array.from(files).filter((f) => f.type.startsWith("video/"));
-                if (imgFiles.length > 0) handleFiles(Object.assign(new DataTransfer(), { files: imgFiles.reduce((dt, f) => { dt.items.add(f); return dt; }, new DataTransfer()) }).files, "image");
-                if (vidFiles.length > 0) handleFiles(Object.assign(new DataTransfer(), { files: vidFiles.reduce((dt, f) => { dt.items.add(f); return dt; }, new DataTransfer()) }).files, "video");
+                if (imgFiles.length > 0) {
+                  const dt = new DataTransfer();
+                  imgFiles.forEach((f) => dt.items.add(f));
+                  handleFiles(dt.files, "image");
+                }
+                if (vidFiles.length > 0) {
+                  const dt = new DataTransfer();
+                  vidFiles.forEach((f) => dt.items.add(f));
+                  handleFiles(dt.files, "video");
+                }
                 e.target.value = "";
               }}
             />
