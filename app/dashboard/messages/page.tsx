@@ -415,11 +415,14 @@ function MessagesContent() {
   const pollConversation = useCallback(async () => {
     const conv = selectedConvRef.current;
     if (!conv || conv._id === "new") return;
+    const convId = conv._id;
     try {
-      if (conv._id.startsWith("clan-")) {
-        const clanId = conv._id.replace("clan-", "");
+      if (convId.startsWith("clan-")) {
+        const clanId = convId.replace("clan-", "");
         const res = await fetch(`/api/clans/${clanId}/chat`);
         const data = await res.json();
+        // discard if user switched away while request was in-flight
+        if (selectedConvRef.current?._id !== convId) return;
         if (data.messages) {
           setMessages(data.messages.map((m: any) => ({
             _id: m._id, senderId: m.senderId, senderName: m.senderName,
@@ -427,8 +430,10 @@ function MessagesContent() {
           })));
         }
       } else {
-        const res = await fetch(`/api/messages/${conv._id}`);
+        const res = await fetch(`/api/messages/${convId}`);
         const data = await res.json();
+        // discard if user switched away while request was in-flight
+        if (selectedConvRef.current?._id !== convId) return;
         if (data.messages) setMessages(data.messages);
         if (typeof data.otherUserOnline === "boolean") setOtherUserOnline(data.otherUserOnline);
         if (data.otherUserLastOnline !== undefined) setOtherUserLastOnline(data.otherUserLastOnline);
@@ -459,14 +464,24 @@ function MessagesContent() {
   const loadConversations = async (silent = false) => {
     if (!silent) {
       const cached = cache.get<any[]>("conversations");
-      if (cached) { setConversations(cached); setLoading(false); }
-      else setLoading(true);
+      if (cached && cached.length > 0) {
+        setConversations(cached);
+        setLoading(false);
+      } else {
+        setLoading(true);
+      }
     }
-    const res = await fetch("/api/messages");
-    const data = await res.json();
-    cache.set("conversations", data.conversations || [], 60);
-    setConversations(data.conversations || []);
-    setLoading(false);
+    try {
+      const res = await fetch("/api/messages");
+      if (!res.ok) throw new Error("Failed");
+      const data = await res.json();
+      cache.set("conversations", data.conversations || [], 60);
+      setConversations(data.conversations || []);
+    } catch {
+      // keep whatever is showing
+    } finally {
+      setLoading(false);
+    }
   };
 
   const loadUsers = async () => {
@@ -476,20 +491,23 @@ function MessagesContent() {
   };
 
   const openConversation = async (conv: Conversation) => {
-    setSelectedConv(conv);
+    const convId = conv._id;
+    // Clear immediately so no old messages flash
     setMessages([]);
+    setSelectedConv(conv);
     setOtherUserTyping(false);
     setAudioBlob(null);
     setPendingMedia(null);
     setUploadError(null);
     setLoadingMessages(true);
-    const isClan = conv._id.startsWith("clan-");
+    const isClan = convId.startsWith("clan-");
     setIsClanChat(isClan);
     if (isClan) {
-      const clanId = conv._id.replace("clan-", "");
+      const clanId = convId.replace("clan-", "");
       try {
         const res = await fetch(`/api/clans/${clanId}/chat`);
         const data = await res.json();
+        if (selectedConvRef.current?._id !== convId) return;
         if (data.messages) {
           setMessages(data.messages.map((m: any) => ({
             _id: m._id, senderId: m.senderId, senderName: m.senderName,
@@ -497,13 +515,16 @@ function MessagesContent() {
           })));
         }
       } catch {}
-    } else if (conv._id !== "new") {
-      const res = await fetch(`/api/messages/${conv._id}`);
-      const data = await res.json();
-      setMessages(data.messages || []);
-      if (typeof data.otherUserOnline === "boolean") setOtherUserOnline(data.otherUserOnline);
-      if (data.otherUserLastOnline !== undefined) setOtherUserLastOnline(data.otherUserLastOnline);
-      if (typeof data.otherUserTyping === "boolean") setOtherUserTyping(data.otherUserTyping);
+    } else if (convId !== "new") {
+      try {
+        const res = await fetch(`/api/messages/${convId}`);
+        const data = await res.json();
+        if (selectedConvRef.current?._id !== convId) return;
+        setMessages(data.messages || []);
+        if (typeof data.otherUserOnline === "boolean") setOtherUserOnline(data.otherUserOnline);
+        if (data.otherUserLastOnline !== undefined) setOtherUserLastOnline(data.otherUserLastOnline);
+        if (typeof data.otherUserTyping === "boolean") setOtherUserTyping(data.otherUserTyping);
+      } catch {}
     }
     setLoadingMessages(false);
   };
