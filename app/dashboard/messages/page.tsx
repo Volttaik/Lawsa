@@ -473,12 +473,12 @@ function MessagesContent() {
     }
     try {
       const res = await fetch("/api/messages");
-      if (!res.ok) throw new Error("Failed");
       const data = await res.json();
-      cache.set("conversations", data.conversations || [], 60);
-      setConversations(data.conversations || []);
+      const convs = data.conversations || [];
+      cache.set("conversations", convs, 60);
+      setConversations(convs);
     } catch {
-      // keep whatever is showing
+      // keep whatever is already showing
     } finally {
       setLoading(false);
     }

@@ -152,14 +152,18 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
       {/* Main Content with page transition */}
       <main className="pt-12 pb-16">
-        <div className="overflow-x-hidden">
+        <div style={{ overflowX: "clip" }}>
           <AnimatePresence mode="wait" initial={false}>
             <motion.div
               key={pathname}
-              initial={{ x: "100%" }}
-              animate={{ x: 0 }}
-              exit={{ x: "-100%" }}
-              transition={{ duration: 0.28, ease: [0.32, 0, 0.2, 1] }}
+              variants={{
+                hidden: { x: "100%", transition: { duration: 0 } },
+                enter:  { x: 0,      transition: { duration: 0.28, ease: [0.32, 0, 0.2, 1] } },
+                exit:   { x: "-100%",transition: { duration: 0.28, ease: [0.32, 0, 0.2, 1] } },
+              }}
+              initial="hidden"
+              animate="enter"
+              exit="exit"
               style={{ willChange: "transform" }}
             >
               {children}

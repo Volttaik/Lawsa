@@ -910,7 +910,7 @@ export default function DashboardHome() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-4">
+    <div className="max-w-2xl mx-auto px-4 pb-4">
 
       {/* Shared post param reader */}
       <Suspense fallback={null}>
