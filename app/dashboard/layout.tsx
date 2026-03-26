@@ -3,6 +3,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
 import { Home, MessageCircle, PlusSquare, Users, User, Bell, Loader2 } from "lucide-react";
 import { Logo } from "@/components/Logo";
 
@@ -149,9 +150,19 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </div>
       </header>
 
-      {/* Main Content — no AnimatePresence wrapper so pages render instantly */}
+      {/* Main Content with page transition */}
       <main className="pt-12 pb-16">
-        {children}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={pathname}
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.18, ease: "easeOut" }}
+          >
+            {children}
+          </motion.div>
+        </AnimatePresence>
       </main>
 
       {/* Bottom Navigation */}
@@ -166,11 +177,18 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
             return (
               <Link key={label} href={href}>
-                <div className={`flex flex-col items-center gap-0.5 px-2 py-1 rounded-xl transition-all duration-200 ${isActive ? "text-blue-600" : "text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"}`}>
+                <motion.div
+                  whileTap={{ scale: 0.88 }}
+                  transition={{ duration: 0.12 }}
+                  className={`flex flex-col items-center gap-0.5 px-2 py-1 rounded-xl transition-all duration-200 ${isActive ? "text-blue-600" : "text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"}`}
+                >
                   {label === "Post" ? (
-                    <div className={`w-8 h-8 rounded-xl flex items-center justify-center transition-all duration-200 ${isActive ? "bg-blue-600" : "bg-gray-100 dark:bg-gray-800 hover:bg-blue-50"}`}>
+                    <motion.div
+                      animate={isActive ? { scale: 1.05 } : { scale: 1 }}
+                      className={`w-8 h-8 rounded-xl flex items-center justify-center transition-all duration-200 ${isActive ? "bg-blue-600" : "bg-gray-100 dark:bg-gray-800 hover:bg-blue-50"}`}
+                    >
                       <Icon size={17} className={isActive ? "text-white" : "text-gray-600 dark:text-gray-300"} />
-                    </div>
+                    </motion.div>
                   ) : label === "Profile" && user ? (
                     <>
                       <div className={`w-6 h-6 rounded-full overflow-hidden border-2 transition-all duration-200 ${isActive ? "border-blue-600" : "border-transparent"}`}>
@@ -181,7 +199,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   ) : (
                     <>
                       <div className="relative">
-                        <Icon size={18} />
+                        <motion.div animate={isActive ? { y: -1 } : { y: 0 }} transition={{ duration: 0.15 }}>
+                          <Icon size={18} />
+                        </motion.div>
                         {label === "Chats" && notifCount > 0 && (
                           <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full" />
                         )}
@@ -189,7 +209,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                       <span className="text-[10px] font-medium">{label}</span>
                     </>
                   )}
-                </div>
+                </motion.div>
               </Link>
             );
           })}

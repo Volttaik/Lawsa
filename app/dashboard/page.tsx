@@ -469,6 +469,10 @@ function PostCard({ post, currentUser, onDelete, onOpenLightbox }: {
 
   const handleShare = () => {
     const url = `${window.location.origin}/dashboard?post=${post._id}`;
+    const preview = post.content?.trim()
+      ? `"${post.content.slice(0, 120)}${post.content.length > 120 ? "…" : ""}"\n\n`
+      : "";
+    const shareText = `${preview}${url}`;
     const copy = (text: string) => {
       if (navigator.clipboard) {
         navigator.clipboard.writeText(text).catch(() => fallback(text));
@@ -487,7 +491,7 @@ function PostCard({ post, currentUser, onDelete, onOpenLightbox }: {
       document.execCommand("copy");
       document.body.removeChild(ta);
     };
-    copy(url);
+    copy(shareText);
     setCopied(true);
     setTimeout(() => setCopied(false), 2200);
   };
@@ -576,7 +580,7 @@ function PostCard({ post, currentUser, onDelete, onOpenLightbox }: {
                   key={i}
                   src={img}
                   alt="Post"
-                  className={`w-full object-cover ${validImages.length === 1 ? "max-h-96" : "max-h-64"}`}
+                  className="w-full block"
                   onClick={() => onOpenLightbox(allMediaItems, i)}
                 />
               ))}
@@ -712,7 +716,10 @@ function SharedPostLoader({ onPostId }: { onPostId: (id: string) => void }) {
   const searchParams = useSearchParams();
   const postId = searchParams.get("post");
   useEffect(() => {
-    if (postId) onPostId(postId);
+    if (postId) {
+      onPostId(postId);
+      window.history.replaceState(null, "", "/dashboard");
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [postId]);
   return null;

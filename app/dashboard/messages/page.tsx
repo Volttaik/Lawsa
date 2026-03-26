@@ -896,9 +896,11 @@ function MessagesContent() {
                         const isEditing = editingMsgId === msg._id;
                         return (
                           <motion.div key={msg._id}
-                            initial={{ opacity: 0, y: 10, scale: 0.96 }}
-                            animate={{ opacity: 1, y: 0, scale: 1 }}
-                            transition={{ duration: 0.18 }}
+                            initial={isMe
+                              ? { opacity: 0, x: 16, scale: 0.93 }
+                              : { opacity: 0, x: -16, scale: 0.93 }}
+                            animate={{ opacity: 1, x: 0, scale: 1 }}
+                            transition={{ duration: 0.2, ease: [0.34, 1.2, 0.64, 1] }}
                             className={`flex items-end gap-1.5 ${isMe ? "flex-row-reverse" : ""}`}
                             onMouseDown={() => !isClanChat && startLongPress(msg)}
                             onMouseUp={cancelLongPress}

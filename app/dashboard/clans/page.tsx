@@ -281,7 +281,7 @@ export default function ClansPage() {
 
       {/* Current clan badge */}
       {currentUser?.clanId && (
-        <div className="mb-4 bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 border border-indigo-200 dark:border-indigo-800/50 rounded-2xl p-4 flex items-center gap-3">
+        <div className="mb-4 bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 border border-indigo-200 dark:border-indigo-800/50 rounded-[2px] p-4 flex items-center gap-3">
           <ClanLogo src={currentUser.clanLogo} name={currentUser.clanName || ""} size={44} />
           <div className="flex-1 min-w-0">
             <p className="text-xs text-indigo-600 dark:text-indigo-400 font-medium">Your Clan</p>
@@ -301,7 +301,7 @@ export default function ClansPage() {
 
       {/* Clans list */}
       {clans.length === 0 ? (
-        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-black/10 dark:border-white/10 shadow-card p-12 text-center">
+        <div className="bg-white dark:bg-gray-900 rounded-[2px] border border-black/10 dark:border-white/10 shadow-pro p-12 text-center">
           <div className="w-14 h-14 rounded-2xl bg-indigo-50 dark:bg-indigo-900/20 flex items-center justify-center mx-auto mb-4">
             <Shield size={24} className="text-indigo-500" />
           </div>
@@ -322,7 +322,7 @@ export default function ClansPage() {
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.04, duration: 0.3 }}
-              className="bg-white dark:bg-gray-900 rounded-2xl border border-black/10 dark:border-white/10 shadow-card p-4"
+              className="bg-white dark:bg-gray-900 rounded-[2px] border border-black/10 dark:border-white/10 shadow-pro p-4"
             >
               <div className="flex items-center gap-3">
                 <ClanLogo src={clan.logo} name={clan.name} size={52} />
@@ -392,7 +392,7 @@ export default function ClansPage() {
             <motion.div
               initial={{ y: 40, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 40, opacity: 0 }}
               transition={{ type: "spring", damping: 28, stiffness: 260 }}
-              className="bg-white dark:bg-gray-900 rounded-2xl p-6 w-full max-w-sm"
+              className="bg-white dark:bg-gray-900 rounded-[2px] p-6 w-full max-w-sm"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex items-center justify-between mb-5">

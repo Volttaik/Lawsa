@@ -106,7 +106,7 @@ export default function NotificationsPage() {
         </div>
       ) : notifications.length === 0 ? (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-          className="bg-white dark:bg-gray-900 rounded-2xl border border-black/10 dark:border-white/10 shadow-card p-14 text-center">
+          className="bg-white dark:bg-gray-900 rounded-[2px] border border-black/10 dark:border-white/10 shadow-pro p-14 text-center">
           <div className="w-14 h-14 rounded-2xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center mx-auto mb-4">
             <Bell className="text-gray-400" size={26} />
           </div>
@@ -127,8 +127,9 @@ export default function NotificationsPage() {
                 <motion.div
                   key={notif._id}
                   variants={{ hidden: { opacity: 0, y: 8 }, visible: { opacity: 1, y: 0 } }}
+                  whileTap={{ scale: 0.99 }}
                   onClick={() => !notif.read && markOneRead(notif._id)}
-                  className={`bg-white dark:bg-gray-900 rounded-2xl border shadow-card p-4 flex items-start gap-3 cursor-pointer transition-all hover:shadow-card-hover ${
+                  className={`bg-white dark:bg-gray-900 rounded-[2px] border shadow-pro p-4 flex items-start gap-3 cursor-pointer transition-all hover:shadow-card-hover ${
                     !notif.read
                       ? "border-blue-200 dark:border-blue-800 bg-blue-50/40 dark:bg-blue-900/10"
                       : "border-black/10 dark:border-white/10"

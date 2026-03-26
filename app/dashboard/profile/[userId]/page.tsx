@@ -168,7 +168,7 @@ function CreateStoryModal({ onClose, onCreated }: { onClose: () => void; onCreat
       <motion.div
         initial={{ y: 40, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 40, opacity: 0 }}
         transition={{ type: "spring", damping: 28, stiffness: 260 }}
-        className="bg-white dark:bg-gray-900 rounded-2xl p-6 w-full max-w-sm"
+        className="bg-white dark:bg-gray-900 rounded-[2px] p-6 w-full max-w-sm"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-4">
@@ -344,7 +344,7 @@ export default function ProfilePage() {
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-        className="bg-white dark:bg-gray-900 rounded-2xl border border-black/10 dark:border-white/10 shadow-card overflow-hidden mb-4"
+        className="bg-white dark:bg-gray-900 rounded-[2px] border border-black/10 dark:border-white/10 shadow-pro overflow-hidden mb-4"
       >
         {/* Banner */}
         <div className="relative h-40 bg-gradient-to-r from-blue-500 to-blue-700 overflow-hidden">
@@ -489,7 +489,7 @@ export default function ProfilePage() {
       </motion.div>
 
       {/* Tab Switch */}
-      <div className="flex gap-1 mb-4 bg-white dark:bg-gray-900 rounded-2xl border border-black/10 dark:border-white/10 shadow-card p-1">
+      <div className="flex gap-1 mb-4 bg-white dark:bg-gray-900 rounded-[2px] border border-black/10 dark:border-white/10 shadow-pro p-1">
         {[
           { key: "posts", label: "Posts" },
           { key: "stories", label: "Stories" },
@@ -512,7 +512,7 @@ export default function ProfilePage() {
       {activeTab === "posts" && (
         <div>
           {posts.length === 0 ? (
-            <div className="bg-white dark:bg-gray-900 rounded-2xl border border-black/10 dark:border-white/10 shadow-card p-10 text-center text-gray-400 text-sm">
+            <div className="bg-white dark:bg-gray-900 rounded-[2px] border border-black/10 dark:border-white/10 shadow-pro p-10 text-center text-gray-400 text-sm">
               No posts yet.
             </div>
           ) : (
@@ -523,7 +523,7 @@ export default function ProfilePage() {
                   initial={{ opacity: 0, y: 16 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.04, duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-                  className="bg-white dark:bg-gray-900 rounded-2xl border border-black/10 dark:border-white/10 shadow-card p-4"
+                  className="bg-white dark:bg-gray-900 rounded-[2px] border border-black/10 dark:border-white/10 shadow-pro p-4"
                 >
                   <p className="text-sm text-gray-800 dark:text-gray-200 leading-relaxed">{post.content}</p>
                   {post.images && post.images.length > 0 && (
@@ -568,7 +568,7 @@ export default function ProfilePage() {
           )}
 
           {stories.length === 0 ? (
-            <div className="bg-white dark:bg-gray-900 rounded-2xl border border-black/10 dark:border-white/10 shadow-card p-10 text-center text-gray-400 text-sm">
+            <div className="bg-white dark:bg-gray-900 rounded-[2px] border border-black/10 dark:border-white/10 shadow-pro p-10 text-center text-gray-400 text-sm">
               <BookOpen className="mx-auto mb-3 text-gray-300" size={32} />
               No stories yet.
             </div>

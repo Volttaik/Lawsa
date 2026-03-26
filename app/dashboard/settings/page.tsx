@@ -20,7 +20,7 @@ function SettingCard({ children, delay = 0 }: { children: React.ReactNode; delay
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay, duration: 0.3 }}
-      className="bg-white dark:bg-gray-900 rounded-2xl border border-black/10 dark:border-white/10 shadow-card p-6"
+      className="bg-white dark:bg-gray-900 rounded-[2px] border border-black/10 dark:border-white/10 shadow-pro p-6"
     >
       {children}
     </motion.div>
