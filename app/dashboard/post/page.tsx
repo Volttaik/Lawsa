@@ -36,6 +36,7 @@ type MediaItem = {
   filename: string;
   fileSize: number;
   progress: number;
+  file: File;
 };
 
 function formatBytes(bytes: number): string {
@@ -197,6 +198,7 @@ export default function CreatePostPage() {
         filename: file.name,
         fileSize: file.size,
         progress: 0,
+        file,
       };
 
       setMedia((prev) => [...prev, item]);
@@ -209,7 +211,15 @@ export default function CreatePostPage() {
   };
 
   const retryUpload = (id: string) => {
-    setMedia((prev) => prev.map((m) => m.id === id ? { ...m, status: "uploading", serverUrl: "", progress: 0 } : m));
+    setMedia((prev) => {
+      const item = prev.find((m) => m.id === id);
+      if (item?.file) {
+        const updated = prev.map((m) => m.id === id ? { ...m, status: "uploading" as UploadStatus, serverUrl: "", progress: 0 } : m);
+        uploadToServer(item.file, id);
+        return updated;
+      }
+      return prev;
+    });
   };
 
   const canSubmit =
