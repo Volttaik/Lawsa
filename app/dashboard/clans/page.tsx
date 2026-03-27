@@ -4,8 +4,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import { cache } from "@/lib/cache";
 import {
   Shield, Plus, Users, Send, Loader2, X, ArrowLeft,
-  Crown, LogOut, Trash2, Check, MessageSquare,
+  Crown, LogOut, Trash2, Check, MessageSquare, Share2,
 } from "lucide-react";
+import Linkify from "@/components/Linkify";
 
 interface Clan {
   _id: string;
@@ -90,6 +91,21 @@ export default function ClansPage() {
   const [activeView, setActiveView] = useState<"members" | "chat">("chat");
   const [joiningId, setJoiningId] = useState<string | null>(null);
   const [lastMsgTime, setLastMsgTime] = useState<string | null>(null);
+  const [clanShareCopied, setClanShareCopied] = useState(false);
+
+  const handleShareClan = (clan: Clan) => {
+    const text = `Join ${clan.name} on Lawsa Socials!\n${window.location.origin}/dashboard/clans`;
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(text).catch(() => {});
+    } else {
+      const ta = document.createElement("textarea");
+      ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
+      document.body.appendChild(ta); ta.focus(); ta.select();
+      document.execCommand("copy"); document.body.removeChild(ta);
+    }
+    setClanShareCopied(true);
+    setTimeout(() => setClanShareCopied(false), 2200);
+  };
 
   const chatEndRef = useRef<HTMLDivElement>(null);
   const chatPollRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -481,6 +497,15 @@ export default function ClansPage() {
                   {onlineCount > 0 ? `${onlineCount} online` : `${selectedClan.members.length} members`}
                 </div>
               </div>
+              {/* Share clan */}
+              <motion.button
+                whileTap={{ scale: 0.9 }}
+                onClick={() => handleShareClan(selectedClan)}
+                className={`w-8 h-8 flex-shrink-0 rounded-xl flex items-center justify-center transition-colors ${clanShareCopied ? "bg-green-500/30 text-green-400" : "text-white/70 hover:bg-white/10"}`}
+              >
+                {clanShareCopied ? <Check size={16} /> : <Share2 size={16} />}
+              </motion.button>
+
               {/* Tab buttons */}
               <div className="flex items-center gap-1 bg-white/10 rounded-xl p-1">
                 <button
@@ -566,7 +591,7 @@ export default function ClansPage() {
                                 ? "bg-indigo-600 text-white rounded-[18px] rounded-br-[4px]"
                                 : "bg-white/10 backdrop-blur-sm border border-white/10 text-white rounded-[18px] rounded-bl-[4px]"
                             }`}>
-                              {msg.content}
+                              <Linkify text={msg.content} linkClass="text-blue-200 hover:underline break-all" />
                             </div>
                             <span className="text-[9px] text-white/30 mt-0.5 px-1">
                               {new Date(msg.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}

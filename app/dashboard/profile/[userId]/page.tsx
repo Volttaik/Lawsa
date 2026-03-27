@@ -4,10 +4,11 @@ import { useParams, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Camera, Edit3, UserPlus, UserCheck, Loader2, X, Save,
-  Shield, ChevronRight, Plus, BookOpen, MessageCircle,
+  Shield, ChevronRight, Plus, BookOpen, MessageCircle, Share2, Check,
 } from "lucide-react";
 import { uploadFile } from "@/lib/uploadClient";
 import VideoPlayer from "@/components/VideoPlayer";
+import Linkify from "@/components/Linkify";
 
 interface UserProfile {
   _id: string;
@@ -229,6 +230,21 @@ export default function ProfilePage() {
   const [viewingStory, setViewingStory] = useState<number | null>(null);
   const [showCreateStory, setShowCreateStory] = useState(false);
   const [activeTab, setActiveTab] = useState<"posts" | "stories">("posts");
+  const [profileLinkCopied, setProfileLinkCopied] = useState(false);
+
+  const handleShareProfile = () => {
+    const url = `${window.location.origin}/dashboard/profile/${userId}`;
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(url).catch(() => {});
+    } else {
+      const ta = document.createElement("textarea");
+      ta.value = url; ta.style.position = "fixed"; ta.style.opacity = "0";
+      document.body.appendChild(ta); ta.focus(); ta.select();
+      document.execCommand("copy"); document.body.removeChild(ta);
+    }
+    setProfileLinkCopied(true);
+    setTimeout(() => setProfileLinkCopied(false), 2200);
+  };
 
   const loadData = () => {
     if (!userId) return;
@@ -388,10 +404,16 @@ export default function ProfilePage() {
                     </button>
                   </div>
                 ) : (
-                  <button onClick={() => setEditing(true)}
-                    className="flex items-center gap-1.5 text-sm font-medium px-4 py-2 rounded-xl border border-black/10 dark:border-white/10 text-gray-700 dark:text-gray-300 hover:border-blue-300 hover:text-blue-600 transition-all shadow-soft">
-                    <Edit3 size={15} /> Edit Profile
-                  </button>
+                  <div className="flex gap-2">
+                    <button onClick={() => setEditing(true)}
+                      className="flex items-center gap-1.5 text-sm font-medium px-4 py-2 rounded-xl border border-black/10 dark:border-white/10 text-gray-700 dark:text-gray-300 hover:border-blue-300 hover:text-blue-600 transition-all shadow-soft">
+                      <Edit3 size={15} /> Edit Profile
+                    </button>
+                    <button onClick={handleShareProfile}
+                      className={`flex items-center gap-1.5 text-sm font-medium px-3 py-2 rounded-xl border shadow-soft transition-all ${profileLinkCopied ? "border-green-400 text-green-600 bg-green-50 dark:bg-green-900/20" : "border-black/10 dark:border-white/10 text-gray-700 dark:text-gray-300 hover:border-blue-300 hover:text-blue-600"}`}>
+                      {profileLinkCopied ? <Check size={15} /> : <Share2 size={15} />}
+                    </button>
+                  </div>
                 )
               ) : (
                 <div className="flex gap-2">
@@ -413,6 +435,14 @@ export default function ProfilePage() {
                   >
                     <MessageCircle size={15} />
                     Message
+                  </motion.button>
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={handleShareProfile}
+                    className={`flex items-center gap-1.5 text-sm font-semibold px-3 py-2 rounded-[8px] border shadow-[0_1px_4px_0_rgba(0,0,0,0.08)] transition-all ${profileLinkCopied ? "border-green-400 text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20" : "border-black/10 dark:border-white/10 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"}`}
+                  >
+                    {profileLinkCopied ? <Check size={15} /> : <Share2 size={15} />}
                   </motion.button>
                 </div>
               )}
@@ -525,7 +555,7 @@ export default function ProfilePage() {
                   transition={{ delay: i * 0.04, duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
                   className="bg-white dark:bg-gray-900 rounded-[2px] border border-black/10 dark:border-white/10 shadow-pro p-4"
                 >
-                  <p className="text-sm text-gray-800 dark:text-gray-200 leading-relaxed">{post.content}</p>
+                  <Linkify text={post.content} className="text-sm text-gray-800 dark:text-gray-200 leading-relaxed whitespace-pre-wrap break-words" />
                   {post.images && post.images.length > 0 && (
                     <div className="mt-3 grid grid-cols-2 gap-2">
                       {post.images.map((img, j) => (

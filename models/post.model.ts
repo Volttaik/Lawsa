@@ -1,5 +1,14 @@
 import mongoose, { Document, Model } from "mongoose";
 
+export interface IRepostedFrom {
+    _id: string;
+    authorName: string;
+    authorUsername: string;
+    authorImage?: string;
+    content: string;
+    images?: string[];
+}
+
 export interface IPost {
     authorId: string;
     authorName: string;
@@ -13,6 +22,7 @@ export interface IPost {
     shares?: string[];
     reshares?: number;
     category?: string;
+    repostedFrom?: IRepostedFrom;
     createdAt?: Date;
     updatedAt?: Date;
 }
@@ -27,7 +37,7 @@ const postSchema = new mongoose.Schema<IPostDocument>({
     authorName: { type: String, required: true },
     authorUsername: { type: String, required: true },
     authorImage: { type: String, default: "" },
-    content: { type: String, required: true },
+    content: { type: String, default: "" },
     images: [{ type: String }],
     videos: [{ type: String }],
     likes: [{ type: String }],
@@ -35,6 +45,14 @@ const postSchema = new mongoose.Schema<IPostDocument>({
     shares: [{ type: String }],
     reshares: { type: Number, default: 0 },
     category: { type: String, default: "general" },
+    repostedFrom: {
+        _id: { type: String },
+        authorName: { type: String },
+        authorUsername: { type: String },
+        authorImage: { type: String },
+        content: { type: String },
+        images: [{ type: String }],
+    },
 }, { timestamps: true });
 
 export const Post: Model<IPostDocument> =

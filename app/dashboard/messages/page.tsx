@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect, useRef, useCallback, useMemo, Suspense } from "react";
 import { createPortal } from "react-dom";
+import Linkify from "@/components/Linkify";
 import { cache } from "@/lib/cache";
 import { uploadFile } from "@/lib/uploadClient";
 import { motion, AnimatePresence } from "framer-motion";
@@ -969,7 +970,7 @@ function MessagesContent() {
                                           ? "bg-blue-600 text-white shadow-[0_2px_8px_0_rgba(37,99,235,0.3)]"
                                           : "bg-white text-gray-900 border border-black/8 shadow-[0_1px_6px_0_rgba(0,0,0,0.12)]"
                                       }`}>
-                                        {msg.content}
+                                        <Linkify text={msg.content} linkClass={isMe ? "text-blue-200 hover:underline break-all" : "text-blue-600 hover:underline break-all"} />
                                         {msg.edited && <span className="text-[9px] opacity-50 ml-1">edited</span>}
                                       </div>
                                     )

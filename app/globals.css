@@ -27,11 +27,11 @@
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
+    --background: 0 0% 3.5%;
     --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
+    --card: 0 0% 3.5%;
     --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
+    --popover: 0 0% 3.5%;
     --popover-foreground: 210 40% 98%;
     --primary: 217 91% 60%;
     --primary-foreground: 0 0% 100%;
@@ -54,7 +54,7 @@
     @apply border-border;
   }
   body {
-    @apply bg-white dark:bg-gray-950 text-foreground;
+    @apply bg-white dark:bg-black text-foreground;
   }
 }
 

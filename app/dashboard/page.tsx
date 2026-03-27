@@ -8,8 +8,9 @@ import {
   UserPlus, UserCheck, LayoutGrid, Globe, Scale, Cpu, Trophy, Newspaper,
   BookOpen, Briefcase, CalendarDays, HeartPulse, Music, Palette, Sparkles,
   Plus, X, ArrowUp, RefreshCw, Check, ExternalLink, ChevronLeft, ChevronRight,
-  ZoomIn, Maximize, Pause,
+  ZoomIn, Maximize, Pause, Repeat2,
 } from "lucide-react";
+import Linkify from "@/components/Linkify";
 import Link from "next/link";
 import ReactTimeago from "react-timeago";
 
@@ -32,6 +33,15 @@ const CATEGORIES: CategoryDef[] = [
   { id: "art",      label: "Art",      Icon: Palette },
 ];
 
+interface RepostedFrom {
+  _id: string;
+  authorName: string;
+  authorUsername: string;
+  authorImage?: string;
+  content: string;
+  images?: string[];
+}
+
 interface Post {
   _id: string;
   authorId: string;
@@ -44,6 +54,8 @@ interface Post {
   likes?: string[];
   comments?: Comment[];
   category?: string;
+  reshares?: number;
+  repostedFrom?: RepostedFrom;
   createdAt: string;
 }
 
@@ -460,7 +472,21 @@ function PostCard({ post, currentUser, onDelete, onOpenLightbox }: {
   );
   const [likesCount, setLikesCount] = useState(post.likes?.length || 0);
   const [copied, setCopied] = useState(false);
+  const [reposted, setReposted] = useState(false);
+  const [reshareCount, setReshareCount] = useState(post.reshares || 0);
   const isOwner = currentUser && (post.authorId === currentUser._id || post.authorId === currentUser.id);
+
+  const handleRepost = async () => {
+    if (!currentUser) return;
+    try {
+      const res = await fetch(`/api/posts/${post._id}/repost`, { method: "POST" });
+      const data = await res.json();
+      if (res.ok) {
+        setReposted(data.reposted);
+        setReshareCount(data.reshares ?? 0);
+      }
+    } catch {}
+  };
 
   const handleShare = () => {
     const url = `${window.location.origin}/dashboard?post=${post._id}`;
@@ -536,6 +562,14 @@ function PostCard({ post, currentUser, onDelete, onOpenLightbox }: {
       transition={{ duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] }}
       className="bg-white dark:bg-gray-900 rounded-2xl border border-black/10 dark:border-white/10 shadow-card overflow-hidden"
     >
+      {/* ── Reposted indicator ── */}
+      {post.repostedFrom && (
+        <div className="flex items-center gap-1.5 px-4 pt-3 text-[11px] font-medium text-green-600 dark:text-green-400">
+          <Repeat2 size={12} />
+          <span>{post.authorName} reposted</span>
+        </div>
+      )}
+
       {/* ── Author header at TOP ── */}
       <div className="px-4 pt-4 pb-3">
         <div className="flex items-start justify-between">
@@ -595,12 +629,32 @@ function PostCard({ post, currentUser, onDelete, onOpenLightbox }: {
         </div>
       )}
 
+      {/* ── Reposted-from embedded card ── */}
+      {post.repostedFrom && (
+        <div className="mx-4 mt-2 mb-1 rounded-xl border border-black/10 dark:border-white/10 bg-gray-50 dark:bg-gray-900 p-3">
+          <div className="flex items-center gap-2 mb-1.5">
+            <Avatar src={post.repostedFrom.authorImage} name={post.repostedFrom.authorName} size={22} />
+            <span className="text-xs font-semibold text-gray-800 dark:text-gray-200">@{post.repostedFrom.authorUsername || post.repostedFrom.authorName}</span>
+          </div>
+          {(post.repostedFrom.images || []).filter(Boolean).length > 0 && (
+            <img src={post.repostedFrom.images![0]} alt="" className="w-full max-h-48 object-cover rounded-lg mb-2" />
+          )}
+          <Linkify
+            text={post.repostedFrom.content}
+            className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap break-words line-clamp-5"
+          />
+        </div>
+      )}
+
       {/* ── Text content UNDER media ── */}
-      <div className={`px-4 ${hasMedia ? "pt-3" : "pt-0"} pb-0`}>
-        <p className="text-sm text-gray-800 dark:text-gray-200 leading-relaxed whitespace-pre-wrap break-words">
-          {post.content}
-        </p>
-      </div>
+      {(post.content || !post.repostedFrom) && (
+        <div className={`px-4 ${hasMedia ? "pt-3" : "pt-0"} pb-0`}>
+          <Linkify
+            text={post.content}
+            className="text-sm text-gray-800 dark:text-gray-200 leading-relaxed whitespace-pre-wrap break-words"
+          />
+        </div>
+      )}
 
       {/* ── Actions ── */}
       <div className="px-4 py-2.5 border-t border-black/5 dark:border-white/5 mt-3 flex items-center gap-1">
@@ -618,6 +672,20 @@ function PostCard({ post, currentUser, onDelete, onOpenLightbox }: {
           {(post.comments?.length || 0) > 0 && <span>{post.comments?.length}</span>}
           <span className="hidden sm:block">Comment</span>
         </motion.button>
+        {!post.repostedFrom && (
+          <motion.button whileTap={{ scale: 0.82 }} onClick={handleRepost}
+            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all ${
+              reposted
+                ? "text-green-600 bg-green-50 dark:bg-green-900/20"
+                : "text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800"
+            }`}>
+            <motion.div animate={reposted ? { rotate: [0, 360] } : {}} transition={{ duration: 0.4 }}>
+              <Repeat2 size={14} />
+            </motion.div>
+            {reshareCount > 0 && <span>{reshareCount}</span>}
+            <span className="hidden sm:block">{reposted ? "Reposted" : "Repost"}</span>
+          </motion.button>
+        )}
         <motion.button whileTap={{ scale: 0.82 }} onClick={handleShare}
           className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all ml-auto ${
             copied
