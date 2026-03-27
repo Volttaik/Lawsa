@@ -472,6 +472,8 @@ function PostCard({ post, currentUser, onDelete, onOpenLightbox }: {
   );
   const [likesCount, setLikesCount] = useState(post.likes?.length || 0);
   const [copied, setCopied] = useState(false);
+  const [showShareSheet, setShowShareSheet] = useState(false);
+  const [shareLoading, setShareLoading] = useState(false);
   const [reposted, setReposted] = useState(false);
   const [reshareCount, setReshareCount] = useState(post.reshares || 0);
   const isOwner = currentUser && (post.authorId === currentUser._id || post.authorId === currentUser.id);
@@ -488,33 +490,71 @@ function PostCard({ post, currentUser, onDelete, onOpenLightbox }: {
     } catch {}
   };
 
-  const handleShare = () => {
-    const url = `${window.location.origin}/post/${post._id}`;
-    const preview = post.content?.trim()
+  const getVideoThumbnail = (videoUrl: string): Promise<File | null> =>
+    new Promise((resolve) => {
+      try {
+        const video = document.createElement("video");
+        video.crossOrigin = "anonymous";
+        video.muted = true;
+        video.src = videoUrl;
+        video.currentTime = 0.5;
+        const onSeeked = () => {
+          const canvas = document.createElement("canvas");
+          canvas.width = video.videoWidth || 640;
+          canvas.height = video.videoHeight || 360;
+          const ctx = canvas.getContext("2d");
+          if (!ctx) { resolve(null); return; }
+          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+          canvas.toBlob((blob) => {
+            resolve(blob ? new File([blob], "thumbnail.jpg", { type: "image/jpeg" }) : null);
+          }, "image/jpeg", 0.85);
+        };
+        video.addEventListener("seeked", onSeeked, { once: true });
+        video.addEventListener("error", () => resolve(null), { once: true });
+        video.load();
+      } catch { resolve(null); }
+    });
+
+  const getImageFile = async (imageUrl: string): Promise<File | null> => {
+    try {
+      const res = await fetch(imageUrl);
+      const blob = await res.blob();
+      const ext = blob.type.includes("png") ? "png" : "jpg";
+      return new File([blob], `post.${ext}`, { type: blob.type });
+    } catch { return null; }
+  };
+
+  const handleShare = async () => {
+    const postUrl = `${window.location.origin}/post/${post._id}`;
+    const previewText = post.content?.trim()
       ? `"${post.content.slice(0, 120)}${post.content.length > 120 ? "…" : ""}"\n\n`
       : "";
-    const shareText = `${preview}${url}`;
-    const copy = (text: string) => {
-      if (navigator.clipboard) {
-        navigator.clipboard.writeText(text).catch(() => fallback(text));
-      } else {
-        fallback(text);
+
+    if (typeof navigator !== "undefined" && navigator.share) {
+      setShareLoading(true);
+      try {
+        let files: File[] = [];
+        if (validImages.length > 0) {
+          const f = await getImageFile(validImages[0]);
+          if (f && navigator.canShare?.({ files: [f] })) files = [f];
+        } else if (validVideos.length > 0) {
+          const f = await getVideoThumbnail(validVideos[0]);
+          if (f && navigator.canShare?.({ files: [f] })) files = [f];
+        }
+        await navigator.share({
+          title: `${post.authorName} on Lawsa Socials`,
+          text: previewText,
+          url: postUrl,
+          ...(files.length > 0 ? { files } : {}),
+        } as ShareData);
+      } catch (err) {
+        if ((err as Error).name !== "AbortError") setShowShareSheet(true);
+      } finally {
+        setShareLoading(false);
       }
-    };
-    const fallback = (text: string) => {
-      const ta = document.createElement("textarea");
-      ta.value = text;
-      ta.style.position = "fixed";
-      ta.style.opacity = "0";
-      document.body.appendChild(ta);
-      ta.focus();
-      ta.select();
-      document.execCommand("copy");
-      document.body.removeChild(ta);
-    };
-    copy(shareText);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2200);
+    } else {
+      setShowShareSheet(true);
+    }
   };
 
   const validImages = (post.images || []).filter(Boolean);
@@ -687,16 +727,12 @@ function PostCard({ post, currentUser, onDelete, onOpenLightbox }: {
             <span className="hidden sm:block">{reposted ? "Reposted" : "Repost"}</span>
           </motion.button>
         )}
-        <motion.button whileTap={{ scale: 0.82 }} onClick={handleShare}
-          className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all ml-auto ${
-            copied
-              ? "text-green-600 bg-green-50 dark:bg-green-900/20"
-              : "text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800"
-          }`}>
-          <motion.div animate={copied ? { scale: [1, 1.4, 1] } : {}} transition={{ duration: 0.25 }}>
-            {copied ? <Check size={14} /> : <Share2 size={14} />}
-          </motion.div>
-          <span className="hidden sm:block">{copied ? "Copied!" : "Share"}</span>
+        <motion.button whileTap={{ scale: 0.82 }} onClick={handleShare} disabled={shareLoading}
+          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all ml-auto text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-60">
+          {shareLoading
+            ? <Loader2 size={14} className="animate-spin" />
+            : <Share2 size={14} />}
+          <span className="hidden sm:block">Share</span>
         </motion.button>
       </div>
 
@@ -758,6 +794,73 @@ function PostCard({ post, currentUser, onDelete, onOpenLightbox }: {
                 <p className="text-xs text-gray-400 text-center py-2">No comments yet. Be the first!</p>
               )}
             </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ── Share sheet ── */}
+      <AnimatePresence>
+        {showShareSheet && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[500] flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm px-4 pb-4 sm:pb-0"
+            onClick={() => setShowShareSheet(false)}
+          >
+            <motion.div
+              initial={{ y: 80, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: 80, opacity: 0 }}
+              transition={{ type: "spring", damping: 26, stiffness: 340 }}
+              className="bg-white dark:bg-gray-900 rounded-2xl w-full max-w-sm shadow-2xl overflow-hidden"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="px-4 pt-4 pb-3 border-b border-black/5 dark:border-white/5 flex items-center justify-between">
+                <span className="text-sm font-semibold text-gray-900 dark:text-white">Share post</span>
+                <button onClick={() => setShowShareSheet(false)}
+                  className="w-7 h-7 rounded-lg flex items-center justify-center text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all">
+                  <X size={15} />
+                </button>
+              </div>
+              <div className="p-4 grid grid-cols-4 gap-2">
+                {[
+                  { name: "WhatsApp", bg: "#25D366", label: "WA", url: `https://wa.me/?text=${encodeURIComponent(`${post.content?.slice(0, 100) || ""}\n\n${window.location.origin}/post/${post._id}`)}` },
+                  { name: "Telegram", bg: "#229ED9", label: "TG", url: `https://t.me/share/url?url=${encodeURIComponent(`${window.location.origin}/post/${post._id}`)}&text=${encodeURIComponent(post.content?.slice(0, 100) || "")}` },
+                  { name: "Twitter", bg: "#000000", label: "𝕏", url: `https://twitter.com/intent/tweet?text=${encodeURIComponent(`${post.content?.slice(0, 100) || ""}\n${window.location.origin}/post/${post._id}`)}` },
+                  { name: "Facebook", bg: "#1877F2", label: "f", url: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(`${window.location.origin}/post/${post._id}`)}` },
+                ].map(({ name, bg, label, url }) => (
+                  <a key={name} href={url} target="_blank" rel="noopener noreferrer"
+                    onClick={() => setShowShareSheet(false)}
+                    className="flex flex-col items-center gap-2">
+                    <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-white text-lg font-bold shadow-sm"
+                      style={{ backgroundColor: bg }}>
+                      {label}
+                    </div>
+                    <span className="text-[10px] text-gray-500 dark:text-gray-400 text-center">{name}</span>
+                  </a>
+                ))}
+              </div>
+              <div className="px-4 pb-4">
+                <button
+                  onClick={() => {
+                    const url = `${window.location.origin}/post/${post._id}`;
+                    navigator.clipboard?.writeText(url).catch(() => {
+                      const ta = document.createElement("textarea");
+                      ta.value = url; document.body.appendChild(ta);
+                      ta.select(); document.execCommand("copy");
+                      document.body.removeChild(ta);
+                    });
+                    setShowShareSheet(false);
+                    setCopied(true);
+                    setTimeout(() => setCopied(false), 2200);
+                  }}
+                  className="w-full py-2.5 rounded-xl border border-black/10 dark:border-white/10 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all flex items-center justify-center gap-2">
+                  {copied ? <Check size={14} className="text-green-500" /> : <Share2 size={14} />}
+                  {copied ? "Link copied!" : "Copy link"}
+                </button>
+              </div>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
