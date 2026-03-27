@@ -489,7 +489,7 @@ function PostCard({ post, currentUser, onDelete, onOpenLightbox }: {
   };
 
   const handleShare = () => {
-    const url = `${window.location.origin}/dashboard?post=${post._id}`;
+    const url = `${window.location.origin}/post/${post._id}`;
     const preview = post.content?.trim()
       ? `"${post.content.slice(0, 120)}${post.content.length > 120 ? "…" : ""}"\n\n`
       : "";
@@ -555,6 +555,7 @@ function PostCard({ post, currentUser, onDelete, onOpenLightbox }: {
 
   return (
     <motion.div
+      id={post._id}
       layout
       initial={{ opacity: 0, y: 24 }}
       animate={{ opacity: 1, y: 0 }}
@@ -1020,7 +1021,7 @@ export default function DashboardHome() {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.92, y: 24 }}
               transition={{ type: "spring", damping: 22, stiffness: 320 }}
-              className="bg-white dark:bg-gray-900 rounded-2xl border border-black/10 dark:border-white/10 shadow-2xl w-full max-w-lg overflow-hidden"
+              className="bg-white dark:bg-gray-900 rounded-2xl border border-black/10 dark:border-white/10 shadow-2xl w-full max-w-lg overflow-y-auto max-h-[85vh]"
               onClick={(e) => e.stopPropagation()}
             >
               {sharedPostLoading ? (
@@ -1073,7 +1074,19 @@ export default function DashboardHome() {
                     )}
                   </div>
                   <div className="px-4 pb-4">
-                    <button onClick={() => setSharedPost(null)}
+                    <button onClick={() => {
+                        const postId = sharedPost._id;
+                        setSharedPost(null);
+                        setTimeout(() => {
+                          const el = document.getElementById(postId);
+                          if (el) {
+                            el.scrollIntoView({ behavior: "smooth", block: "center" });
+                            el.style.transition = "box-shadow 0.3s ease";
+                            el.style.boxShadow = "0 0 0 2px #3b82f6";
+                            setTimeout(() => { el.style.boxShadow = ""; }, 1800);
+                          }
+                        }, 300);
+                      }}
                       className="w-full py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold transition-all">
                       View in Feed
                     </button>

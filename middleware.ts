@@ -48,6 +48,19 @@ export async function middleware(request: NextRequest) {
     }
   }
 
+  if (pathname.startsWith("/post/") && token) {
+    try {
+      const secret = new TextEncoder().encode(process.env.JWT_SECRET || "lawsa-socials-secret-key-2024-very-secure");
+      await jwtVerify(token, secret);
+      const postId = pathname.replace("/post/", "");
+      const dashboardUrl = new URL("/dashboard", request.url);
+      dashboardUrl.searchParams.set("post", postId);
+      return NextResponse.redirect(dashboardUrl);
+    } catch {
+      return NextResponse.next();
+    }
+  }
+
   return NextResponse.next();
 }
 
