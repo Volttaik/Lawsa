@@ -563,7 +563,7 @@ function PostCard({ post, currentUser, onDelete, onOpenLightbox }: {
       className="bg-white dark:bg-gray-900 rounded-2xl border border-black/10 dark:border-white/10 shadow-card overflow-hidden"
     >
       {/* ── Reposted indicator ── */}
-      {post.repostedFrom && (
+      {post.repostedFrom?._id && (
         <div className="flex items-center gap-1.5 px-4 pt-3 text-[11px] font-medium text-green-600 dark:text-green-400">
           <Repeat2 size={12} />
           <span>{post.authorName} reposted</span>
@@ -630,7 +630,7 @@ function PostCard({ post, currentUser, onDelete, onOpenLightbox }: {
       )}
 
       {/* ── Reposted-from embedded card ── */}
-      {post.repostedFrom && (
+      {post.repostedFrom?._id && (
         <div className="mx-4 mt-2 mb-1 rounded-xl border border-black/10 dark:border-white/10 bg-gray-50 dark:bg-gray-900 p-3">
           <div className="flex items-center gap-2 mb-1.5">
             <Avatar src={post.repostedFrom.authorImage} name={post.repostedFrom.authorName} size={22} />
@@ -647,7 +647,7 @@ function PostCard({ post, currentUser, onDelete, onOpenLightbox }: {
       )}
 
       {/* ── Text content UNDER media ── */}
-      {(post.content || !post.repostedFrom) && (
+      {(post.content || !post.repostedFrom?._id) && (
         <div className={`px-4 ${hasMedia ? "pt-3" : "pt-0"} pb-0`}>
           <Linkify
             text={post.content}
@@ -672,7 +672,7 @@ function PostCard({ post, currentUser, onDelete, onOpenLightbox }: {
           {(post.comments?.length || 0) > 0 && <span>{post.comments?.length}</span>}
           <span className="hidden sm:block">Comment</span>
         </motion.button>
-        {!post.repostedFrom && (
+        {!post.repostedFrom?._id && (
           <motion.button whileTap={{ scale: 0.82 }} onClick={handleRepost}
             className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all ${
               reposted
@@ -698,6 +698,28 @@ function PostCard({ post, currentUser, onDelete, onOpenLightbox }: {
           <span className="hidden sm:block">{copied ? "Copied!" : "Share"}</span>
         </motion.button>
       </div>
+
+      {/* ── Top comment preview ── */}
+      {!showComments && (post.comments as unknown as Comment[])?.length > 0 && (() => {
+        const topComment = (post.comments as unknown as Comment[])[0];
+        if (!topComment?.content) return null;
+        return (
+          <div className="px-4 pb-3 pt-1 border-t border-black/5 dark:border-white/5">
+            <div className="flex gap-2 items-start">
+              <Avatar src={topComment.authorImage} name={topComment.authorName} size={22} />
+              <div className="flex-1 bg-gray-50 dark:bg-gray-800 rounded-xl px-3 py-2 border border-black/5 dark:border-white/5 min-w-0">
+                <span className="text-[11px] font-semibold text-gray-800 dark:text-gray-200 mr-1.5">@{topComment.authorUsername || topComment.authorName}</span>
+                <span className="text-[11px] text-gray-600 dark:text-gray-300 break-words line-clamp-2">{topComment.content}</span>
+              </div>
+            </div>
+            {(post.comments as unknown as Comment[]).length > 1 && (
+              <button onClick={loadComments} className="mt-1.5 ml-8 text-[11px] text-blue-500 hover:text-blue-600 font-medium transition-colors">
+                View all {(post.comments as unknown as Comment[]).length} comments
+              </button>
+            )}
+          </div>
+        );
+      })()}
 
       {/* ── Comments ── */}
       <AnimatePresence>
