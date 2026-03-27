@@ -380,7 +380,7 @@ export default function ProfilePage() {
         <div className="px-6 pb-6">
           {/* Avatar row */}
           <div className="flex items-end justify-between -mt-12 mb-4">
-            <div className="relative">
+            <div className="relative flex-shrink-0">
               <Avatar src={profileImagePreview || profile.profileImage} name={profile.name} size={88} />
               {isOwnProfile && editing && (
                 <label className="absolute inset-0 flex items-center justify-center bg-black/30 rounded-full cursor-pointer">
@@ -389,60 +389,60 @@ export default function ProfilePage() {
                 </label>
               )}
             </div>
-            <div className="flex gap-2 pb-1">
+            <div className="flex gap-1.5 pb-1 flex-shrink-0">
               {isOwnProfile ? (
                 editing ? (
-                  <div className="flex gap-2">
+                  <div className="flex gap-1.5">
                     <button onClick={() => { setEditing(false); setProfileImagePreview(null); setBannerPreview(null); }}
-                      className="flex items-center gap-1.5 text-sm font-medium px-4 py-2 rounded-xl border border-black/10 dark:border-white/10 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all">
-                      <X size={15} /> Cancel
+                      className="flex items-center gap-1 text-sm font-medium px-3 py-2 rounded-xl border border-black/10 dark:border-white/10 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all">
+                      <X size={14} /> Cancel
                     </button>
                     <button onClick={handleSaveProfile} disabled={saving}
-                      className="flex items-center gap-1.5 text-sm font-medium px-4 py-2 rounded-xl bg-blue-600 text-white hover:bg-blue-700 transition-all shadow-btn disabled:opacity-70">
-                      {saving ? <Loader2 size={15} className="animate-spin" /> : <Save size={15} />}
+                      className="flex items-center gap-1 text-sm font-medium px-3 py-2 rounded-xl bg-blue-600 text-white hover:bg-blue-700 transition-all shadow-btn disabled:opacity-70">
+                      {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
                       Save
                     </button>
                   </div>
                 ) : (
-                  <div className="flex gap-2">
+                  <div className="flex gap-1.5">
                     <button onClick={() => setEditing(true)}
-                      className="flex items-center gap-1.5 text-sm font-medium px-4 py-2 rounded-xl border border-black/10 dark:border-white/10 text-gray-700 dark:text-gray-300 hover:border-blue-300 hover:text-blue-600 transition-all shadow-soft">
-                      <Edit3 size={15} /> Edit Profile
+                      className="flex items-center gap-1 text-sm font-medium px-3 py-2 rounded-xl border border-black/10 dark:border-white/10 text-gray-700 dark:text-gray-300 hover:border-blue-300 hover:text-blue-600 transition-all shadow-soft">
+                      <Edit3 size={14} /> Edit
                     </button>
                     <button onClick={handleShareProfile}
-                      className={`flex items-center gap-1.5 text-sm font-medium px-3 py-2 rounded-xl border shadow-soft transition-all ${profileLinkCopied ? "border-green-400 text-green-600 bg-green-50 dark:bg-green-900/20" : "border-black/10 dark:border-white/10 text-gray-700 dark:text-gray-300 hover:border-blue-300 hover:text-blue-600"}`}>
-                      {profileLinkCopied ? <Check size={15} /> : <Share2 size={15} />}
+                      className={`flex items-center justify-center w-9 h-9 rounded-xl border shadow-soft transition-all ${profileLinkCopied ? "border-green-400 text-green-600 bg-green-50 dark:bg-green-900/20" : "border-black/10 dark:border-white/10 text-gray-700 dark:text-gray-300 hover:border-blue-300 hover:text-blue-600"}`}>
+                      {profileLinkCopied ? <Check size={14} /> : <Share2 size={14} />}
                     </button>
                   </div>
                 )
               ) : (
-                <div className="flex gap-2">
+                <div className="flex gap-1.5">
                   <motion.button
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     onClick={handleFollow}
                     disabled={followLoading}
-                    className={`flex items-center gap-1.5 text-sm font-semibold px-4 py-2 rounded-[8px] border border-black/10 shadow-[0_1px_4px_0_rgba(0,0,0,0.08)] transition-all ${isFollowing ? "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200" : "bg-blue-600 text-white hover:bg-blue-700"}`}
+                    className={`flex items-center gap-1 text-sm font-semibold px-3 py-2 rounded-[8px] border border-black/10 shadow-[0_1px_4px_0_rgba(0,0,0,0.08)] transition-all ${isFollowing ? "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200" : "bg-blue-600 text-white hover:bg-blue-700"}`}
                   >
-                    {followLoading ? <Loader2 size={15} className="animate-spin" /> : isFollowing ? <UserCheck size={15} /> : <UserPlus size={15} />}
+                    {followLoading ? <Loader2 size={14} className="animate-spin" /> : isFollowing ? <UserCheck size={14} /> : <UserPlus size={14} />}
                     {isFollowing ? "Following" : "Follow"}
                   </motion.button>
                   <motion.button
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     onClick={() => router.push(`/dashboard/messages?userId=${profile._id}`)}
-                    className="flex items-center gap-1.5 text-sm font-semibold px-4 py-2 rounded-[8px] border border-black/10 dark:border-white/10 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 shadow-[0_1px_4px_0_rgba(0,0,0,0.08)] transition-all"
+                    className="flex items-center gap-1 text-sm font-semibold px-3 py-2 rounded-[8px] border border-black/10 dark:border-white/10 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 shadow-[0_1px_4px_0_rgba(0,0,0,0.08)] transition-all"
                   >
-                    <MessageCircle size={15} />
+                    <MessageCircle size={14} />
                     Message
                   </motion.button>
                   <motion.button
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     onClick={handleShareProfile}
-                    className={`flex items-center gap-1.5 text-sm font-semibold px-3 py-2 rounded-[8px] border shadow-[0_1px_4px_0_rgba(0,0,0,0.08)] transition-all ${profileLinkCopied ? "border-green-400 text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20" : "border-black/10 dark:border-white/10 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"}`}
+                    className={`flex items-center justify-center w-9 h-9 rounded-[8px] border shadow-[0_1px_4px_0_rgba(0,0,0,0.08)] transition-all flex-shrink-0 ${profileLinkCopied ? "border-green-400 text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20" : "border-black/10 dark:border-white/10 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"}`}
                   >
-                    {profileLinkCopied ? <Check size={15} /> : <Share2 size={15} />}
+                    {profileLinkCopied ? <Check size={14} /> : <Share2 size={14} />}
                   </motion.button>
                 </div>
               )}
