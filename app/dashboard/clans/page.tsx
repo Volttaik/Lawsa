@@ -8,6 +8,19 @@ import {
 } from "lucide-react";
 import Linkify from "@/components/Linkify";
 
+const CHAT_BACKGROUNDS = [
+  { id: "midnight", bgColor: "#0f0c29", imgValue: "linear-gradient(145deg,#0f0c29 0%,#302b63 55%,#24243e 100%)" },
+  { id: "galaxy",   bgColor: "#0d1b2a", imgValue: "linear-gradient(160deg,#0d1b2a 0%,#162032 45%,#0f3460 100%)" },
+  { id: "noir",     bgColor: "#111827", imgValue: "linear-gradient(140deg,#111827 0%,#1f2937 100%)" },
+  { id: "ocean",    bgColor: "#004e92", imgValue: "linear-gradient(155deg,#004e92 0%,#000428 100%)" },
+  { id: "sunset",   bgColor: "#f7971e", imgValue: "linear-gradient(135deg,#f7971e 0%,#e84393 50%,#8b5cf6 100%)" },
+  { id: "forest",   bgColor: "#0a3d2b", imgValue: "linear-gradient(145deg,#0a3d2b 0%,#1a6b47 55%,#2d9966 100%)" },
+  { id: "rose",     bgColor: "#c0392b", imgValue: "linear-gradient(145deg,#c0392b 0%,#e91e8c 55%,#f093fb 100%)" },
+  { id: "minimal",  bgColor: "#e8edf2", imgValue: "linear-gradient(160deg,#e8edf2 0%,#d1d9e0 100%)" },
+  { id: "dots",     bgColor: "#0f172a", imgValue: "radial-gradient(circle,#3b82f6 1.2px,transparent 1.2px)", bgSize: "18px 18px" },
+  { id: "custom",   bgColor: "#0f0c29", imgValue: null, isCustom: true },
+] as const;
+
 interface Clan {
   _id: string;
   name: string;
@@ -53,7 +66,7 @@ function Avatar({ src, name, size = 40 }: { src?: string; name: string; size?: n
   if (src) return <img src={src} alt={name} className="rounded-full object-cover flex-shrink-0" style={{ width: size, height: size }} />;
   return (
     <div
-      className="rounded-full bg-gradient-to-br from-indigo-400 to-purple-600 flex items-center justify-center text-white font-bold flex-shrink-0"
+      className="rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-bold flex-shrink-0"
       style={{ width: size, height: size, fontSize: size / 2.5 }}
     >
       {name?.[0]?.toUpperCase() || "?"}
@@ -92,6 +105,8 @@ export default function ClansPage() {
   const [joiningId, setJoiningId] = useState<string | null>(null);
   const [lastMsgTime, setLastMsgTime] = useState<string | null>(null);
   const [clanShareCopied, setClanShareCopied] = useState(false);
+  const [chatBg, setChatBg] = useState(CHAT_BACKGROUNDS[0]);
+  const [customBgUrl, setCustomBgUrl] = useState<string | null>(null);
 
   const handleShareClan = (clan: Clan) => {
     const text = `Join ${clan.name} on Lawsa Socials!\n${window.location.origin}/dashboard/clans`;
@@ -134,6 +149,20 @@ export default function ClansPage() {
     setCurrentUser(meRes.user || null);
     setLoading(false);
   };
+
+  useEffect(() => {
+    try {
+      const savedId = localStorage.getItem("chatBgId");
+      const savedCustomUrl = localStorage.getItem("chatBgCustomUrl");
+      if (savedId === "custom" && savedCustomUrl) {
+        setCustomBgUrl(savedCustomUrl);
+        setChatBg(CHAT_BACKGROUNDS[CHAT_BACKGROUNDS.length - 1]);
+      } else if (savedId) {
+        const bg = CHAT_BACKGROUNDS.find((b) => b.id === savedId);
+        if (bg) setChatBg(bg as typeof CHAT_BACKGROUNDS[0]);
+      }
+    } catch {}
+  }, []);
 
   useEffect(() => { loadData(); }, []);
 
@@ -480,20 +509,23 @@ export default function ClansPage() {
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
             transition={{ type: "spring", damping: 28, stiffness: 260 }}
-            className="fixed inset-0 z-[200] flex flex-col bg-gray-950"
+            className="fixed inset-0 z-[200] flex flex-col"
+            style={{ backgroundColor: chatBg.bgColor }}
           >
-            {/* Chat Header */}
-            <div className="flex-shrink-0 flex items-center gap-3 px-4 py-3 bg-indigo-900/50 backdrop-blur-xl border-b border-indigo-700/40"
-              style={{ paddingTop: "max(0.75rem, env(safe-area-inset-top))" }}>
+            {/* Chat Header — matches messages page */}
+            <div
+              className="flex-shrink-0 flex items-center gap-3 px-4 bg-white/10 backdrop-blur-xl border-b border-white/10"
+              style={{ paddingTop: "max(0.75rem, env(safe-area-inset-top))", paddingBottom: "0.75rem" }}
+            >
               <motion.button whileTap={{ scale: 0.9 }}
                 onClick={() => setSelectedClan(null)}
-                className="w-9 h-9 rounded-xl flex items-center justify-center text-white hover:bg-white/10 transition-colors flex-shrink-0">
+                className="w-9 h-9 rounded-[8px] flex items-center justify-center text-white hover:bg-white/10 transition-colors flex-shrink-0">
                 <ArrowLeft size={20} />
               </motion.button>
               <ClanLogo src={selectedClan.logo} name={selectedClan.name} size={40} />
               <div className="flex-1 min-w-0">
-                <div className="font-bold text-white truncate">{selectedClan.name}</div>
-                <div className="text-[10px] text-indigo-300 font-medium">
+                <div className="font-semibold text-white truncate">{selectedClan.name}</div>
+                <div className="text-[10px] text-blue-300 font-medium">
                   {onlineCount > 0 ? `${onlineCount} online` : `${selectedClan.members.length} members`}
                 </div>
               </div>
@@ -501,7 +533,7 @@ export default function ClansPage() {
               <motion.button
                 whileTap={{ scale: 0.9 }}
                 onClick={() => handleShareClan(selectedClan)}
-                className={`w-8 h-8 flex-shrink-0 rounded-xl flex items-center justify-center transition-colors ${clanShareCopied ? "bg-green-500/30 text-green-400" : "text-white/70 hover:bg-white/10"}`}
+                className={`w-9 h-9 flex-shrink-0 rounded-[8px] flex items-center justify-center transition-colors ${clanShareCopied ? "bg-green-500/30 text-green-400" : "text-white/70 hover:bg-white/10"}`}
               >
                 {clanShareCopied ? <Check size={16} /> : <Share2 size={16} />}
               </motion.button>
@@ -510,13 +542,13 @@ export default function ClansPage() {
               <div className="flex items-center gap-1 bg-white/10 rounded-xl p-1">
                 <button
                   onClick={() => setActiveView("chat")}
-                  className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all ${activeView === "chat" ? "bg-indigo-600 text-white" : "text-white/60 hover:text-white"}`}
+                  className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all ${activeView === "chat" ? "bg-blue-600 text-white" : "text-white/60 hover:text-white"}`}
                 >
                   Chat
                 </button>
                 <button
                   onClick={() => setActiveView("members")}
-                  className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all ${activeView === "members" ? "bg-indigo-600 text-white" : "text-white/60 hover:text-white"}`}
+                  className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all ${activeView === "members" ? "bg-blue-600 text-white" : "text-white/60 hover:text-white"}`}
                 >
                   Members
                 </button>
@@ -525,7 +557,15 @@ export default function ClansPage() {
 
             {/* Members View */}
             {activeView === "members" && (
-              <div className="flex-1 overflow-y-auto scrollbar-hide p-4 space-y-2">
+              <div
+                className="flex-1 overflow-y-auto scrollbar-hide p-4 space-y-2"
+                style={{
+                  backgroundColor: chatBg.bgColor,
+                  backgroundImage: (chatBg as any).isCustom && customBgUrl ? `url(${customBgUrl})` : (chatBg.imgValue ?? undefined),
+                  backgroundSize: (chatBg as any).isCustom && customBgUrl ? "cover" : ((chatBg as any).bgSize ?? (chatBg.imgValue ? "cover" : undefined)),
+                  backgroundPosition: "center",
+                }}
+              >
                 <p className="text-xs font-semibold text-white/40 uppercase tracking-wider px-1 mb-3">
                   {onlineCount} Online · {selectedClan.members.length} Total
                 </p>
@@ -534,7 +574,7 @@ export default function ClansPage() {
                     <div className="relative flex-shrink-0">
                       <Avatar src={member.profileImage} name={member.name} size={40} />
                       {member.isOnline && (
-                        <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-400 border-2 border-gray-950 rounded-full" />
+                        <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-400 border-2 border-black/30 rounded-full" />
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
@@ -561,14 +601,24 @@ export default function ClansPage() {
             {/* Chat View */}
             {activeView === "chat" && (
               <>
-                <div className="flex-1 overflow-y-auto scrollbar-hide px-4 py-4 space-y-3 bg-gradient-to-b from-indigo-950/30 to-gray-950">
+                <div
+                  className="flex-1 overflow-y-auto scrollbar-hide px-4 py-4 space-y-2"
+                  style={{
+                    backgroundColor: chatBg.bgColor,
+                    backgroundImage: (chatBg as any).isCustom && customBgUrl ? `url(${customBgUrl})` : (chatBg.imgValue ?? undefined),
+                    backgroundSize: (chatBg as any).isCustom && customBgUrl ? "cover" : ((chatBg as any).bgSize ?? (chatBg.imgValue ? "cover" : undefined)),
+                    backgroundPosition: "center",
+                  }}
+                >
                   {chatMessages.length === 0 ? (
                     <div className="flex flex-col items-center justify-center h-full gap-3 py-20 text-center">
-                      <div className="w-14 h-14 rounded-2xl bg-indigo-500/20 flex items-center justify-center">
-                        <MessageSquare size={24} className="text-indigo-400" />
+                      <div className="w-14 h-14 rounded-[8px] bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center shadow-[0_2px_12px_0_rgba(0,0,0,0.2)]">
+                        <MessageSquare size={24} className="text-white/80" />
                       </div>
-                      <p className="font-semibold text-white/80 text-sm">Welcome to {selectedClan.name}!</p>
-                      <p className="text-xs text-white/40">Start the clan conversation</p>
+                      <div>
+                        <p className="font-semibold text-white text-sm drop-shadow">Welcome to {selectedClan.name}!</p>
+                        <p className="text-xs text-white/50 mt-0.5">Be the first to say something</p>
+                      </div>
                     </div>
                   ) : (
                     chatMessages.map((msg) => {
@@ -576,22 +626,25 @@ export default function ClansPage() {
                       return (
                         <motion.div
                           key={msg._id}
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ duration: 0.2 }}
-                          className={`flex items-end gap-2 ${isMe ? "flex-row-reverse" : ""}`}
+                          initial={isMe ? { opacity: 0, x: 16, scale: 0.93 } : { opacity: 0, x: -16, scale: 0.93 }}
+                          animate={{ opacity: 1, x: 0, scale: 1 }}
+                          transition={{ duration: 0.2, ease: [0.34, 1.2, 0.64, 1] }}
+                          className={`flex items-end gap-1.5 ${isMe ? "flex-row-reverse" : ""}`}
                         >
-                          {!isMe && <Avatar src={msg.senderImage} name={msg.senderName} size={30} />}
-                          <div className={`max-w-[75%] flex flex-col ${isMe ? "items-end" : "items-start"}`}>
+                          {!isMe && <Avatar src={msg.senderImage} name={msg.senderName} size={28} />}
+                          <div className={`max-w-[76%] flex flex-col ${isMe ? "items-end" : "items-start"}`}>
                             {!isMe && (
-                              <span className="text-[10px] text-white/40 mb-0.5 px-1">{msg.senderName}</span>
+                              <span className="text-[10px] text-white/50 font-medium px-1 mb-0.5 truncate max-w-full">{msg.senderName}</span>
                             )}
-                            <div className={`px-4 py-2.5 text-sm leading-relaxed ${
+                            <div className={`px-3 py-2 text-sm leading-relaxed rounded-[6px] ${
                               isMe
-                                ? "bg-indigo-600 text-white rounded-[18px] rounded-br-[4px]"
-                                : "bg-white/10 backdrop-blur-sm border border-white/10 text-white rounded-[18px] rounded-bl-[4px]"
+                                ? "bg-blue-600 text-white shadow-[0_2px_8px_0_rgba(37,99,235,0.3)]"
+                                : "bg-white text-gray-900 border border-black/8 shadow-[0_1px_6px_0_rgba(0,0,0,0.12)]"
                             }`}>
-                              <Linkify text={msg.content} linkClass="text-blue-200 hover:underline break-all" />
+                              <Linkify
+                                text={msg.content}
+                                linkClass={isMe ? "text-blue-200 hover:underline break-all" : "text-blue-600 hover:underline break-all"}
+                              />
                             </div>
                             <span className="text-[9px] text-white/30 mt-0.5 px-1">
                               {new Date(msg.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
@@ -604,7 +657,7 @@ export default function ClansPage() {
                   <div ref={chatEndRef} />
                 </div>
 
-                {/* Input */}
+                {/* Input — matches messages page */}
                 <div className="flex-shrink-0 px-3 py-3 bg-black/40 backdrop-blur-xl border-t border-white/10 flex items-center gap-2"
                   style={{ paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))" }}>
                   <input
@@ -613,13 +666,13 @@ export default function ClansPage() {
                     onChange={(e) => setChatText(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSendChat()}
                     placeholder="Message the clan..."
-                    className="flex-1 px-4 py-2.5 text-sm rounded-2xl bg-white/10 border border-white/15 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-indigo-400/50 transition-all"
+                    className="flex-1 px-4 py-2.5 text-sm rounded-2xl bg-white/10 border border-white/15 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-blue-400/50 transition-all"
                   />
                   <motion.button
                     whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.92 }}
                     onClick={handleSendChat}
                     disabled={sendingChat || !chatText.trim()}
-                    className="w-9 h-9 bg-indigo-600 text-white rounded-xl flex items-center justify-center hover:bg-indigo-500 transition-colors disabled:opacity-50 flex-shrink-0"
+                    className="w-9 h-9 bg-blue-600 text-white rounded-[8px] flex items-center justify-center hover:bg-blue-500 transition-colors disabled:opacity-50 flex-shrink-0 shadow-[0_2px_6px_0_rgba(37,99,235,0.3)]"
                   >
                     {sendingChat ? <Loader2 size={15} className="animate-spin" /> : <Send size={15} />}
                   </motion.button>
