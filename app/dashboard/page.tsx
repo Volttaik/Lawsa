@@ -402,26 +402,25 @@ function Lightbox({
 
 function PostSkeleton() {
   return (
-    <div className="bg-white dark:bg-gray-900 rounded-2xl border border-black/8 dark:border-white/8 shadow-card overflow-hidden">
-      <div className="p-4 space-y-3">
-        <div className="flex items-start gap-3">
-          <div className="skeleton rounded-full flex-shrink-0" style={{ width: 40, height: 40 }} />
-          <div className="flex-1 space-y-2 pt-1">
-            <div className="skeleton h-3.5 w-2/5" />
-            <div className="skeleton h-3 w-1/4" />
-          </div>
+    <div className="flex gap-3 px-4 py-4 border-b border-black/8 dark:border-white/8">
+      <div className="skeleton rounded-full flex-shrink-0" style={{ width: 40, height: 40 }} />
+      <div className="flex-1 space-y-3">
+        <div className="flex items-center gap-2">
+          <div className="skeleton h-3.5 w-28 rounded-full" />
+          <div className="skeleton h-3 w-20 rounded-full" />
+          <div className="skeleton h-3 w-10 rounded-full" />
         </div>
-        <div className="skeleton w-full h-52 rounded-xl" />
         <div className="space-y-2">
-          <div className="skeleton h-3.5 w-full" />
-          <div className="skeleton h-3.5 w-5/6" />
-          <div className="skeleton h-3.5 w-2/5" />
+          <div className="skeleton h-3.5 w-full rounded-full" />
+          <div className="skeleton h-3.5 w-4/5 rounded-full" />
+          <div className="skeleton h-3.5 w-3/5 rounded-full" />
         </div>
-        <div className="flex gap-2 pt-1 border-t border-black/5 dark:border-white/5 mt-2">
-          <div className="skeleton h-8 w-16 rounded-xl" />
-          <div className="skeleton h-8 w-20 rounded-xl" />
-          <div className="skeleton h-8 w-16 rounded-xl" />
-          <div className="skeleton h-8 w-14 rounded-xl ml-auto" />
+        <div className="skeleton w-full h-48 rounded-2xl" />
+        <div className="flex gap-6 pt-1">
+          <div className="skeleton h-5 w-10 rounded-full" />
+          <div className="skeleton h-5 w-10 rounded-full" />
+          <div className="skeleton h-5 w-10 rounded-full" />
+          <div className="skeleton h-5 w-8 rounded-full ml-auto" />
         </div>
       </div>
     </div>
@@ -598,199 +597,203 @@ function PostCard({ post, currentUser, onDelete, onOpenLightbox }: {
     <motion.div
       id={post._id}
       layout
-      initial={{ opacity: 0, y: 28 }}
+      initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, scale: 0.96, y: -8 }}
-      transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-      whileHover={{ y: -2, boxShadow: "0 8px 24px 0 rgba(0,0,0,0.10), 0 2px 6px 0 rgba(0,0,0,0.06)" }}
-      className="bg-white dark:bg-gray-900 rounded-2xl border border-black/8 dark:border-white/8 shadow-card overflow-hidden cursor-default"
-      style={{ transition: "box-shadow 0.2s ease" }}
+      exit={{ opacity: 0, scale: 0.98 }}
+      transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+      className="flex gap-3 px-4 pt-4 border-b border-black/8 dark:border-white/8 hover:bg-black/[0.012] dark:hover:bg-white/[0.02] transition-colors cursor-default"
     >
-      {/* ── Reposted indicator ── */}
-      {post.repostedFrom?._id && (
-        <div className="flex items-center gap-1.5 px-4 pt-3 text-[11px] font-medium text-green-600 dark:text-green-400">
-          <Repeat2 size={12} />
-          <span>{post.authorName} reposted</span>
-        </div>
-      )}
+      {/* Left: Avatar column */}
+      <div className="flex-shrink-0 flex flex-col items-center">
+        <Link href={`/dashboard/profile/${post.authorId}`} className="block">
+          <Avatar src={post.authorImage} name={post.authorName} size={40} />
+        </Link>
+      </div>
 
-      {/* ── Author header at TOP ── */}
-      <div className="px-4 pt-4 pb-3">
-        <div className="flex items-start justify-between">
-          <div className="flex items-center gap-3">
-            <Link href={`/dashboard/profile/${post.authorId}`}>
-              <Avatar src={post.authorImage} name={post.authorName} size={40} />
+      {/* Right: All content */}
+      <div className="flex-1 min-w-0 pb-3">
+        {/* Repost label */}
+        {post.repostedFrom?._id && (
+          <div className="flex items-center gap-1.5 text-[12px] font-medium text-gray-500 dark:text-gray-400 mb-1">
+            <Repeat2 size={12} />
+            <span>{post.authorName} reposted</span>
+          </div>
+        )}
+
+        {/* Author row */}
+        <div className="flex items-center justify-between mb-1.5">
+          <div className="flex items-center gap-1 min-w-0 flex-wrap leading-tight">
+            <Link href={`/dashboard/profile/${post.authorId}`}
+              className="font-bold text-[15px] text-gray-900 dark:text-white hover:underline truncate max-w-[120px]">
+              {post.authorName}
             </Link>
-            <div>
-              <Link href={`/dashboard/profile/${post.authorId}`}
-                className="font-semibold text-gray-900 dark:text-white text-sm hover:text-blue-600 transition-colors">
-                @{post.authorUsername}
-              </Link>
-              <div className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400 flex-wrap mt-0.5">
-                <ReactTimeago date={post.createdAt} />
-                {post.category && post.category !== "general" && (
-                  <><span>·</span><CategoryBadge category={post.category} /></>
-                )}
-              </div>
-            </div>
+            <span className="text-gray-500 dark:text-gray-400 text-sm truncate max-w-[100px]">@{post.authorUsername}</span>
+            <span className="text-gray-400 dark:text-gray-600 text-sm">·</span>
+            <span className="text-gray-500 dark:text-gray-400 text-sm flex-shrink-0 whitespace-nowrap">
+              <ReactTimeago date={post.createdAt} />
+            </span>
+            {post.category && post.category !== "general" && (
+              <><span className="text-gray-400 dark:text-gray-600 text-sm">·</span><CategoryBadge category={post.category} /></>
+            )}
           </div>
           {isOwner && (
             <button onClick={() => onDelete(post._id)}
-              className="w-7 h-7 rounded-lg flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all">
+              className="w-7 h-7 rounded-full flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all flex-shrink-0 ml-1">
               <Trash2 size={13} />
             </button>
           )}
         </div>
-      </div>
 
-      {/* ── Media in CENTER ── */}
-      {hasMedia && (
-        <div className="w-full">
-          {validImages.length > 0 && (
-            <div className={`grid gap-0.5 overflow-hidden ${validImages.length > 1 ? "grid-cols-2" : "grid-cols-1"}`}>
-              {validImages.map((img, i) => (
-                <FadeImg
-                  key={i}
-                  src={img}
-                  alt="Post"
-                  className="w-full block"
-                  onClick={() => onOpenLightbox(allMediaItems, i)}
-                />
-              ))}
-            </div>
-          )}
-          {validVideos.length > 0 && (
-            <div className="space-y-0.5">
-              {validVideos.map((vid, i) => (
-                <VideoPlayer
-                  key={i}
-                  src={vid}
-                  onClick={() => onOpenLightbox(allMediaItems, validImages.length + i)}
-                />
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* ── Reposted-from embedded card ── */}
-      {post.repostedFrom?._id && (
-        <div className="mx-4 mt-2 mb-1 rounded-xl border border-black/10 dark:border-white/10 bg-gray-50 dark:bg-gray-900 p-3">
-          <div className="flex items-center gap-2 mb-1.5">
-            <Avatar src={post.repostedFrom.authorImage} name={post.repostedFrom.authorName} size={22} />
-            <span className="text-xs font-semibold text-gray-800 dark:text-gray-200">@{post.repostedFrom.authorUsername || post.repostedFrom.authorName}</span>
-          </div>
-          {(post.repostedFrom.images || []).filter(Boolean).length > 0 && (
-            <img src={post.repostedFrom.images![0]} alt="" className="w-full max-h-48 object-cover rounded-lg mb-2" />
-          )}
-          <Linkify
-            text={post.repostedFrom.content}
-            className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap break-words line-clamp-5"
-          />
-        </div>
-      )}
-
-      {/* ── Text content UNDER media ── */}
-      {(post.content || !post.repostedFrom?._id) && (
-        <div className={`px-4 ${hasMedia ? "pt-3" : "pt-0"} pb-0`}>
+        {/* Text content */}
+        {(post.content || !post.repostedFrom?._id) && (
           <Linkify
             text={post.content}
-            className="text-sm text-gray-800 dark:text-gray-200 leading-relaxed whitespace-pre-wrap break-words"
+            className="text-[15px] text-gray-800 dark:text-gray-100 leading-normal whitespace-pre-wrap break-words mb-3 block"
           />
-        </div>
-      )}
+        )}
 
-      {/* ── Actions ── */}
-      <div className="px-3 py-2 border-t border-black/5 dark:border-white/5 mt-3 flex items-center gap-0.5">
-        <motion.button
-          whileTap={{ scale: 0.78 }}
-          transition={{ type: "spring", stiffness: 600, damping: 25 }}
-          onClick={handleLike}
-          className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold transition-colors duration-150 ${liked ? "text-red-500 bg-red-50 dark:bg-red-900/20" : "text-gray-500 dark:text-gray-400 hover:bg-[#f0f2f5] dark:hover:bg-gray-800 hover:text-red-400"}`}>
-          <motion.div
-            animate={liked ? { scale: [1, 1.5, 0.9, 1.2, 1] } : { scale: 1 }}
-            transition={{ duration: 0.45, ease: [0.34, 1.56, 0.64, 1] }}
-          >
-            <Heart size={15} className={liked ? "fill-red-500" : ""} />
-          </motion.div>
-          {likesCount > 0 && (
-            <motion.span key={likesCount} initial={{ scale: 0.6, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ type: "spring", stiffness: 500, damping: 20 }}>
-              {likesCount}
-            </motion.span>
+        {/* Media */}
+        {hasMedia && (
+          <div className="rounded-2xl overflow-hidden border border-black/10 dark:border-white/10 mb-3">
+            {validImages.length > 0 && (
+              <div className={`grid gap-0.5 ${validImages.length > 1 ? "grid-cols-2" : "grid-cols-1"}`}>
+                {validImages.map((img, i) => (
+                  <FadeImg
+                    key={i}
+                    src={img}
+                    alt="Post"
+                    className="w-full block"
+                    onClick={() => onOpenLightbox(allMediaItems, i)}
+                  />
+                ))}
+              </div>
+            )}
+            {validVideos.length > 0 && (
+              <div className="space-y-0.5">
+                {validVideos.map((vid, i) => (
+                  <VideoPlayer
+                    key={i}
+                    src={vid}
+                    onClick={() => onOpenLightbox(allMediaItems, validImages.length + i)}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Reposted-from embedded card */}
+        {post.repostedFrom?._id && (
+          <div className="rounded-xl border border-black/10 dark:border-white/10 bg-gray-50 dark:bg-gray-900/60 p-3 mb-3">
+            <div className="flex items-center gap-2 mb-1.5">
+              <Avatar src={post.repostedFrom.authorImage} name={post.repostedFrom.authorName} size={18} />
+              <span className="text-xs font-bold text-gray-800 dark:text-gray-200">@{post.repostedFrom.authorUsername || post.repostedFrom.authorName}</span>
+            </div>
+            {(post.repostedFrom.images || []).filter(Boolean).length > 0 && (
+              <img src={post.repostedFrom.images![0]} alt="" className="w-full max-h-48 object-cover rounded-lg mb-2" />
+            )}
+            <Linkify
+              text={post.repostedFrom.content}
+              className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap break-words line-clamp-5"
+            />
+          </div>
+        )}
+
+        {/* Action bar — X style: just icons + counts */}
+        <div className="flex items-center justify-between -ml-2 mt-0.5 mb-0.5">
+          {/* Comment */}
+          <motion.button
+            whileTap={{ scale: 0.8 }}
+            transition={{ type: "spring", stiffness: 600, damping: 25 }}
+            onClick={loadComments}
+            className="group flex items-center gap-1.5 px-2 py-1.5 rounded-full text-gray-500 dark:text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all">
+            <MessageCircle size={18} />
+            {(post.comments?.length || 0) > 0 && <span className="text-[13px]">{post.comments?.length}</span>}
+          </motion.button>
+
+          {/* Repost */}
+          {!post.repostedFrom?._id && (
+            <motion.button
+              whileTap={{ scale: 0.8 }}
+              transition={{ type: "spring", stiffness: 600, damping: 25 }}
+              onClick={handleRepost}
+              className={`flex items-center gap-1.5 px-2 py-1.5 rounded-full transition-all ${
+                reposted
+                  ? "text-green-600"
+                  : "text-gray-500 dark:text-gray-400 hover:text-green-500 hover:bg-green-50 dark:hover:bg-green-900/20"
+              }`}>
+              <motion.div animate={reposted ? { rotate: [0, 180, 360] } : {}} transition={{ duration: 0.45, ease: "easeInOut" }}>
+                <Repeat2 size={18} />
+              </motion.div>
+              {reshareCount > 0 && <span className="text-[13px]">{reshareCount}</span>}
+            </motion.button>
           )}
-          <span className="hidden sm:block">Like</span>
-        </motion.button>
-        <motion.button
-          whileTap={{ scale: 0.78 }}
-          transition={{ type: "spring", stiffness: 600, damping: 25 }}
-          onClick={loadComments}
-          className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-gray-500 dark:text-gray-400 hover:bg-[#f0f2f5] dark:hover:bg-gray-800 hover:text-blue-500 transition-colors duration-150">
-          <MessageCircle size={15} />
-          {(post.comments?.length || 0) > 0 && <span>{post.comments?.length}</span>}
-          <span className="hidden sm:block">Comment</span>
-        </motion.button>
-        {!post.repostedFrom?._id && (
+
+          {/* Like */}
           <motion.button
             whileTap={{ scale: 0.78 }}
             transition={{ type: "spring", stiffness: 600, damping: 25 }}
-            onClick={handleRepost}
-            className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold transition-colors duration-150 ${
-              reposted
-                ? "text-green-600 bg-green-50 dark:bg-green-900/20"
-                : "text-gray-500 dark:text-gray-400 hover:bg-[#f0f2f5] dark:hover:bg-gray-800 hover:text-green-500"
+            onClick={handleLike}
+            className={`flex items-center gap-1.5 px-2 py-1.5 rounded-full transition-all ${
+              liked ? "text-red-500" : "text-gray-500 dark:text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20"
             }`}>
-            <motion.div animate={reposted ? { rotate: [0, 180, 360] } : {}} transition={{ duration: 0.45, ease: "easeInOut" }}>
-              <Repeat2 size={15} />
+            <motion.div
+              animate={liked ? { scale: [1, 1.5, 0.9, 1.2, 1] } : { scale: 1 }}
+              transition={{ duration: 0.45, ease: [0.34, 1.56, 0.64, 1] }}
+            >
+              <Heart size={18} className={liked ? "fill-red-500" : ""} />
             </motion.div>
-            {reshareCount > 0 && <span>{reshareCount}</span>}
-            <span className="hidden sm:block">{reposted ? "Reposted" : "Repost"}</span>
-          </motion.button>
-        )}
-        <motion.button
-          whileTap={{ scale: 0.78 }}
-          transition={{ type: "spring", stiffness: 600, damping: 25 }}
-          onClick={handleShare}
-          disabled={shareLoading}
-          className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold transition-colors duration-150 ml-auto text-gray-500 dark:text-gray-400 hover:bg-[#f0f2f5] dark:hover:bg-gray-800 hover:text-blue-500 disabled:opacity-60">
-          {shareLoading
-            ? <Loader2 size={15} className="animate-spin" />
-            : <Share2 size={15} />}
-          <span className="hidden sm:block">Share</span>
-        </motion.button>
-      </div>
-
-      {/* ── Top comment preview ── */}
-      {!showComments && (post.comments as unknown as Comment[])?.length > 0 && (() => {
-        const topComment = (post.comments as unknown as Comment[])[0];
-        if (!topComment?.content) return null;
-        return (
-          <div className="px-4 pb-3 pt-1 border-t border-black/5 dark:border-white/5">
-            <div className="flex gap-2 items-start">
-              <Avatar src={topComment.authorImage} name={topComment.authorName} size={22} />
-              <div className="flex-1 bg-gray-50 dark:bg-gray-800 rounded-xl px-3 py-2 border border-black/5 dark:border-white/5 min-w-0">
-                <span className="text-[11px] font-semibold text-gray-800 dark:text-gray-200 mr-1.5">@{topComment.authorUsername || topComment.authorName}</span>
-                <span className="text-[11px] text-gray-600 dark:text-gray-300 break-words line-clamp-2">{topComment.content}</span>
-              </div>
-            </div>
-            {(post.comments as unknown as Comment[]).length > 1 && (
-              <button onClick={loadComments} className="mt-1.5 ml-8 text-[11px] text-blue-500 hover:text-blue-600 font-medium transition-colors">
-                View all {(post.comments as unknown as Comment[]).length} comments
-              </button>
+            {likesCount > 0 && (
+              <motion.span key={likesCount} initial={{ scale: 0.6, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
+                transition={{ type: "spring", stiffness: 500, damping: 20 }} className="text-[13px]">
+                {likesCount}
+              </motion.span>
             )}
-          </div>
-        );
-      })()}
+          </motion.button>
 
-      {/* ── Comments ── */}
-      <AnimatePresence>
-        {showComments && (
-          <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.25 }}
-            className="border-t border-black/5 dark:border-white/5 overflow-hidden">
-            {currentUser && (
-              <div className="px-4 py-3 flex items-center gap-3">
-                <Avatar src={currentUser.profileImage} name={currentUser.name} size={28} />
-                <div className="flex-1 relative">
+          {/* Share */}
+          <motion.button
+            whileTap={{ scale: 0.78 }}
+            transition={{ type: "spring", stiffness: 600, damping: 25 }}
+            onClick={handleShare}
+            disabled={shareLoading}
+            className="flex items-center gap-1.5 px-2 py-1.5 rounded-full text-gray-500 dark:text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all disabled:opacity-60">
+            {shareLoading ? <Loader2 size={18} className="animate-spin" /> : <Share2 size={18} />}
+          </motion.button>
+        </div>
+
+        {/* Top comment preview */}
+        {!showComments && (post.comments as unknown as Comment[])?.length > 0 && (() => {
+          const topComment = (post.comments as unknown as Comment[])[0];
+          if (!topComment?.content) return null;
+          return (
+            <div className="mt-2">
+              <div className="flex gap-2 items-start">
+                <Avatar src={topComment.authorImage} name={topComment.authorName} size={20} />
+                <div className="flex-1 bg-gray-50 dark:bg-gray-800 rounded-xl px-3 py-2 border border-black/5 dark:border-white/5 min-w-0">
+                  <span className="text-[11px] font-bold text-gray-800 dark:text-gray-200 mr-1.5">@{topComment.authorUsername || topComment.authorName}</span>
+                  <span className="text-[11px] text-gray-600 dark:text-gray-300 break-words line-clamp-2">{topComment.content}</span>
+                </div>
+              </div>
+              {(post.comments as unknown as Comment[]).length > 1 && (
+                <button onClick={loadComments} className="mt-1.5 ml-7 text-[12px] text-blue-500 hover:text-blue-600 font-medium transition-colors">
+                  View all {(post.comments as unknown as Comment[]).length} comments
+                </button>
+              )}
+            </div>
+          );
+        })()}
+
+        {/* Comments panel */}
+        <AnimatePresence>
+          {showComments && (
+            <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.25 }}
+              className="border-t border-black/5 dark:border-white/5 mt-3 overflow-hidden">
+              {currentUser && (
+                <div className="py-3 flex items-center gap-3">
+                  <Avatar src={currentUser.profileImage} name={currentUser.name} size={28} />
+                  <div className="flex-1 relative">
                   <input type="text" value={commentText} onChange={(e) => setCommentText(e.target.value)}
                     placeholder="Write a comment..."
                     className="w-full pl-4 pr-10 py-2 text-sm rounded-xl border border-black/10 dark:border-white/10 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
@@ -802,7 +805,7 @@ function PostCard({ post, currentUser, onDelete, onOpenLightbox }: {
                 </div>
               </div>
             )}
-            <div className="px-4 pb-4 space-y-3 max-h-64 overflow-y-auto scrollbar-hide">
+            <div className="pb-3 space-y-3 max-h-64 overflow-y-auto scrollbar-hide">
               {comments.map((comment, i) => (
                 <motion.div key={comment._id} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: i * 0.04 }} className="flex gap-2.5">
@@ -887,6 +890,7 @@ function PostCard({ post, currentUser, onDelete, onOpenLightbox }: {
           </motion.div>
         )}
       </AnimatePresence>
+      </div>
     </motion.div>
   );
 }
@@ -1357,64 +1361,66 @@ export default function DashboardHome() {
       </AnimatePresence>
 
       {/* Feed */}
-      {loading ? (
-        <div className="space-y-4">
-          {[1, 2, 3].map((i) => <PostSkeleton key={i} />)}
-        </div>
-      ) : posts.length === 0 ? (
-        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-black/10 dark:border-white/10 shadow-card p-12 text-center">
-          <Sparkles size={32} className="text-gray-300 dark:text-gray-600 mx-auto mb-3" />
-          <p className="text-gray-500 dark:text-gray-400 font-medium text-sm">No posts yet</p>
-          <p className="text-gray-400 dark:text-gray-500 text-xs mt-1">Be the first to share something!</p>
-        </div>
-      ) : (
-        <div className="space-y-4">
-          {posts.map((post, i) => (
-            <div key={post._id}>
-              <PostCard
-                post={post}
-                currentUser={currentUser}
-                onDelete={handleDeletePost}
-                onOpenLightbox={openLightbox}
-              />
-              {i === 3 && recommendations.length > 0 && (
-                <motion.div
-                  initial={{ opacity: 0, y: 16 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="bg-white dark:bg-gray-900 rounded-2xl border border-black/10 dark:border-white/10 shadow-card overflow-hidden"
-                >
-                  <div className="px-4 pt-4 pb-2 border-b border-black/5 dark:border-white/5">
-                    <h3 className="font-bold text-gray-900 dark:text-white text-sm">People you may know</h3>
-                  </div>
-                  <div className="py-1 divide-y divide-black/5 dark:divide-white/5">
-                    {recommendations.slice(0, 4).map((rec) => (
-                      <RecommendedCard
-                        key={rec._id}
-                        user={rec}
-                        isFollowing={following.has(rec._id)}
-                        onFollow={() => handleFollow(rec._id)}
-                      />
-                    ))}
-                  </div>
-                </motion.div>
-              )}
-            </div>
-          ))}
+      <div className="bg-white dark:bg-gray-900 rounded-2xl border border-black/8 dark:border-white/8 shadow-card overflow-hidden">
+        {loading ? (
+          <>
+            {[1, 2, 3].map((i) => <PostSkeleton key={i} />)}
+          </>
+        ) : posts.length === 0 ? (
+          <div className="p-12 text-center">
+            <Sparkles size={32} className="text-gray-300 dark:text-gray-600 mx-auto mb-3" />
+            <p className="text-gray-500 dark:text-gray-400 font-medium text-sm">No posts yet</p>
+            <p className="text-gray-400 dark:text-gray-500 text-xs mt-1">Be the first to share something!</p>
+          </div>
+        ) : (
+          <>
+            {posts.map((post, i) => (
+              <div key={post._id}>
+                <PostCard
+                  post={post}
+                  currentUser={currentUser}
+                  onDelete={handleDeletePost}
+                  onOpenLightbox={openLightbox}
+                />
+                {i === 3 && recommendations.length > 0 && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="border-b border-black/8 dark:border-white/8"
+                  >
+                    <div className="px-4 pt-3 pb-2">
+                      <h3 className="font-bold text-gray-900 dark:text-white text-sm">People you may know</h3>
+                    </div>
+                    <div className="divide-y divide-black/5 dark:divide-white/5 pb-1">
+                      {recommendations.slice(0, 4).map((rec) => (
+                        <RecommendedCard
+                          key={rec._id}
+                          user={rec}
+                          isFollowing={following.has(rec._id)}
+                          onFollow={() => handleFollow(rec._id)}
+                        />
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
+              </div>
+            ))}
 
-          {hasMore && (
-            <div className="text-center pt-2 pb-4">
-              <button
-                onClick={() => loadPosts(page + 1)}
-                disabled={loadingMore}
-                className="flex items-center gap-2 text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 mx-auto px-6 py-2.5 rounded-xl border border-black/10 dark:border-white/10 hover:border-blue-300 dark:hover:border-blue-700 transition-all"
-              >
-                {loadingMore ? <Loader2 size={14} className="animate-spin" /> : <ChevronDown size={14} />}
-                {loadingMore ? "Loading…" : "Load more posts"}
-              </button>
-            </div>
-          )}
-        </div>
-      )}
+            {hasMore && (
+              <div className="text-center py-4 border-t border-black/8 dark:border-white/8">
+                <button
+                  onClick={() => loadPosts(page + 1)}
+                  disabled={loadingMore}
+                  className="flex items-center gap-2 text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 mx-auto px-6 py-2 rounded-xl hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all"
+                >
+                  {loadingMore ? <Loader2 size={14} className="animate-spin" /> : <ChevronDown size={14} />}
+                  {loadingMore ? "Loading…" : "Load more posts"}
+                </button>
+              </div>
+            )}
+          </>
+        )}
+      </div>
     </div>
   );
 }
