@@ -679,20 +679,23 @@ function PostCard({ post, currentUser, onDelete, onOpenLightbox }: {
           </div>
         )}
 
-        {/* Reposted-from embedded card */}
+        {/* Reposted-from embedded card — flat X quote-tweet style */}
         {post.repostedFrom?._id && (
-          <div className="rounded-xl border border-black/10 dark:border-white/10 bg-gray-50 dark:bg-gray-900/60 p-3 mb-3">
-            <div className="flex items-center gap-2 mb-1.5">
+          <div className="rounded-2xl border border-black/[0.12] dark:border-white/15 hover:bg-black/[0.02] dark:hover:bg-white/[0.03] transition-colors overflow-hidden mb-2.5 cursor-pointer">
+            <div className="flex items-center gap-1.5 px-3 pt-2.5 pb-1">
               <Avatar src={post.repostedFrom.authorImage} name={post.repostedFrom.authorName} size={18} />
-              <span className="text-xs font-bold text-gray-800 dark:text-gray-200">@{post.repostedFrom.authorUsername || post.repostedFrom.authorName}</span>
+              <span className="text-[13px] font-bold text-gray-900 dark:text-white truncate post-title">{post.repostedFrom.authorName}</span>
+              <span className="text-[12.5px] text-gray-500 dark:text-gray-400 truncate">@{post.repostedFrom.authorUsername || post.repostedFrom.authorName}</span>
             </div>
-            {(post.repostedFrom.images || []).filter(Boolean).length > 0 && (
-              <img src={post.repostedFrom.images![0]} alt="" className="w-full max-h-48 object-cover rounded-lg mb-2" />
+            {post.repostedFrom.content && (
+              <Linkify
+                text={post.repostedFrom.content}
+                className="px-3 pb-2 text-[13.5px] text-gray-900 dark:text-gray-100 leading-[1.45] whitespace-pre-wrap break-words line-clamp-5 post-body block"
+              />
             )}
-            <Linkify
-              text={post.repostedFrom.content}
-              className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap break-words line-clamp-5"
-            />
+            {(post.repostedFrom.images || []).filter(Boolean).length > 0 && (
+              <img src={post.repostedFrom.images![0]} alt="" className="w-full max-h-72 object-cover" />
+            )}
           </div>
         )}
 
@@ -766,33 +769,36 @@ function PostCard({ post, currentUser, onDelete, onOpenLightbox }: {
               exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.25 }}
               className="border-t border-black/5 dark:border-white/5 mt-3 overflow-hidden">
               {currentUser && (
-                <div className="py-3 flex items-center gap-3">
+                <div className="py-2.5 flex items-center gap-2.5">
                   <Avatar src={currentUser.profileImage} name={currentUser.name} size={28} />
                   <div className="flex-1 relative">
                   <input type="text" value={commentText} onChange={(e) => setCommentText(e.target.value)}
-                    placeholder="Write a comment..."
-                    className="w-full pl-4 pr-10 py-2 text-sm rounded-xl border border-black/10 dark:border-white/10 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                    placeholder="Post your reply"
+                    className="w-full pl-4 pr-11 h-9 text-[13.5px] rounded-full border border-black/[0.08] dark:border-white/10 bg-[#eff3f4] dark:bg-[#202327] text-gray-900 dark:text-white placeholder:text-gray-500 focus:outline-none focus:bg-white dark:focus:bg-black focus:border-blue-500 transition-all"
                     onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleComment()} />
                   <button onClick={handleComment} disabled={loadingComment || !commentText.trim()}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 text-blue-600 disabled:text-gray-300 dark:disabled:text-gray-600 transition-colors">
-                    {loadingComment ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
+                    className="absolute right-1 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full flex items-center justify-center bg-blue-600 text-white hover:bg-blue-700 disabled:bg-gray-300 dark:disabled:bg-gray-700 disabled:text-gray-400 transition-colors">
+                    {loadingComment ? <Loader2 size={13} className="animate-spin" /> : <Send size={12} />}
                   </button>
                 </div>
               </div>
             )}
-            <div className="pb-3 space-y-3 max-h-64 overflow-y-auto scrollbar-hide">
+            <div className="pb-3 space-y-2 max-h-64 overflow-y-auto scrollbar-hide">
               {comments.map((comment, i) => (
                 <motion.div key={comment._id} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: i * 0.04 }} className="flex gap-2.5">
-                  <Avatar src={comment.authorImage} name={comment.authorName} size={26} />
-                  <div className="flex-1 bg-gray-50 dark:bg-gray-800 rounded-xl px-3 py-2 border border-black/5 dark:border-white/5">
-                    <div className="text-xs font-semibold text-gray-900 dark:text-white">@{comment.authorUsername || comment.authorName}</div>
-                    <div className="text-xs text-gray-700 dark:text-gray-300 mt-0.5">{comment.content}</div>
+                  <Avatar src={comment.authorImage} name={comment.authorName} size={28} />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-baseline gap-1.5">
+                      <span className="text-[13px] font-bold text-gray-900 dark:text-white truncate post-title">{comment.authorName}</span>
+                      <span className="text-[12px] text-gray-500 dark:text-gray-400 truncate">@{comment.authorUsername || comment.authorName}</span>
+                    </div>
+                    <div className="text-[13.5px] text-gray-900 dark:text-gray-100 leading-[1.4] post-body">{comment.content}</div>
                   </div>
                 </motion.div>
               ))}
               {comments.length === 0 && (
-                <p className="text-xs text-gray-400 text-center py-2">No comments yet. Be the first!</p>
+                <p className="text-[12px] text-gray-500 text-center py-3">No replies yet. Be the first!</p>
               )}
             </div>
           </motion.div>

@@ -150,9 +150,9 @@ html {
 .skeleton {
   background: linear-gradient(
     90deg,
-    #dde1e7 25%,
-    #d2d6dc 37%,
-    #dde1e7 63%
+    #f1f3f4 25%,
+    #e7eaeb 37%,
+    #f1f3f4 63%
   );
   background-size: 1600px 100%;
   animation: shimmer 1.6s infinite linear;
@@ -162,9 +162,9 @@ html {
 .dark .skeleton {
   background: linear-gradient(
     90deg,
-    #1f2937 25%,
-    #2d3748 37%,
-    #1f2937 63%
+    #16181c 25%,
+    #1f2226 37%,
+    #16181c 63%
   );
   background-size: 1600px 100%;
   animation: shimmer 1.6s infinite linear;
@@ -313,3 +313,29 @@ input, textarea {
 .press-effect:active {
   transform: scale(0.95);
 }
+
+/* ─── X-style focus ring ─── */
+*:focus-visible {
+  outline: 2px solid rgba(29, 155, 240, 0.6);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ─── Custom scrollbar (subtle) ─── */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: rgba(0,0,0,0.18);
+  border-radius: 8px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+.dark ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.18); background-clip: padding-box; }
+::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,0.32); background-clip: padding-box; }
+.dark ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.32); background-clip: padding-box; }
+
+/* ─── Selection color ─── */
+::selection { background: rgba(29, 155, 240, 0.28); }
+
+/* ─── Disable double-tap zoom on touch buttons ─── */
+button, a, [role="button"] { touch-action: manipulation; }

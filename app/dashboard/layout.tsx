@@ -92,36 +92,35 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#e8ecf0] dark:bg-gray-950 flex items-center justify-center">
+      <div className="min-h-screen bg-white dark:bg-black flex items-center justify-center">
         <div className="flex flex-col items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-blue-600 flex items-center justify-center shadow-elevated animate-pulse">
+          <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center animate-pulse">
             <Loader2 className="animate-spin text-white" size={20} />
           </div>
-          <div className="text-xs text-gray-400 font-medium">Loading…</div>
+          <div className="text-xs text-gray-500 font-medium">Loading…</div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#e8ecf0] dark:bg-gray-950">
-      {/* Top Header */}
-      <header className="fixed top-0 left-0 right-0 z-50 glass-strong dark:bg-gray-900/95 border-b border-black/8 dark:border-white/8 shadow-soft">
+    <div className="min-h-screen bg-white dark:bg-black">
+      {/* Top Header — flat X-style */}
+      <header className="fixed top-0 left-0 right-0 z-50 bg-white/85 dark:bg-black/85 backdrop-blur-xl border-b border-black/[0.08] dark:border-white/10">
         <div className="max-w-5xl mx-auto px-4 h-12 flex items-center justify-between gap-4">
           <Link href="/dashboard" className="flex-shrink-0">
             <Logo size={28} textClass="font-bold text-sm text-gray-900 dark:text-white hidden sm:block" />
           </Link>
 
           <div className="flex-1 max-w-md">
-            <div className="relative">
-              <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <div className="relative group">
+              <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400 group-focus-within:text-blue-500 transition-colors" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
               </svg>
               <input
                 type="text"
-                placeholder="Search people, posts..."
-                className="w-full pl-8 pr-4 py-1.5 text-sm rounded-xl border border-black/8 dark:border-white/10 bg-[#eef0f4] dark:bg-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:bg-white dark:focus:bg-gray-700 focus:border-blue-400/30 transition-all"
-                style={{ boxShadow: "inset 0 1px 3px rgba(0,0,0,0.06)" }}
+                placeholder="Search"
+                className="w-full pl-9 pr-4 h-8 text-[13.5px] rounded-full border border-transparent bg-[#eff3f4] dark:bg-[#202327] text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:outline-none focus:bg-white dark:focus:bg-black focus:border-blue-500 transition-all"
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
                     const val = (e.target as HTMLInputElement).value;
@@ -132,24 +131,24 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </div>
           </div>
 
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-0.5">
             <Link href="/dashboard/notifications" onClick={() => setNotifCount(0)}
-              className="relative w-8 h-8 rounded-xl border border-black/8 dark:border-white/10 flex items-center justify-center text-gray-500 dark:text-gray-300 hover:bg-[#eef0f4] dark:hover:bg-gray-800 hover:text-blue-600 transition-all shadow-soft">
-              <Bell size={16} />
+              className="relative w-9 h-9 rounded-full flex items-center justify-center text-gray-700 dark:text-gray-200 hover:bg-blue-500/10 hover:text-blue-500 transition-all">
+              <Bell size={17} strokeWidth={2} />
               {notifCount > 0 && (
-                <span className="absolute -top-1 -right-1 min-w-[16px] h-4 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center px-0.5 leading-none animate-pop-in">
+                <span className="absolute top-1 right-1 min-w-[15px] h-[15px] bg-blue-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center px-1 leading-none animate-pop-in ring-2 ring-white dark:ring-black">
                   {notifCount > 99 ? "99+" : notifCount}
                 </span>
               )}
             </Link>
-            <Link href="/dashboard/settings" className="relative w-8 h-8 rounded-xl border border-black/8 dark:border-white/10 flex items-center justify-center text-gray-500 dark:text-gray-300 hover:bg-[#eef0f4] dark:hover:bg-gray-800 hover:text-blue-600 transition-all shadow-soft">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <Link href="/dashboard/settings" className="w-9 h-9 rounded-full flex items-center justify-center text-gray-700 dark:text-gray-200 hover:bg-blue-500/10 hover:text-blue-500 transition-all">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/>
                 <circle cx="12" cy="12" r="3"/>
               </svg>
             </Link>
             {user && (
-              <Link href={`/dashboard/profile/${userId}`} className="w-8 h-8 rounded-full overflow-hidden border border-black/10 dark:border-white/10 flex-shrink-0">
+              <Link href={`/dashboard/profile/${userId}`} className="ml-1 w-8 h-8 rounded-full overflow-hidden flex-shrink-0 ring-2 ring-transparent hover:ring-blue-500/40 transition-all">
                 <Avatar src={user.profileImage} name={user.name} size={32} />
               </Link>
             )}
@@ -162,9 +161,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         {children}
       </main>
 
-      {/* Bottom Navigation */}
-      <nav className="fixed bottom-0 left-0 right-0 z-50 glass-strong dark:bg-gray-900/95 border-t border-black/8 dark:border-white/8 shadow-elevated">
-        <div className="max-w-md mx-auto px-2 h-16 flex items-center justify-around">
+      {/* Bottom Navigation — flat X-style */}
+      <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white/90 dark:bg-black/90 backdrop-blur-xl border-t border-black/[0.08] dark:border-white/10">
+        <div className="max-w-md mx-auto px-2 h-14 flex items-center justify-around">
           {navItems.map(({ href, icon: Icon, label }) => {
             const isActive = label === "Profile"
               ? pathname.includes("/profile/")
@@ -181,39 +180,25 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 >
                   {label === "Post" ? (
                     <motion.div
-                      animate={isActive ? { scale: 1.08, rotate: 0 } : { scale: 1, rotate: 0 }}
-                      whileHover={{ scale: 1.05 }}
+                      animate={isActive ? { scale: 1.06 } : { scale: 1 }}
+                      whileHover={{ scale: 1.04 }}
                       transition={{ type: "spring", stiffness: 400, damping: 20 }}
-                      className={`w-10 h-10 rounded-2xl flex items-center justify-center shadow-btn transition-all duration-200 ${isActive ? "bg-blue-600 shadow-[0_2px_12px_rgba(37,99,235,0.4)]" : "bg-[#e2e6eb] dark:bg-gray-800"}`}
+                      className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${isActive ? "bg-blue-600 text-white" : "bg-blue-600 text-white hover:bg-blue-700"}`}
                     >
-                      <Icon size={18} className={isActive ? "text-white" : "text-gray-500 dark:text-gray-300"} />
+                      <Icon size={20} strokeWidth={2.4} />
                     </motion.div>
                   ) : label === "Profile" && user ? (
-                    <div className="flex flex-col items-center gap-0.5">
-                      <motion.div
-                        animate={isActive ? { scale: 1.05 } : { scale: 1 }}
-                        transition={{ type: "spring", stiffness: 400, damping: 20 }}
-                        className={`rounded-full overflow-hidden border-2 transition-all duration-200 ${isActive ? "border-blue-500 shadow-[0_0_0_2px_rgba(37,99,235,0.2)]" : "border-transparent"}`}
-                      >
-                        <Avatar src={user.profileImage} name={user.name} size={24} />
-                      </motion.div>
-                      <span className={`text-[10px] font-semibold transition-colors duration-200 ${isActive ? "text-blue-600" : "text-gray-400 dark:text-gray-500"}`}>{label}</span>
+                    <div className={`rounded-full overflow-hidden ring-2 transition-all ${isActive ? "ring-blue-500" : "ring-transparent"}`}>
+                      <Avatar src={user.profileImage} name={user.name} size={26} />
                     </div>
                   ) : (
-                    <div className="flex flex-col items-center gap-0.5">
-                      <div className="relative">
-                        <motion.div
-                          animate={isActive ? { y: -1 } : { y: 0 }}
-                          transition={{ type: "spring", stiffness: 500, damping: 25 }}
-                          className={`w-8 h-8 rounded-xl flex items-center justify-center transition-colors duration-200 ${isActive ? "bg-blue-50 dark:bg-blue-900/30 text-blue-600" : "text-gray-400 dark:text-gray-500"}`}
-                        >
-                          <Icon size={18} strokeWidth={isActive ? 2.2 : 1.8} />
-                        </motion.div>
-                        {label === "Chats" && notifCount > 0 && (
-                          <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full border border-white dark:border-gray-900 animate-pop-in" />
-                        )}
+                    <div className="relative">
+                      <div className={`w-9 h-9 rounded-full flex items-center justify-center transition-colors ${isActive ? "text-blue-500" : "text-gray-600 dark:text-gray-300"}`}>
+                        <Icon size={22} strokeWidth={isActive ? 2.4 : 1.8} fill={isActive ? "currentColor" : "none"} fillOpacity={isActive ? 0.12 : 0} />
                       </div>
-                      <span className={`text-[10px] font-semibold transition-colors duration-200 ${isActive ? "text-blue-600" : "text-gray-400 dark:text-gray-500"}`}>{label}</span>
+                      {label === "Chats" && notifCount > 0 && (
+                        <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-blue-500 rounded-full ring-2 ring-white dark:ring-black animate-pop-in" />
+                      )}
                     </div>
                   )}
                 </motion.div>
