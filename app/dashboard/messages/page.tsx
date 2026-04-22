@@ -618,21 +618,35 @@ function MessagesContent() {
     if (isClanChat && selectedConv?._id.startsWith("clan-")) {
       const clanId = selectedConv._id.replace("clan-", "");
       if (!hasText) { setSendingMsg(false); return; }
+      const text = messageText.trim();
+      const tempId = `temp-${Date.now()}`;
+      const optimisticMsg: Message = {
+        _id: tempId,
+        senderId: currentUserId || "",
+        senderName: "You",
+        content: text,
+        createdAt: new Date().toISOString(),
+      };
+      setMessages((prev) => [...prev, optimisticMsg]);
+      setMessageText("");
       try {
         const res = await fetch(`/api/clans/${clanId}/chat`, {
           method: "POST", headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ content: messageText.trim() }),
+          body: JSON.stringify({ content: text }),
         });
         const data = await res.json();
         if (data.message) {
           const m = data.message;
-          setMessages((prev) => [...prev, {
+          setMessages((prev) => prev.map((msg) => msg._id === tempId ? {
             _id: m._id, senderId: m.senderId, senderName: m.senderName,
             senderImage: m.senderImage, content: m.content, createdAt: m.createdAt,
-          }]);
-          setMessageText("");
+          } : msg));
+        } else {
+          setMessages((prev) => prev.filter((msg) => msg._id !== tempId));
         }
-      } catch {}
+      } catch {
+        setMessages((prev) => prev.filter((msg) => msg._id !== tempId));
+      }
       setSendingMsg(false);
       return;
     }

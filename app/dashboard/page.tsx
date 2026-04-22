@@ -659,7 +659,7 @@ function PostCard({ post, currentUser, onDelete, onOpenLightbox }: {
                     key={i}
                     src={img}
                     alt="Post"
-                    className={`w-full block ${validImages.length === 1 ? "max-h-[640px] object-cover" : "aspect-square object-cover"}`}
+                    className={`w-full block ${validImages.length === 1 ? "max-h-[760px] object-cover" : "aspect-square object-cover"}`}
                     onClick={() => onOpenLightbox(allMediaItems, i)}
                   />
                 ))}
@@ -758,28 +758,6 @@ function PostCard({ post, currentUser, onDelete, onOpenLightbox }: {
             {shareLoading ? <Loader2 size={18} className="animate-spin" /> : <Share2 size={18} />}
           </motion.button>
         </div>
-
-        {/* Top comment preview */}
-        {!showComments && (post.comments as unknown as Comment[])?.length > 0 && (() => {
-          const topComment = (post.comments as unknown as Comment[])[0];
-          if (!topComment?.content) return null;
-          return (
-            <div className="mt-2">
-              <div className="flex gap-2 items-start">
-                <Avatar src={topComment.authorImage} name={topComment.authorName} size={20} />
-                <div className="flex-1 bg-gray-50 dark:bg-gray-800 rounded-xl px-3 py-2 border border-black/5 dark:border-white/5 min-w-0">
-                  <span className="text-[11px] font-bold text-gray-800 dark:text-gray-200 mr-1.5">@{topComment.authorUsername || topComment.authorName}</span>
-                  <span className="text-[11px] text-gray-600 dark:text-gray-300 break-words line-clamp-2">{topComment.content}</span>
-                </div>
-              </div>
-              {(post.comments as unknown as Comment[]).length > 1 && (
-                <button onClick={loadComments} className="mt-1.5 ml-7 text-[12px] text-blue-500 hover:text-blue-600 font-medium transition-colors">
-                  View all {(post.comments as unknown as Comment[]).length} comments
-                </button>
-              )}
-            </div>
-          );
-        })()}
 
         {/* Comments panel */}
         <AnimatePresence>
@@ -1148,59 +1126,74 @@ export default function DashboardHome() {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.92, y: 24 }}
               transition={{ type: "spring", damping: 22, stiffness: 320 }}
-              className="bg-white dark:bg-gray-900 rounded-2xl border border-black/10 dark:border-white/10 shadow-2xl w-full max-w-lg overflow-y-auto max-h-[85vh]"
+              className="bg-white dark:bg-black rounded-2xl border border-black/10 dark:border-white/10 w-full max-w-xl overflow-hidden flex flex-col max-h-[90vh]"
               onClick={(e) => e.stopPropagation()}
             >
               {sharedPostLoading ? (
                 <div className="flex items-center justify-center h-48">
-                  <Loader2 size={28} className="animate-spin text-blue-500" />
+                  <Loader2 size={26} className="animate-spin text-blue-500" />
                 </div>
               ) : sharedPost && (
                 <>
-                  <div className="flex items-center justify-between px-4 pt-4 pb-2 border-b border-black/5 dark:border-white/5">
-                    <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 font-medium">
-                      <ExternalLink size={13} className="text-blue-500" />
+                  {/* Compact header */}
+                  <div className="flex items-center justify-between px-4 h-11 border-b border-black/8 dark:border-white/10 flex-shrink-0">
+                    <div className="flex items-center gap-2 text-[12px] text-gray-500 dark:text-gray-400 font-semibold">
+                      <ExternalLink size={12} className="text-blue-500" />
                       Shared post
                     </div>
                     <button onClick={() => setSharedPost(null)}
-                      className="w-7 h-7 rounded-lg flex items-center justify-center text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all">
-                      <X size={15} />
+                      className="w-8 h-8 -mr-2 rounded-full flex items-center justify-center text-gray-500 hover:text-gray-900 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10 transition-all">
+                      <X size={16} />
                     </button>
                   </div>
-                  <div className="p-4">
-                    <div className="flex items-center gap-3 mb-3">
+
+                  {/* Scrollable body */}
+                  <div className="overflow-y-auto scrollbar-hide flex-1">
+                    {/* Author row */}
+                    <div className="flex items-center gap-2.5 px-4 pt-3 pb-2">
                       {sharedPost.authorImage
                         ? <img src={sharedPost.authorImage} alt={sharedPost.authorName} className="w-10 h-10 rounded-full object-cover flex-shrink-0" />
-                        : <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-bold flex-shrink-0">{sharedPost.authorName?.[0]?.toUpperCase()}</div>
+                        : <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-bold flex-shrink-0 text-sm">{sharedPost.authorName?.[0]?.toUpperCase()}</div>
                       }
-                      <div>
+                      <div className="flex-1 min-w-0 leading-tight">
                         <Link href={`/dashboard/profile/${sharedPost.authorId}`} onClick={() => setSharedPost(null)}
-                          className="font-semibold text-sm text-gray-900 dark:text-white hover:text-blue-600 transition-colors">
-                          @{sharedPost.authorUsername || sharedPost.authorName}
+                          className="block font-bold text-[14px] text-gray-900 dark:text-white hover:underline truncate post-title">
+                          {sharedPost.authorName}
                         </Link>
-                        <div className="text-xs text-gray-400 mt-0.5">
-                          <ReactTimeago date={sharedPost.createdAt} />
+                        <div className="text-[12px] text-gray-500 dark:text-gray-400 truncate">
+                          @{sharedPost.authorUsername || sharedPost.authorName} · <ReactTimeago date={sharedPost.createdAt} />
                         </div>
                       </div>
                     </div>
-                    {(sharedPost.images || []).filter(Boolean).length > 0 && (
-                      <img src={(sharedPost.images || [])[0]} alt="Post" className="w-full max-h-56 object-cover rounded-xl mb-3" />
+
+                    {/* Body text */}
+                    {sharedPost.content && (
+                      <p className="px-4 pb-3 text-[14px] text-gray-900 dark:text-gray-100 leading-[1.45] whitespace-pre-wrap break-words post-body">
+                        {sharedPost.content}
+                      </p>
                     )}
-                    <p className="text-sm text-gray-800 dark:text-gray-200 leading-relaxed whitespace-pre-wrap break-words line-clamp-6">
-                      {sharedPost.content}
-                    </p>
+
+                    {/* Edge-to-edge media */}
+                    {(sharedPost.images || []).filter(Boolean).length > 0 && (
+                      <img src={(sharedPost.images || [])[0]} alt="Post"
+                        className="w-full max-h-[70vh] object-cover block" />
+                    )}
+
+                    {/* Stats row */}
                     {((sharedPost.likes?.length || 0) > 0 || (sharedPost.comments?.length || 0) > 0) && (
-                      <div className="flex items-center gap-4 mt-3 pt-3 border-t border-black/5 dark:border-white/5 text-xs text-gray-400">
+                      <div className="flex items-center gap-5 px-4 py-2.5 border-t border-black/8 dark:border-white/10 text-[12px] text-gray-500 dark:text-gray-400">
                         {(sharedPost.likes?.length || 0) > 0 && (
-                          <span className="flex items-center gap-1"><Heart size={12} className="fill-red-400 text-red-400" /> {sharedPost.likes?.length}</span>
+                          <span className="flex items-center gap-1.5"><Heart size={13} className="fill-red-500 text-red-500" /> {sharedPost.likes?.length}</span>
                         )}
                         {(sharedPost.comments?.length || 0) > 0 && (
-                          <span className="flex items-center gap-1"><MessageCircle size={12} /> {sharedPost.comments?.length}</span>
+                          <span className="flex items-center gap-1.5"><MessageCircle size={13} /> {sharedPost.comments?.length}</span>
                         )}
                       </div>
                     )}
                   </div>
-                  <div className="px-4 pb-4">
+
+                  {/* Footer */}
+                  <div className="border-t border-black/8 dark:border-white/10 px-4 py-2.5 flex-shrink-0">
                     <button onClick={() => {
                         const postId = sharedPost._id;
                         setSharedPost(null);
@@ -1208,13 +1201,13 @@ export default function DashboardHome() {
                           const el = document.getElementById(postId);
                           if (el) {
                             el.scrollIntoView({ behavior: "smooth", block: "center" });
-                            el.style.transition = "box-shadow 0.3s ease";
-                            el.style.boxShadow = "0 0 0 2px #3b82f6";
-                            setTimeout(() => { el.style.boxShadow = ""; }, 1800);
+                            el.style.transition = "background-color 0.3s ease";
+                            el.style.backgroundColor = "rgba(59,130,246,0.12)";
+                            setTimeout(() => { el.style.backgroundColor = ""; }, 1800);
                           }
                         }, 300);
                       }}
-                      className="w-full py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold transition-all">
+                      className="w-full h-10 rounded-full bg-blue-600 hover:bg-blue-700 text-white text-[13.5px] font-bold transition-all">
                       View in Feed
                     </button>
                   </div>
