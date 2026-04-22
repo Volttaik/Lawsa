@@ -828,9 +828,8 @@ function MessagesContent() {
                     key={conv._id}
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: idx * 0.04, duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-                    whileHover={{ scale: 1.01 }}
-                    whileTap={{ scale: 0.97 }}
+                    transition={{ delay: Math.min(idx, 8) * 0.025, duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+                    whileTap={{ scale: 0.985 }}
                     onClick={() => openConversation(conv)}
                     className="w-full flex items-center gap-3 px-4 py-3 bg-transparent border-b border-black/8 dark:border-white/10 text-left hover:bg-black/[0.03] dark:hover:bg-white/[0.03] transition-colors">
                     <Avatar src={conv.otherUser?.profileImage} name={conv.otherUser?.name || "?"} size={44} />
@@ -907,7 +906,7 @@ function MessagesContent() {
             {/* Messages area */}
             <div className="relative flex-1 overflow-hidden">
               <div ref={chatScrollRef} onScroll={handleChatScroll}
-                className="h-full overflow-y-auto scrollbar-hide px-4 py-4 space-y-2"
+                className="h-full overflow-y-auto scrollbar-hide smooth-scroll px-4 py-4 space-y-1.5"
                 style={chatAreaStyle}>
                 {loadingMessages ? (
                   <div className="space-y-4">
@@ -939,10 +938,10 @@ function MessagesContent() {
                         return (
                           <motion.div key={msg._id}
                             initial={isMe
-                              ? { opacity: 0, x: 16, scale: 0.93 }
-                              : { opacity: 0, x: -16, scale: 0.93 }}
-                            animate={{ opacity: 1, x: 0, scale: 1 }}
-                            transition={{ duration: 0.2, ease: [0.34, 1.2, 0.64, 1] }}
+                              ? { opacity: 0, y: 8, scale: 0.96 }
+                              : { opacity: 0, y: 8, scale: 0.96 }}
+                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                            transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
                             className={`flex items-end gap-1.5 ${isMe ? "flex-row-reverse" : ""}`}
                             onMouseDown={() => !isClanChat && startLongPress(msg)}
                             onMouseUp={cancelLongPress}
@@ -982,10 +981,10 @@ function MessagesContent() {
                                     </div>
                                   ) : (
                                     msg.content && (
-                                      <div className={`px-3.5 py-2 text-[13px] leading-[1.45] ${msg.mediaUrl ? "mt-1" : ""} rounded-2xl ${
+                                      <div className={`px-3.5 py-2 text-[13.5px] leading-[1.45] ${msg.mediaUrl ? "mt-1" : ""} rounded-2xl ${
                                         isMe
-                                          ? "bg-blue-600 text-white shadow-[0_1px_3px_rgba(37,99,235,0.25)]"
-                                          : "bg-white/95 backdrop-blur-sm text-gray-900 border border-white/30"
+                                          ? "bubble-glass-out text-white"
+                                          : "bubble-glass-in text-gray-900"
                                       }`}>
                                         <Linkify text={msg.content} linkClass={isMe ? "text-blue-200 hover:underline break-all" : "text-blue-600 hover:underline break-all"} />
                                         {msg.edited && <span className="text-[9px] opacity-50 ml-1">edited</span>}

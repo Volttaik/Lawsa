@@ -601,7 +601,7 @@ function PostCard({ post, currentUser, onDelete, onOpenLightbox }: {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.98 }}
       transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-      className="flex gap-3 px-4 pt-3 border-b border-black/8 dark:border-white/10 hover:bg-black/[0.015] dark:hover:bg-white/[0.025] transition-colors cursor-default"
+      className="flex gap-3 px-4 pt-3 border-b border-black/[0.07] dark:border-white/10 hover:bg-black/[0.018] dark:hover:bg-white/[0.025] transition-colors cursor-default post-card-hover"
     >
       {/* Left: Avatar column */}
       <div className="flex-shrink-0 flex flex-col items-center">
@@ -624,7 +624,7 @@ function PostCard({ post, currentUser, onDelete, onOpenLightbox }: {
         <div className="flex items-center justify-between mb-1">
           <div className="flex items-center gap-1 min-w-0 leading-tight overflow-hidden">
             <Link href={`/dashboard/profile/${post.authorId}`}
-              className="font-bold text-[14px] text-gray-900 dark:text-white hover:underline truncate">
+              className="font-bold text-[14.5px] text-gray-900 dark:text-white hover:underline truncate post-title">
               {post.authorName}
             </Link>
             <span className="text-gray-500 dark:text-gray-400 text-[13px] truncate">@{post.authorUsername}</span>
@@ -648,13 +648,13 @@ function PostCard({ post, currentUser, onDelete, onOpenLightbox }: {
         {(post.content || !post.repostedFrom?._id) && post.content && (
           <Linkify
             text={post.content}
-            className="text-[14px] text-gray-900 dark:text-gray-100 leading-[1.45] whitespace-pre-wrap break-words mb-2.5 block"
+            className="text-[14.5px] text-gray-900 dark:text-gray-100 leading-[1.45] whitespace-pre-wrap break-words mb-2.5 block post-body"
           />
         )}
 
         {/* Media */}
         {hasMedia && (
-          <div className="rounded-2xl overflow-hidden border border-black/8 dark:border-white/10 mb-2.5 -ml-1 sm:ml-0">
+          <div className="rounded-2xl overflow-hidden border border-black/8 dark:border-white/10 mb-2.5">
             {validImages.length > 0 && (
               <div className={`grid gap-0.5 ${validImages.length > 1 ? "grid-cols-2" : "grid-cols-1"}`}>
                 {validImages.map((img, i) => (
@@ -662,7 +662,7 @@ function PostCard({ post, currentUser, onDelete, onOpenLightbox }: {
                     key={i}
                     src={img}
                     alt="Post"
-                    className={`w-full block ${validImages.length === 1 ? "max-h-[560px] object-cover" : "aspect-square object-cover"}`}
+                    className={`w-full block ${validImages.length === 1 ? "max-h-[640px] object-cover" : "aspect-square object-cover"}`}
                     onClick={() => onOpenLightbox(allMediaItems, i)}
                   />
                 ))}

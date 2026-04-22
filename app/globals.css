@@ -57,6 +57,13 @@
   }
   body {
     @apply bg-white dark:bg-black text-foreground;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    font-feature-settings: "cv11", "ss01", "ss03";
+  }
+  img, video {
+    -webkit-user-drag: none;
   }
 }
 
@@ -276,14 +283,28 @@ input, textarea {
   transition: box-shadow 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
 }
 
-/* ─── Post card hover lift ─── */
-.post-card-hover {
-  transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+/* ─── Post card hover (flat, no lift) ─── */
+.post-card-hover { transition: background-color 0.15s ease; }
+
+/* ─── Smoother scroll for chat & feed ─── */
+.smooth-scroll { scroll-behavior: smooth; overscroll-behavior: contain; }
+
+/* ─── Glass chat bubble (incoming) ─── */
+.bubble-glass-in {
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(14px) saturate(160%);
+  -webkit-backdrop-filter: blur(14px) saturate(160%);
+  border: 1px solid rgba(255,255,255,0.35);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.06), 0 4px 14px rgba(0,0,0,0.08);
 }
-.post-card-hover:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 8px 24px 0 rgba(0,0,0,0.10), 0 2px 6px 0 rgba(0,0,0,0.06);
+.bubble-glass-out {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  box-shadow: 0 1px 2px rgba(37,99,235,0.25), 0 4px 14px rgba(37,99,235,0.18);
 }
+
+/* ─── Sharper post typography ─── */
+.post-title { letter-spacing: -0.01em; }
+.post-body { letter-spacing: -0.005em; }
 
 /* ─── Interactive press effect ─── */
 .press-effect {
