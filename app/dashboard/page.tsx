@@ -620,25 +620,22 @@ function PostCard({ post, currentUser, onDelete, onOpenLightbox }: {
           </div>
         )}
 
-        {/* Author row */}
-        <div className="flex items-center justify-between mb-1">
-          <div className="flex items-center gap-1 min-w-0 leading-tight overflow-hidden">
-            <Link href={`/dashboard/profile/${post.authorId}`}
-              className="font-bold text-[14.5px] text-gray-900 dark:text-white hover:underline truncate post-title">
-              {post.authorName}
-            </Link>
-            <span className="text-gray-500 dark:text-gray-400 text-[13px] truncate">@{post.authorUsername}</span>
-            <span className="text-gray-400 dark:text-gray-600 text-[13px]">·</span>
-            <span className="text-gray-500 dark:text-gray-400 text-[13px] flex-shrink-0 whitespace-nowrap">
-              <ReactTimeago date={post.createdAt} />
-            </span>
-            {post.category && post.category !== "general" && (
-              <><span className="text-gray-400 dark:text-gray-600 text-[13px]">·</span><CategoryBadge category={post.category} /></>
-            )}
-          </div>
+        {/* Author row — X-style: name/handle on left, time + actions on right */}
+        <div className="flex items-center gap-1 mb-0.5 leading-tight">
+          <Link href={`/dashboard/profile/${post.authorId}`}
+            className="font-bold text-[14.5px] text-gray-900 dark:text-white hover:underline truncate post-title">
+            {post.authorName}
+          </Link>
+          <span className="text-gray-500 dark:text-gray-400 text-[13px] truncate min-w-0">@{post.authorUsername}</span>
+          {post.category && post.category !== "general" && (
+            <span className="flex-shrink-0"><CategoryBadge category={post.category} /></span>
+          )}
+          <span className="text-gray-500 dark:text-gray-400 text-[13px] flex-shrink-0 whitespace-nowrap ml-auto pl-2">
+            <ReactTimeago date={post.createdAt} />
+          </span>
           {isOwner && (
             <button onClick={() => onDelete(post._id)}
-              className="w-7 h-7 rounded-full flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all flex-shrink-0 ml-1">
+              className="w-7 h-7 -mr-1.5 rounded-full flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all flex-shrink-0">
               <Trash2 size={13} />
             </button>
           )}
