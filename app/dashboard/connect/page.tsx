@@ -52,7 +52,7 @@ function UserRow({
       variants={{ hidden: { opacity: 0, y: 10 }, visible: { opacity: 1, y: 0 } }}
       whileHover={{ boxShadow: "0 4px 16px rgba(0,0,0,0.08)" }}
       whileTap={{ scale: 0.99 }}
-      className="bg-white dark:bg-gray-900 rounded-2xl border border-black/8 dark:border-white/8 shadow-card p-4 flex items-center gap-4 transition-all duration-200"
+      className="bg-transparent border-b border-black/8 dark:border-white/10 p-4 flex items-center gap-4 transition-all duration-200"
     >
       <Link href={`/dashboard/profile/${user._id}`} className="flex-shrink-0">
         <Avatar src={user.profileImage} name={user.name} size={52} />
@@ -174,8 +174,7 @@ function ConnectPageContent() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search by name or username..."
-          className="w-full pl-11 pr-4 py-3 rounded-2xl border border-black/8 dark:border-white/10 bg-white dark:bg-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-400/30 focus:bg-white shadow-card transition-all"
-          style={{ boxShadow: "0 2px 8px rgba(0,0,0,0.06), inset 0 1px 2px rgba(0,0,0,0.04)" }}
+          className="w-full pl-11 pr-4 py-3 rounded-full border border-black/8 dark:border-white/10 bg-[#eef0f4] dark:bg-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-400/30 transition-all"
         />
       </div>
 
@@ -224,7 +223,7 @@ function ConnectPageContent() {
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="bg-white dark:bg-gray-900 rounded-[2px] border border-black/10 dark:border-white/10 shadow-pro p-12 text-center"
+              className="bg-transparent border-b border-black/8 dark:border-white/10 p-12 text-center"
             >
               <div className="w-14 h-14 rounded-2xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center mx-auto mb-4">
                 <SearchX size={24} className="text-gray-400 dark:text-gray-500" />

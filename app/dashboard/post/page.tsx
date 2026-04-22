@@ -291,7 +291,7 @@ export default function CreatePostPage() {
         </div>
       </div>
 
-      <div className="bg-white dark:bg-gray-900 rounded-2xl border border-black/10 dark:border-white/10 shadow-card p-6">
+      <div className="bg-transparent border-b border-black/8 dark:border-white/10 p-6">
 
         <AnimatePresence>
           {globalError && (

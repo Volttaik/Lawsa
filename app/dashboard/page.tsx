@@ -1361,7 +1361,7 @@ export default function DashboardHome() {
       </AnimatePresence>
 
       {/* Feed */}
-      <div className="bg-white dark:bg-gray-900 rounded-2xl border border-black/8 dark:border-white/8 shadow-card overflow-hidden">
+      <div className="overflow-hidden">
         {loading ? (
           <>
             {[1, 2, 3].map((i) => <PostSkeleton key={i} />)}

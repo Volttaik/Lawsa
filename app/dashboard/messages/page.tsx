@@ -782,7 +782,7 @@ function MessagesContent() {
             {loading ? (
               <div className="space-y-2">
                 {[1, 2, 3, 4].map((i) => (
-                  <div key={i} className="flex items-center gap-3 p-3 bg-white dark:bg-gray-900 rounded-2xl shadow-soft">
+                  <div key={i} className="flex items-center gap-3 p-3 bg-transparent border-b border-black/8 dark:border-white/10">
                     <div className="skeleton rounded-full flex-shrink-0" style={{ width: 48, height: 48 }} />
                     <div className="flex-1 space-y-2">
                       <div className="skeleton h-3.5 w-2/5" />
@@ -799,7 +799,7 @@ function MessagesContent() {
                     whileTap={{ scale: 0.97 }}
                     transition={{ type: "spring", stiffness: 500, damping: 30 }}
                     onClick={() => openConversation({ _id: `clan-${clanInfo.id}`, participants: [], otherUser: { _id: clanInfo.id, name: `${clanInfo.name} — World Chat`, username: "world-chat", profileImage: clanInfo.logo } })}
-                    className="w-full flex items-center gap-3 px-4 py-3.5 bg-white dark:bg-gray-900 rounded-2xl shadow-soft text-left border border-black/8 dark:border-white/8 hover:shadow-card-hover hover:border-blue-200 dark:hover:border-blue-700/50 transition-all duration-200">
+                    className="w-full flex items-center gap-3 px-4 py-3.5 bg-transparent border-b border-black/8 dark:border-white/10 text-left border border-black/8 dark:border-white/8 hover:bg-black/[0.03] dark:hover:bg-white/[0.03] hover:border-blue-200 dark:hover:border-blue-700/50 transition-all duration-200">
                     <div className="relative flex-shrink-0">
                       {clanInfo.logo ? (
                         <img src={clanInfo.logo} alt={clanInfo.name} className="w-12 h-12 rounded-2xl object-cover shadow-sm" />
@@ -817,7 +817,7 @@ function MessagesContent() {
                 )}
                 {conversations.length === 0 && !clanInfo ? (
                   <div className="p-8 text-center text-sm text-gray-500 dark:text-gray-400 mt-4">
-                    <div className="w-16 h-16 rounded-3xl bg-white dark:bg-gray-900 shadow-card flex items-center justify-center mx-auto mb-4">
+                    <div className="w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-900 flex items-center justify-center mx-auto mb-4">
                       <Users className="text-gray-300 dark:text-gray-700" size={28} />
                     </div>
                     <p className="font-semibold text-gray-700 dark:text-gray-300">No conversations yet</p>
@@ -832,7 +832,7 @@ function MessagesContent() {
                     whileHover={{ scale: 1.01 }}
                     whileTap={{ scale: 0.97 }}
                     onClick={() => openConversation(conv)}
-                    className="w-full flex items-center gap-3 px-4 py-3.5 bg-white dark:bg-gray-900 rounded-2xl shadow-soft text-left border border-black/8 dark:border-white/8 hover:shadow-card-hover transition-all duration-200">
+                    className="w-full flex items-center gap-3 px-4 py-3.5 bg-transparent border-b border-black/8 dark:border-white/10 text-left border border-black/8 dark:border-white/8 hover:bg-black/[0.03] dark:hover:bg-white/[0.03] transition-all duration-200">
                     <Avatar src={conv.otherUser?.profileImage} name={conv.otherUser?.name || "?"} size={48} />
                     <div className="flex-1 min-w-0">
                       <div className="font-semibold text-sm text-gray-900 dark:text-white truncate">{conv.otherUser?.name}</div>

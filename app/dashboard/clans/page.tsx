@@ -346,7 +346,7 @@ export default function ClansPage() {
 
       {/* Clans list */}
       {clans.length === 0 ? (
-        <div className="bg-white dark:bg-gray-900 rounded-[2px] border border-black/10 dark:border-white/10 shadow-pro p-12 text-center">
+        <div className="bg-transparent border-b border-black/8 dark:border-white/10 p-12 text-center">
           <div className="w-14 h-14 rounded-2xl bg-indigo-50 dark:bg-indigo-900/20 flex items-center justify-center mx-auto mb-4">
             <Shield size={24} className="text-indigo-500" />
           </div>
@@ -367,7 +367,7 @@ export default function ClansPage() {
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.04, duration: 0.3 }}
-              className="bg-white dark:bg-gray-900 rounded-[2px] border border-black/10 dark:border-white/10 shadow-pro p-4"
+              className="bg-transparent border-b border-black/8 dark:border-white/10 p-4"
             >
               <div className="flex items-center gap-3">
                 <ClanLogo src={clan.logo} name={clan.name} size={52} />

@@ -341,7 +341,7 @@ export default function ProfilePage() {
     return (
       <div className="max-w-2xl mx-auto px-4 py-6 space-y-4">
         {/* Profile Card Skeleton */}
-        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-black/8 dark:border-white/8 shadow-card overflow-hidden">
+        <div className="bg-transparent border-b border-black/8 dark:border-white/10 overflow-hidden">
           <div className="skeleton w-full h-40" style={{ borderRadius: 0 }} />
           <div className="px-6 pb-6">
             <div className="flex items-end justify-between -mt-10 mb-4">
@@ -369,7 +369,7 @@ export default function ProfilePage() {
         <div className="skeleton h-12 w-full rounded-2xl" />
         {/* Post Skeletons */}
         {[1, 2].map((i) => (
-          <div key={i} className="bg-white dark:bg-gray-900 rounded-2xl border border-black/8 dark:border-white/8 shadow-card p-4 space-y-3">
+          <div key={i} className="bg-transparent border-b border-black/8 dark:border-white/10 p-4 space-y-3">
             <div className="skeleton h-40 w-full rounded-xl" />
             <div className="skeleton h-3.5 w-full" />
             <div className="skeleton h-3.5 w-3/4" />
@@ -394,7 +394,7 @@ export default function ProfilePage() {
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-        className="bg-white dark:bg-gray-900 rounded-2xl border border-black/8 dark:border-white/8 shadow-card overflow-hidden mb-4"
+        className="bg-transparent border-b border-black/8 dark:border-white/10 overflow-hidden mb-4"
       >
         {/* Banner */}
         <div className="relative h-40 bg-gradient-to-r from-blue-500 to-blue-700 overflow-hidden">
@@ -553,7 +553,7 @@ export default function ProfilePage() {
       </motion.div>
 
       {/* Tab Switch */}
-      <div className="flex gap-1 mb-4 bg-white dark:bg-gray-900 rounded-2xl border border-black/8 dark:border-white/8 shadow-card p-1.5">
+      <div className="flex gap-1 mb-4 bg-transparent border-b border-black/8 dark:border-white/10 p-1.5">
         {[
           { key: "posts", label: "Posts" },
           { key: "stories", label: "Stories" },
@@ -578,7 +578,7 @@ export default function ProfilePage() {
       {activeTab === "posts" && (
         <div>
           {posts.length === 0 ? (
-            <div className="bg-white dark:bg-gray-900 rounded-2xl border border-black/8 dark:border-white/8 shadow-card p-10 text-center text-gray-400 text-sm">
+            <div className="bg-transparent border-b border-black/8 dark:border-white/10 p-10 text-center text-gray-400 text-sm">
               <div className="w-12 h-12 rounded-2xl bg-[#f0f2f5] dark:bg-gray-800 flex items-center justify-center mx-auto mb-3">
                 <BookOpen size={20} className="text-gray-300 dark:text-gray-600" />
               </div>
@@ -593,7 +593,7 @@ export default function ProfilePage() {
                   animate={{ opacity: 1, y: 0 }}
                   whileHover={{ y: -1, boxShadow: "0 8px 24px 0 rgba(0,0,0,0.10)" }}
                   transition={{ delay: i * 0.05, duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-                  className="bg-white dark:bg-gray-900 rounded-2xl border border-black/8 dark:border-white/8 shadow-card p-4"
+                  className="bg-transparent border-b border-black/8 dark:border-white/10 p-4"
                 >
                   <Linkify text={post.content} className="text-sm text-gray-800 dark:text-gray-200 leading-relaxed whitespace-pre-wrap break-words" />
                   {post.images && post.images.length > 0 && (
@@ -641,7 +641,7 @@ export default function ProfilePage() {
           )}
 
           {stories.length === 0 ? (
-            <div className="bg-white dark:bg-gray-900 rounded-2xl border border-black/8 dark:border-white/8 shadow-card p-10 text-center text-gray-400 text-sm">
+            <div className="bg-transparent border-b border-black/8 dark:border-white/10 p-10 text-center text-gray-400 text-sm">
               <div className="w-12 h-12 rounded-2xl bg-[#f0f2f5] dark:bg-gray-800 flex items-center justify-center mx-auto mb-3">
                 <BookOpen size={20} className="text-gray-300 dark:text-gray-600" />
               </div>
