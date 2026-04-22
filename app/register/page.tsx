@@ -172,7 +172,7 @@ export default function RegisterPage() {
 
   if (success) {
     return (
-      <div className="min-h-screen bg-white flex flex-col">
+      <div className="min-h-screen bg-[#e8ecf0] flex flex-col">
         <Header />
         <div className="flex-1 flex items-center justify-center px-4 py-12">
           <motion.div
@@ -229,7 +229,7 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white flex flex-col">
+    <div className="min-h-screen bg-[#e8ecf0] flex flex-col">
       <Header />
       <div className="flex-1 flex">
         <div className="flex-1 flex items-center justify-center px-4 py-10">
@@ -610,7 +610,7 @@ export default function RegisterPage() {
 
 function Header() {
   return (
-    <header className="border-b border-black/10 shadow-soft flex-shrink-0">
+    <header className="glass-strong border-b border-black/8 shadow-soft flex-shrink-0">
       <div className="max-w-6xl mx-auto px-4 h-12 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2">
           <LogoIcon size={24} />

@@ -339,8 +339,42 @@ export default function ProfilePage() {
 
   if (loading) {
     return (
-      <div className="flex justify-center py-20">
-        <Loader2 className="animate-spin text-blue-600" size={28} />
+      <div className="max-w-2xl mx-auto px-4 py-6 space-y-4">
+        {/* Profile Card Skeleton */}
+        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-black/8 dark:border-white/8 shadow-card overflow-hidden">
+          <div className="skeleton w-full h-40" style={{ borderRadius: 0 }} />
+          <div className="px-6 pb-6">
+            <div className="flex items-end justify-between -mt-10 mb-4">
+              <div className="skeleton rounded-full flex-shrink-0" style={{ width: 88, height: 88 }} />
+              <div className="skeleton h-9 w-24 rounded-xl" />
+            </div>
+            <div className="skeleton h-5 w-1/3 mb-2" />
+            <div className="skeleton h-3.5 w-1/4 mb-3" />
+            <div className="skeleton h-3.5 w-4/5 mb-1" />
+            <div className="skeleton h-3.5 w-3/5 mb-4" />
+            <div className="flex gap-3 mb-4">
+              {[1, 2, 3].map((i) => <div key={i} className="skeleton h-6 w-20 rounded-full" />)}
+            </div>
+            <div className="flex gap-8">
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="text-center space-y-1">
+                  <div className="skeleton h-5 w-8 mx-auto" />
+                  <div className="skeleton h-3 w-12" />
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+        {/* Tab Skeleton */}
+        <div className="skeleton h-12 w-full rounded-2xl" />
+        {/* Post Skeletons */}
+        {[1, 2].map((i) => (
+          <div key={i} className="bg-white dark:bg-gray-900 rounded-2xl border border-black/8 dark:border-white/8 shadow-card p-4 space-y-3">
+            <div className="skeleton h-40 w-full rounded-xl" />
+            <div className="skeleton h-3.5 w-full" />
+            <div className="skeleton h-3.5 w-3/4" />
+          </div>
+        ))}
       </div>
     );
   }
@@ -360,7 +394,7 @@ export default function ProfilePage() {
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-        className="bg-white dark:bg-gray-900 rounded-[2px] border border-black/10 dark:border-white/10 shadow-pro overflow-hidden mb-4"
+        className="bg-white dark:bg-gray-900 rounded-2xl border border-black/8 dark:border-white/8 shadow-card overflow-hidden mb-4"
       >
         {/* Banner */}
         <div className="relative h-40 bg-gradient-to-r from-blue-500 to-blue-700 overflow-hidden">
@@ -519,22 +553,24 @@ export default function ProfilePage() {
       </motion.div>
 
       {/* Tab Switch */}
-      <div className="flex gap-1 mb-4 bg-white dark:bg-gray-900 rounded-[2px] border border-black/10 dark:border-white/10 shadow-pro p-1">
+      <div className="flex gap-1 mb-4 bg-white dark:bg-gray-900 rounded-2xl border border-black/8 dark:border-white/8 shadow-card p-1.5">
         {[
           { key: "posts", label: "Posts" },
           { key: "stories", label: "Stories" },
         ].map((tab) => (
-          <button
+          <motion.button
             key={tab.key}
+            whileTap={{ scale: 0.96 }}
+            transition={{ type: "spring", stiffness: 500, damping: 30 }}
             onClick={() => setActiveTab(tab.key as "posts" | "stories")}
-            className={`flex-1 py-2 text-sm font-semibold rounded-xl transition-all duration-200 ${
+            className={`flex-1 py-2.5 text-sm font-semibold rounded-xl transition-all duration-200 ${
               activeTab === tab.key
-                ? "bg-blue-600 text-white shadow-btn"
-                : "text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800"
+                ? "bg-blue-600 text-white shadow-[0_2px_8px_rgba(37,99,235,0.3)]"
+                : "text-gray-500 dark:text-gray-400 hover:bg-[#f0f2f5] dark:hover:bg-gray-800"
             }`}
           >
             {tab.label}
-          </button>
+          </motion.button>
         ))}
       </div>
 
@@ -542,18 +578,22 @@ export default function ProfilePage() {
       {activeTab === "posts" && (
         <div>
           {posts.length === 0 ? (
-            <div className="bg-white dark:bg-gray-900 rounded-[2px] border border-black/10 dark:border-white/10 shadow-pro p-10 text-center text-gray-400 text-sm">
+            <div className="bg-white dark:bg-gray-900 rounded-2xl border border-black/8 dark:border-white/8 shadow-card p-10 text-center text-gray-400 text-sm">
+              <div className="w-12 h-12 rounded-2xl bg-[#f0f2f5] dark:bg-gray-800 flex items-center justify-center mx-auto mb-3">
+                <BookOpen size={20} className="text-gray-300 dark:text-gray-600" />
+              </div>
               No posts yet.
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-3">
               {posts.map((post, i) => (
                 <motion.div
                   key={post._id}
                   initial={{ opacity: 0, y: 16 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.04, duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-                  className="bg-white dark:bg-gray-900 rounded-[2px] border border-black/10 dark:border-white/10 shadow-pro p-4"
+                  whileHover={{ y: -1, boxShadow: "0 8px 24px 0 rgba(0,0,0,0.10)" }}
+                  transition={{ delay: i * 0.05, duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+                  className="bg-white dark:bg-gray-900 rounded-2xl border border-black/8 dark:border-white/8 shadow-card p-4"
                 >
                   <Linkify text={post.content} className="text-sm text-gray-800 dark:text-gray-200 leading-relaxed whitespace-pre-wrap break-words" />
                   {post.images && post.images.length > 0 && (
@@ -571,7 +611,10 @@ export default function ProfilePage() {
                     </div>
                   )}
                   <div className="flex items-center gap-3 mt-3 pt-3 border-t border-black/5 dark:border-white/5 text-xs text-gray-500 dark:text-gray-400">
-                    <span>❤️ {post.likes?.length || 0} likes</span>
+                    <span className="flex items-center gap-1">
+                      <Heart size={11} className="fill-red-400 text-red-400" /> {post.likes?.length || 0}
+                    </span>
+                    <span className="text-gray-300 dark:text-gray-600">·</span>
                     <span>{new Date(post.createdAt).toLocaleDateString()}</span>
                   </div>
                 </motion.div>
@@ -598,8 +641,10 @@ export default function ProfilePage() {
           )}
 
           {stories.length === 0 ? (
-            <div className="bg-white dark:bg-gray-900 rounded-[2px] border border-black/10 dark:border-white/10 shadow-pro p-10 text-center text-gray-400 text-sm">
-              <BookOpen className="mx-auto mb-3 text-gray-300" size={32} />
+            <div className="bg-white dark:bg-gray-900 rounded-2xl border border-black/8 dark:border-white/8 shadow-card p-10 text-center text-gray-400 text-sm">
+              <div className="w-12 h-12 rounded-2xl bg-[#f0f2f5] dark:bg-gray-800 flex items-center justify-center mx-auto mb-3">
+                <BookOpen size={20} className="text-gray-300 dark:text-gray-600" />
+              </div>
               No stories yet.
             </div>
           ) : (

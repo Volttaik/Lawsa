@@ -42,7 +42,7 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-title" content="Lawsa" />
         <link rel="apple-touch-icon" href="/icon.jpg" />
       </head>
-      <body className={`${inter.className} min-h-screen bg-white dark:bg-gray-950`}>
+      <body className={`${inter.className} min-h-screen bg-[#e8ecf0] dark:bg-gray-950`}>
         <ThemeProvider>
           {children}
         </ThemeProvider>

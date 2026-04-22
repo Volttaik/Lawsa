@@ -402,25 +402,26 @@ function Lightbox({
 
 function PostSkeleton() {
   return (
-    <div className="bg-white dark:bg-gray-900 rounded-2xl border border-black/10 dark:border-white/10 shadow-card overflow-hidden">
+    <div className="bg-white dark:bg-gray-900 rounded-2xl border border-black/8 dark:border-white/8 shadow-card overflow-hidden">
       <div className="p-4 space-y-3">
         <div className="flex items-start gap-3">
           <div className="skeleton rounded-full flex-shrink-0" style={{ width: 40, height: 40 }} />
           <div className="flex-1 space-y-2 pt-1">
-            <div className="skeleton h-3.5 w-1/3" />
+            <div className="skeleton h-3.5 w-2/5" />
             <div className="skeleton h-3 w-1/4" />
           </div>
         </div>
-        <div className="skeleton w-full h-48 rounded-xl" />
+        <div className="skeleton w-full h-52 rounded-xl" />
         <div className="space-y-2">
           <div className="skeleton h-3.5 w-full" />
           <div className="skeleton h-3.5 w-5/6" />
-          <div className="skeleton h-3.5 w-3/5" />
+          <div className="skeleton h-3.5 w-2/5" />
         </div>
-        <div className="flex gap-2 pt-1">
-          <div className="skeleton h-7 w-16 rounded-lg" />
-          <div className="skeleton h-7 w-20 rounded-lg" />
-          <div className="skeleton h-7 w-14 rounded-lg ml-auto" />
+        <div className="flex gap-2 pt-1 border-t border-black/5 dark:border-white/5 mt-2">
+          <div className="skeleton h-8 w-16 rounded-xl" />
+          <div className="skeleton h-8 w-20 rounded-xl" />
+          <div className="skeleton h-8 w-16 rounded-xl" />
+          <div className="skeleton h-8 w-14 rounded-xl ml-auto" />
         </div>
       </div>
     </div>
@@ -597,11 +598,13 @@ function PostCard({ post, currentUser, onDelete, onOpenLightbox }: {
     <motion.div
       id={post._id}
       layout
-      initial={{ opacity: 0, y: 24 }}
+      initial={{ opacity: 0, y: 28 }}
       animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, scale: 0.97 }}
-      transition={{ duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] }}
-      className="bg-white dark:bg-gray-900 rounded-2xl border border-black/10 dark:border-white/10 shadow-card overflow-hidden"
+      exit={{ opacity: 0, scale: 0.96, y: -8 }}
+      transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+      whileHover={{ y: -2, boxShadow: "0 8px 24px 0 rgba(0,0,0,0.10), 0 2px 6px 0 rgba(0,0,0,0.06)" }}
+      className="bg-white dark:bg-gray-900 rounded-2xl border border-black/8 dark:border-white/8 shadow-card overflow-hidden cursor-default"
+      style={{ transition: "box-shadow 0.2s ease" }}
     >
       {/* ── Reposted indicator ── */}
       {post.repostedFrom?._id && (
@@ -698,40 +701,60 @@ function PostCard({ post, currentUser, onDelete, onOpenLightbox }: {
       )}
 
       {/* ── Actions ── */}
-      <div className="px-4 py-2.5 border-t border-black/5 dark:border-white/5 mt-3 flex items-center gap-1">
-        <motion.button whileTap={{ scale: 0.82 }} onClick={handleLike}
-          className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all ${liked ? "text-red-500 bg-red-50 dark:bg-red-900/20" : "text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800"}`}>
-          <motion.div animate={liked ? { scale: [1, 1.6, 1] } : {}} transition={{ duration: 0.3 }}>
-            <Heart size={14} className={liked ? "fill-red-500" : ""} />
+      <div className="px-3 py-2 border-t border-black/5 dark:border-white/5 mt-3 flex items-center gap-0.5">
+        <motion.button
+          whileTap={{ scale: 0.78 }}
+          transition={{ type: "spring", stiffness: 600, damping: 25 }}
+          onClick={handleLike}
+          className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold transition-colors duration-150 ${liked ? "text-red-500 bg-red-50 dark:bg-red-900/20" : "text-gray-500 dark:text-gray-400 hover:bg-[#f0f2f5] dark:hover:bg-gray-800 hover:text-red-400"}`}>
+          <motion.div
+            animate={liked ? { scale: [1, 1.5, 0.9, 1.2, 1] } : { scale: 1 }}
+            transition={{ duration: 0.45, ease: [0.34, 1.56, 0.64, 1] }}
+          >
+            <Heart size={15} className={liked ? "fill-red-500" : ""} />
           </motion.div>
-          {likesCount > 0 && <span>{likesCount}</span>}
+          {likesCount > 0 && (
+            <motion.span key={likesCount} initial={{ scale: 0.6, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ type: "spring", stiffness: 500, damping: 20 }}>
+              {likesCount}
+            </motion.span>
+          )}
           <span className="hidden sm:block">Like</span>
         </motion.button>
-        <motion.button whileTap={{ scale: 0.82 }} onClick={loadComments}
-          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all">
-          <MessageCircle size={14} />
+        <motion.button
+          whileTap={{ scale: 0.78 }}
+          transition={{ type: "spring", stiffness: 600, damping: 25 }}
+          onClick={loadComments}
+          className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-gray-500 dark:text-gray-400 hover:bg-[#f0f2f5] dark:hover:bg-gray-800 hover:text-blue-500 transition-colors duration-150">
+          <MessageCircle size={15} />
           {(post.comments?.length || 0) > 0 && <span>{post.comments?.length}</span>}
           <span className="hidden sm:block">Comment</span>
         </motion.button>
         {!post.repostedFrom?._id && (
-          <motion.button whileTap={{ scale: 0.82 }} onClick={handleRepost}
-            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all ${
+          <motion.button
+            whileTap={{ scale: 0.78 }}
+            transition={{ type: "spring", stiffness: 600, damping: 25 }}
+            onClick={handleRepost}
+            className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold transition-colors duration-150 ${
               reposted
                 ? "text-green-600 bg-green-50 dark:bg-green-900/20"
-                : "text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800"
+                : "text-gray-500 dark:text-gray-400 hover:bg-[#f0f2f5] dark:hover:bg-gray-800 hover:text-green-500"
             }`}>
-            <motion.div animate={reposted ? { rotate: [0, 360] } : {}} transition={{ duration: 0.4 }}>
-              <Repeat2 size={14} />
+            <motion.div animate={reposted ? { rotate: [0, 180, 360] } : {}} transition={{ duration: 0.45, ease: "easeInOut" }}>
+              <Repeat2 size={15} />
             </motion.div>
             {reshareCount > 0 && <span>{reshareCount}</span>}
             <span className="hidden sm:block">{reposted ? "Reposted" : "Repost"}</span>
           </motion.button>
         )}
-        <motion.button whileTap={{ scale: 0.82 }} onClick={handleShare} disabled={shareLoading}
-          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all ml-auto text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-60">
+        <motion.button
+          whileTap={{ scale: 0.78 }}
+          transition={{ type: "spring", stiffness: 600, damping: 25 }}
+          onClick={handleShare}
+          disabled={shareLoading}
+          className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold transition-colors duration-150 ml-auto text-gray-500 dark:text-gray-400 hover:bg-[#f0f2f5] dark:hover:bg-gray-800 hover:text-blue-500 disabled:opacity-60">
           {shareLoading
-            ? <Loader2 size={14} className="animate-spin" />
-            : <Share2 size={14} />}
+            ? <Loader2 size={15} className="animate-spin" />
+            : <Share2 size={15} />}
           <span className="hidden sm:block">Share</span>
         </motion.button>
       </div>
@@ -1226,18 +1249,21 @@ export default function DashboardHome() {
       </AnimatePresence>
 
       {/* Category Filter Strip */}
-      <div className="sticky top-12 z-30 -mx-4 px-4 py-2 bg-white/90 dark:bg-gray-950/90 backdrop-blur-md border-b border-black/5 dark:border-white/5 mb-4">
+      <div className="sticky top-12 z-30 -mx-4 px-4 py-2.5 bg-[#e8ecf0]/95 dark:bg-gray-950/95 backdrop-blur-xl border-b border-black/6 dark:border-white/5 mb-4">
         <div ref={filterScrollRef} className="flex gap-2 overflow-x-auto scrollbar-hide pb-0.5">
           {CATEGORIES.map((cat) => {
             const { Icon } = cat;
             const isActive = activeCategory === cat.id;
             return (
-              <motion.button key={cat.id} whileTap={{ scale: 0.93 }}
+              <motion.button key={cat.id}
+                whileTap={{ scale: 0.90 }}
+                whileHover={{ scale: 1.03 }}
+                transition={{ type: "spring", stiffness: 500, damping: 30 }}
                 onClick={() => handleCategoryChange(cat.id)}
-                className={`flex-shrink-0 flex items-center gap-1.5 text-xs font-semibold px-3.5 py-1.5 rounded-full transition-all whitespace-nowrap ${
+                className={`flex-shrink-0 flex items-center gap-1.5 text-xs font-semibold px-3.5 py-1.5 rounded-full transition-colors duration-200 whitespace-nowrap ${
                   isActive
-                    ? "bg-blue-600 text-white shadow-btn"
-                    : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700"
+                    ? "bg-blue-600 text-white shadow-[0_2px_8px_rgba(37,99,235,0.35)]"
+                    : "bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-[#dde1e7] dark:hover:bg-gray-700 border border-black/8 dark:border-white/8 shadow-soft"
                 }`}>
                 <Icon size={12} /> {cat.label}
               </motion.button>

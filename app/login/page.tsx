@@ -42,14 +42,14 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-white flex flex-col">
+    <div className="min-h-screen bg-[#e8ecf0] flex flex-col">
       {/* Success overlay */}
       <AnimatePresence>
         {success && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="fixed inset-0 z-50 bg-white flex flex-col items-center justify-center gap-5"
+            className="fixed inset-0 z-50 bg-[#e8ecf0] flex flex-col items-center justify-center gap-5"
           >
             <motion.div
               initial={{ scale: 0 }}
@@ -81,7 +81,7 @@ export default function LoginPage() {
       </AnimatePresence>
 
       {/* Header */}
-      <header className="border-b border-black/10 shadow-soft flex-shrink-0">
+      <header className="glass-strong border-b border-black/8 shadow-soft flex-shrink-0">
         <div className="max-w-6xl mx-auto px-5 h-12 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
             <LogoIcon size={24} />
@@ -140,7 +140,7 @@ export default function LoginPage() {
         </motion.div>
 
         {/* Right Panel — Form */}
-        <div className="flex-1 flex items-center justify-center px-4 py-12 bg-white">
+        <div className="flex-1 flex items-center justify-center px-4 py-12 bg-[#e8ecf0]">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}

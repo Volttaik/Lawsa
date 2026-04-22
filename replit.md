@@ -99,13 +99,31 @@ The app runs on port 5000.
 
 ## Design System
 
-- **Background**: White (`#ffffff`)
+- **Page Background**: Muted cool grey (`#e8ecf0`) — set globally in `app/layout.tsx` body and repeated per-page
+- **Card Background**: Pure white (`#ffffff`) — cards sit on muted bg for depth contrast
+- **Input Background**: `#eef0f4` with inset shadow — softer than white, focused state returns to white
 - **Accent**: Blue (`#2563EB`)
-- **Borders**: Thin black with opacity (`border-black/10`)
-- **Shadows**: Soft elevation only (`shadow-soft`, `shadow-card`, `shadow-card-hover`, `shadow-btn`)
+- **Borders**: Very thin black with opacity (`border-black/8`)
+- **Shadows**: Layered elevation (`shadow-soft`, `shadow-card`, `shadow-card-hover`, `shadow-btn`)
+- **Header/Nav**: Frosted glass (`.glass-strong` = rgba(255,255,255,0.95) + 24px blur + saturate(200%))
 - **Typography**: Clean, balanced, no oversized headings
-- **Animations**: Framer Motion (smooth, subtle) + CSS keyframes for page elements
+- **Border Radius**: `rounded-2xl` for cards, `rounded-xl` for buttons/inputs, `rounded-full` for chips/avatars
+- **Animations**: Framer Motion spring (`stiffness: 500, damping: 30`) + 5-keyframe like bounce + slide-in variants
 - **Form inputs**: `.form-input` CSS class (defined in globals.css)
+
+### UI Overhaul Completed (April 2026)
+
+Pages updated with spring/slide animations, glass headers, muted bg, card lift hovers:
+- `app/globals.css` — full color system, animations, glass utilities, skeleton, post-card-hover
+- `app/layout.tsx` — body background changed to `#e8ecf0`
+- `app/dashboard/layout.tsx` — glass-strong frosted header + spring-animated bottom nav with pill active states
+- `app/dashboard/page.tsx` — PostCard hover lift + heartbeat like bounce + category filter chips
+- `app/dashboard/messages/page.tsx` — white cards on muted bg, staggered fade-in, spring new-chat button
+- `app/dashboard/profile/[userId]/page.tsx` — full skeleton loader, tab spring animation, card hover lift
+- `app/dashboard/connect/page.tsx` — rounded-2xl cards, styled search input
+- `app/login/page.tsx` — muted background, glass header
+- `app/register/page.tsx` — muted background, glass header
+- `app/page.tsx` — landing page background updated
 
 ## Important Notes
 

@@ -739,22 +739,28 @@ function MessagesContent() {
 
       {/* Conversation List */}
       <div className="flex h-[calc(100vh-112px)]">
-        <div className="w-full flex flex-col bg-white dark:bg-gray-900">
-          <div className="px-4 pt-4 pb-3 border-b border-black/10 dark:border-white/10 shadow-sm">
+        <div className="w-full flex flex-col bg-[#e8ecf0] dark:bg-gray-950">
+          <div className="px-4 pt-4 pb-3 border-b border-black/8 dark:border-white/10 glass-strong dark:bg-gray-900/95">
             <div className="flex items-center justify-between mb-3">
-              <h2 className="font-bold text-gray-900 dark:text-white text-xl">Messages</h2>
-              <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
+              <h2 className="font-bold text-gray-900 dark:text-white text-xl tracking-tight">Messages</h2>
+              <motion.button
+                whileHover={{ scale: 1.08 }}
+                whileTap={{ scale: 0.9 }}
+                transition={{ type: "spring", stiffness: 500, damping: 25 }}
                 onClick={() => setShowNewConv(!showNewConv)}
-                className="w-8 h-8 rounded-[8px] bg-blue-600 text-white flex items-center justify-center hover:bg-blue-700 transition-colors shadow-[0_2px_6px_0_rgba(37,99,235,0.3)]">
-                <MessageCircle size={16} />
+                className="w-9 h-9 rounded-2xl bg-blue-600 text-white flex items-center justify-center hover:bg-blue-700 transition-colors shadow-[0_2px_10px_rgba(37,99,235,0.4)]">
+                <motion.div animate={{ rotate: showNewConv ? 45 : 0 }} transition={{ type: "spring", stiffness: 400, damping: 20 }}>
+                  <MessageCircle size={16} />
+                </motion.div>
               </motion.button>
             </div>
             <AnimatePresence>
               {showNewConv && (
-                <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
+                <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }} className="overflow-hidden">
                   <input type="text" value={userSearch} onChange={(e) => setUserSearch(e.target.value)}
                     placeholder="Search people..."
-                    className="w-full px-3 py-2 text-sm rounded-[8px] border border-black/10 dark:border-white/10 bg-gray-50 dark:bg-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 mb-2" />
+                    className="w-full px-3 py-2 text-sm rounded-xl border border-black/8 dark:border-white/10 bg-[#eef0f4] dark:bg-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:bg-white dark:focus:bg-gray-700 mb-2 transition-all"
+                    style={{ boxShadow: "inset 0 1px 3px rgba(0,0,0,0.06)" }} />
                   <div className="max-h-48 overflow-y-auto space-y-1 scrollbar-hide">
                     {filteredUsers.slice(0, 10).map((u) => (
                       <button key={u._id} onClick={() => startNewConversation(u)}
@@ -772,11 +778,11 @@ function MessagesContent() {
             </AnimatePresence>
           </div>
 
-          <div className="flex-1 overflow-y-auto scrollbar-hide">
+          <div className="flex-1 overflow-y-auto scrollbar-hide p-3 space-y-1.5">
             {loading ? (
-              <div className="p-4 space-y-3">
+              <div className="space-y-2">
                 {[1, 2, 3, 4].map((i) => (
-                  <div key={i} className="flex items-center gap-3 px-1">
+                  <div key={i} className="flex items-center gap-3 p-3 bg-white dark:bg-gray-900 rounded-2xl shadow-soft">
                     <div className="skeleton rounded-full flex-shrink-0" style={{ width: 48, height: 48 }} />
                     <div className="flex-1 space-y-2">
                       <div className="skeleton h-3.5 w-2/5" />
@@ -788,14 +794,17 @@ function MessagesContent() {
             ) : (
               <>
                 {clanInfo && (
-                  <motion.button whileTap={{ scale: 0.98 }}
+                  <motion.button
+                    whileHover={{ scale: 1.01 }}
+                    whileTap={{ scale: 0.97 }}
+                    transition={{ type: "spring", stiffness: 500, damping: 30 }}
                     onClick={() => openConversation({ _id: `clan-${clanInfo.id}`, participants: [], otherUser: { _id: clanInfo.id, name: `${clanInfo.name} — World Chat`, username: "world-chat", profileImage: clanInfo.logo } })}
-                    className="w-full flex items-center gap-3 px-4 py-3 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors text-left border-b border-black/5 dark:border-white/5">
+                    className="w-full flex items-center gap-3 px-4 py-3.5 bg-white dark:bg-gray-900 rounded-2xl shadow-soft text-left border border-black/8 dark:border-white/8 hover:shadow-card-hover hover:border-blue-200 dark:hover:border-blue-700/50 transition-all duration-200">
                     <div className="relative flex-shrink-0">
                       {clanInfo.logo ? (
-                        <img src={clanInfo.logo} alt={clanInfo.name} className="w-12 h-12 rounded-[8px] object-cover shadow-sm" />
+                        <img src={clanInfo.logo} alt={clanInfo.name} className="w-12 h-12 rounded-2xl object-cover shadow-sm" />
                       ) : (
-                        <div className="w-12 h-12 rounded-[8px] bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-sm">
+                        <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-sm">
                           <Users size={22} className="text-white" />
                         </div>
                       )}
@@ -807,19 +816,27 @@ function MessagesContent() {
                   </motion.button>
                 )}
                 {conversations.length === 0 && !clanInfo ? (
-                  <div className="p-8 text-center text-sm text-gray-500 dark:text-gray-400">
-                    <Users className="mx-auto text-gray-300 dark:text-gray-700 mb-3" size={36} />
-                    <p className="font-medium">No conversations yet</p>
+                  <div className="p-8 text-center text-sm text-gray-500 dark:text-gray-400 mt-4">
+                    <div className="w-16 h-16 rounded-3xl bg-white dark:bg-gray-900 shadow-card flex items-center justify-center mx-auto mb-4">
+                      <Users className="text-gray-300 dark:text-gray-700" size={28} />
+                    </div>
+                    <p className="font-semibold text-gray-700 dark:text-gray-300">No conversations yet</p>
                     <p className="text-xs mt-1 text-gray-400">Tap the icon above to start one</p>
                   </div>
-                ) : conversations.map((conv) => (
-                  <motion.button key={conv._id} whileTap={{ scale: 0.98 }}
+                ) : conversations.map((conv, idx) => (
+                  <motion.button
+                    key={conv._id}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: idx * 0.04, duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+                    whileHover={{ scale: 1.01 }}
+                    whileTap={{ scale: 0.97 }}
                     onClick={() => openConversation(conv)}
-                    className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800/60 transition-colors text-left border-b border-black/5 dark:border-white/5">
+                    className="w-full flex items-center gap-3 px-4 py-3.5 bg-white dark:bg-gray-900 rounded-2xl shadow-soft text-left border border-black/8 dark:border-white/8 hover:shadow-card-hover transition-all duration-200">
                     <Avatar src={conv.otherUser?.profileImage} name={conv.otherUser?.name || "?"} size={48} />
                     <div className="flex-1 min-w-0">
                       <div className="font-semibold text-sm text-gray-900 dark:text-white truncate">{conv.otherUser?.name}</div>
-                      <div className="text-xs text-gray-500 dark:text-gray-400 truncate mt-0.5">{conv.lastMessage || "Start a conversation"}</div>
+                      <div className="text-xs text-gray-400 dark:text-gray-500 truncate mt-0.5">{conv.lastMessage || "Start a conversation"}</div>
                     </div>
                   </motion.button>
                 ))}
