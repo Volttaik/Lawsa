@@ -87,7 +87,7 @@ function MessageSkeleton({ isMe }: { isMe: boolean }) {
     <div className={`flex items-end gap-2 ${isMe ? "flex-row-reverse" : ""}`}>
       {!isMe && <div className="skeleton rounded-full flex-shrink-0" style={{ width: 30, height: 30 }} />}
       <div className={`flex flex-col gap-1 ${isMe ? "items-end" : "items-start"}`}>
-        <div className={`skeleton h-10 rounded-[6px]`} style={{ width: isMe ? 140 : 180 }} />
+        <div className={`skeleton h-10 rounded-2xl`} style={{ width: isMe ? 140 : 180 }} />
       </div>
     </div>
   );
@@ -117,7 +117,7 @@ function TypingIndicator() {
   return (
     <div className="flex items-end gap-2">
       <div className="w-8 h-8 rounded-full bg-white/20 flex-shrink-0" />
-      <div className="bg-white/10 backdrop-blur-sm border border-white/10 rounded-[6px] px-4 py-3 flex items-center gap-1 shadow-[0_1px_6px_0_rgba(0,0,0,0.15)]">
+      <div className="bg-white/10 backdrop-blur-md border border-white/15 rounded-2xl px-4 py-3 flex items-center gap-1">
         {[0, 0.15, 0.3].map((delay, i) => (
           <motion.div key={i}
             animate={{ y: [0, -4, 0] }}
@@ -172,8 +172,8 @@ function VoiceNotePlayer({ url, isMe }: { url: string; isMe: boolean }) {
   const playedCount = Math.floor(progress * bars.length);
 
   return (
-    <div className={`flex items-center gap-2.5 px-3 py-2.5 rounded-[6px] min-w-[220px] max-w-[280px] shadow-[0_1px_8px_0_rgba(0,0,0,0.15)] ${
-      isMe ? "bg-blue-600" : "bg-white border border-black/8"
+    <div className={`flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl min-w-[240px] max-w-[300px] ${
+      isMe ? "bg-blue-600" : "bg-white/95 backdrop-blur-sm border border-black/8"
     }`}>
       <audio ref={audioRef} src={url} preload="metadata"
         onLoadedMetadata={handleDuration}
@@ -225,21 +225,21 @@ function MediaPreview({ url, type, isMe }: { url: string; type: string; isMe: bo
 
   if (type === "image") {
     if (imgError) return (
-      <div className="mt-1 w-[220px] h-32 rounded-[6px] bg-white/10 flex items-center justify-center">
+      <div className="mt-1 w-[300px] h-40 rounded-2xl bg-white/10 flex items-center justify-center">
         <span className="text-white/40 text-xs">Image unavailable</span>
       </div>
     );
     return (
-      <div className="mt-1 max-w-[220px] overflow-hidden rounded-[6px] bg-white/5 shadow-[0_1px_6px_0_rgba(0,0,0,0.2)]">
+      <div className="mt-1 max-w-[300px] overflow-hidden rounded-2xl bg-white/5">
         <img
           src={url}
           alt="Image"
-          className={`max-w-[220px] max-h-56 object-cover rounded-[6px] w-full block transition-opacity duration-300 ${imgLoaded ? "opacity-100" : "opacity-0"}`}
+          className={`max-w-[300px] max-h-80 object-cover rounded-2xl w-full block transition-opacity duration-300 ${imgLoaded ? "opacity-100" : "opacity-0"}`}
           onLoad={() => setImgLoaded(true)}
           onError={() => setImgError(true)}
         />
         {!imgLoaded && !imgError && (
-          <div className="w-[220px] h-32 flex items-center justify-center">
+          <div className="w-[300px] h-40 flex items-center justify-center">
             <Loader2 size={18} className="text-white/40 animate-spin" />
           </div>
         )}
@@ -248,14 +248,14 @@ function MediaPreview({ url, type, isMe }: { url: string; type: string; isMe: bo
   }
   if (type === "video") {
     if (vidError) return (
-      <div className="mt-1 w-[260px] h-32 rounded-[6px] bg-white/10 flex items-center justify-center">
+      <div className="mt-1 w-[320px] h-40 rounded-2xl bg-white/10 flex items-center justify-center">
         <span className="text-white/40 text-xs">Video unavailable</span>
       </div>
     );
     return (
-      <div className="mt-1 max-w-[260px] rounded-[6px] overflow-hidden bg-black shadow-[0_1px_6px_0_rgba(0,0,0,0.25)]">
+      <div className="mt-1 max-w-[320px] rounded-2xl overflow-hidden bg-black">
         <video src={url} controls preload="metadata" playsInline
-          className="rounded-[6px] max-w-[260px] max-h-56 block w-full"
+          className="rounded-2xl max-w-[320px] max-h-80 block w-full"
           onError={() => setVidError(true)} />
       </div>
     );
@@ -265,7 +265,7 @@ function MediaPreview({ url, type, isMe }: { url: string; type: string; isMe: bo
     const filename = url.split("/").pop() || "File";
     return (
       <a href={url} target="_blank" rel="noopener noreferrer"
-        className={`mt-1 flex items-center gap-2 px-4 py-3 text-sm hover:opacity-90 transition-opacity max-w-[220px] rounded-[6px] shadow-[0_1px_4px_0_rgba(0,0,0,0.15)] ${
+        className={`mt-1 flex items-center gap-2 px-4 py-3 text-sm hover:opacity-90 transition-opacity max-w-[260px] rounded-2xl ${
           isMe ? "bg-blue-600 text-white" : "bg-white/15 backdrop-blur-sm border border-white/20 text-white"
         }`}>
         <FileText size={16} />
@@ -778,7 +778,7 @@ function MessagesContent() {
             </AnimatePresence>
           </div>
 
-          <div className="flex-1 overflow-y-auto scrollbar-hide p-3 space-y-1.5">
+          <div className="flex-1 overflow-y-auto scrollbar-hide">
             {loading ? (
               <div className="space-y-2">
                 {[1, 2, 3, 4].map((i) => (
@@ -799,19 +799,19 @@ function MessagesContent() {
                     whileTap={{ scale: 0.97 }}
                     transition={{ type: "spring", stiffness: 500, damping: 30 }}
                     onClick={() => openConversation({ _id: `clan-${clanInfo.id}`, participants: [], otherUser: { _id: clanInfo.id, name: `${clanInfo.name} — World Chat`, username: "world-chat", profileImage: clanInfo.logo } })}
-                    className="w-full flex items-center gap-3 px-4 py-3.5 bg-transparent border-b border-black/8 dark:border-white/10 text-left border border-black/8 dark:border-white/8 hover:bg-black/[0.03] dark:hover:bg-white/[0.03] hover:border-blue-200 dark:hover:border-blue-700/50 transition-all duration-200">
+                    className="w-full flex items-center gap-3 px-4 py-3 bg-transparent border-b border-black/8 dark:border-white/10 text-left hover:bg-black/[0.03] dark:hover:bg-white/[0.03] transition-colors">
                     <div className="relative flex-shrink-0">
                       {clanInfo.logo ? (
-                        <img src={clanInfo.logo} alt={clanInfo.name} className="w-12 h-12 rounded-2xl object-cover shadow-sm" />
+                        <img src={clanInfo.logo} alt={clanInfo.name} className="w-11 h-11 rounded-full object-cover" />
                       ) : (
-                        <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-sm">
-                          <Users size={22} className="text-white" />
+                        <div className="w-11 h-11 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center">
+                          <Users size={20} className="text-white" />
                         </div>
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="font-semibold text-sm text-gray-900 dark:text-white truncate">{clanInfo.name}</div>
-                      <div className="text-xs text-blue-500 dark:text-blue-400 truncate mt-0.5 font-medium">World Chat</div>
+                      <div className="font-semibold text-[14px] text-gray-900 dark:text-white truncate">{clanInfo.name}</div>
+                      <div className="text-[12px] text-blue-500 dark:text-blue-400 truncate mt-0.5 font-medium">World Chat</div>
                     </div>
                   </motion.button>
                 )}
@@ -832,11 +832,11 @@ function MessagesContent() {
                     whileHover={{ scale: 1.01 }}
                     whileTap={{ scale: 0.97 }}
                     onClick={() => openConversation(conv)}
-                    className="w-full flex items-center gap-3 px-4 py-3.5 bg-transparent border-b border-black/8 dark:border-white/10 text-left border border-black/8 dark:border-white/8 hover:bg-black/[0.03] dark:hover:bg-white/[0.03] transition-all duration-200">
-                    <Avatar src={conv.otherUser?.profileImage} name={conv.otherUser?.name || "?"} size={48} />
+                    className="w-full flex items-center gap-3 px-4 py-3 bg-transparent border-b border-black/8 dark:border-white/10 text-left hover:bg-black/[0.03] dark:hover:bg-white/[0.03] transition-colors">
+                    <Avatar src={conv.otherUser?.profileImage} name={conv.otherUser?.name || "?"} size={44} />
                     <div className="flex-1 min-w-0">
-                      <div className="font-semibold text-sm text-gray-900 dark:text-white truncate">{conv.otherUser?.name}</div>
-                      <div className="text-xs text-gray-400 dark:text-gray-500 truncate mt-0.5">{conv.lastMessage || "Start a conversation"}</div>
+                      <div className="font-semibold text-[14px] text-gray-900 dark:text-white truncate">{conv.otherUser?.name}</div>
+                      <div className="text-[12px] text-gray-400 dark:text-gray-500 truncate mt-0.5">{conv.lastMessage || "Start a conversation"}</div>
                     </div>
                   </motion.button>
                 ))}
@@ -859,7 +859,7 @@ function MessagesContent() {
               style={{ backgroundColor: chatBg.bgColor }}
             >
             {/* Header */}
-            <div className="flex-shrink-0 flex items-center gap-3 px-4 bg-white/10 dark:bg-black/20 backdrop-blur-xl border-b border-white/10"
+            <div className="flex-shrink-0 flex items-center gap-3 px-4 bg-black/25 backdrop-blur-2xl backdrop-saturate-150 border-b border-white/10"
               style={{ paddingTop: "max(0.75rem, env(safe-area-inset-top))", paddingBottom: "0.75rem" }}>
               <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.9 }}
                 onClick={closeChat}
@@ -957,8 +957,8 @@ function MessagesContent() {
                                 <span className="text-[10px] text-white/50 font-medium px-1 mb-0.5 truncate max-w-full">{msg.senderName}</span>
                               )}
                               {msg.isDeleted ? (
-                                <div className={`px-3 py-2 text-sm italic opacity-50 rounded-[6px] shadow-[0_1px_4px_0_rgba(0,0,0,0.1)] ${
-                                  isMe ? "bg-blue-600/60 text-white" : "bg-white/10 text-white"
+                                <div className={`px-3.5 py-2 text-[13px] italic opacity-60 rounded-2xl ${
+                                  isMe ? "bg-blue-600/60 text-white" : "bg-white/15 backdrop-blur-md text-white"
                                 }`}>
                                   Message deleted
                                 </div>
@@ -973,19 +973,19 @@ function MessagesContent() {
                                         autoFocus value={editText}
                                         onChange={(e) => setEditText(e.target.value)}
                                         onKeyDown={(e) => { if (e.key === "Enter") submitEdit(msg._id); if (e.key === "Escape") setEditingMsgId(null); }}
-                                        className="px-3 py-2 text-sm rounded-[6px] bg-white/10 border border-white/20 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-blue-400/50 min-w-[160px]"
+                                        className="px-3.5 py-2 text-[13px] rounded-2xl bg-white/10 border border-white/20 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-blue-400/50 min-w-[160px]"
                                       />
                                       <button onClick={() => submitEdit(msg._id)}
-                                        className="px-3 py-2 text-xs bg-blue-500 text-white rounded-[6px] hover:bg-blue-400 transition-colors">Save</button>
+                                        className="px-3 py-2 text-xs bg-blue-500 text-white rounded-full hover:bg-blue-400 transition-colors">Save</button>
                                       <button onClick={() => setEditingMsgId(null)}
                                         className="p-2 text-white/50 hover:text-white transition-colors"><X size={14} /></button>
                                     </div>
                                   ) : (
                                     msg.content && (
-                                      <div className={`px-3 py-2 text-sm leading-relaxed ${msg.mediaUrl ? "mt-1" : ""} rounded-[6px] ${
+                                      <div className={`px-3.5 py-2 text-[13px] leading-[1.45] ${msg.mediaUrl ? "mt-1" : ""} rounded-2xl ${
                                         isMe
-                                          ? "bg-blue-600 text-white shadow-[0_2px_8px_0_rgba(37,99,235,0.3)]"
-                                          : "bg-white text-gray-900 border border-black/8 shadow-[0_1px_6px_0_rgba(0,0,0,0.12)]"
+                                          ? "bg-blue-600 text-white shadow-[0_1px_3px_rgba(37,99,235,0.25)]"
+                                          : "bg-white/95 backdrop-blur-sm text-gray-900 border border-white/30"
                                       }`}>
                                         <Linkify text={msg.content} linkClass={isMe ? "text-blue-200 hover:underline break-all" : "text-blue-600 hover:underline break-all"} />
                                         {msg.edited && <span className="text-[9px] opacity-50 ml-1">edited</span>}
@@ -1075,7 +1075,7 @@ function MessagesContent() {
             </AnimatePresence>
 
             {/* Input Bar */}
-            <div className="flex-shrink-0 px-3 py-3 bg-black/30 backdrop-blur-xl border-t border-white/15 shadow-[0_-2px_16px_0_rgba(0,0,0,0.2)]"
+            <div className="flex-shrink-0 px-3 py-3 bg-black/25 backdrop-blur-2xl backdrop-saturate-150 border-t border-white/10"
               style={{ paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))" }}>
               {isRecording ? (
                 <div className="flex items-center gap-3">
@@ -1099,7 +1099,7 @@ function MessagesContent() {
                   <div className="relative flex-shrink-0" ref={mediaMenuRef}>
                     <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.92 }}
                       onClick={() => setShowMediaMenu(!showMediaMenu)}
-                      className={`w-9 h-9 rounded-[8px] flex items-center justify-center transition-all ${showMediaMenu ? "bg-blue-500 text-white" : "bg-white/10 text-white/70 hover:bg-white/20"}`}>
+                      className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${showMediaMenu ? "bg-blue-500 text-white" : "bg-white/10 text-white/80 hover:bg-white/20"}`}>
                       <motion.div animate={{ rotate: showMediaMenu ? 45 : 0 }} transition={{ duration: 0.2 }}>
                         <Plus size={18} />
                       </motion.div>
@@ -1135,7 +1135,7 @@ function MessagesContent() {
                     onChange={(e) => handleTextChange(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && sendMessage()}
                     placeholder="Message..."
-                    className="flex-1 px-4 py-2.5 text-sm rounded-[8px] bg-white/10 border border-white/15 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-blue-400/50 focus:bg-white/15 transition-all"
+                    className="flex-1 px-4 py-2.5 text-[14px] rounded-full bg-white/10 backdrop-blur-md border border-white/15 text-white placeholder-white/45 focus:outline-none focus:ring-2 focus:ring-blue-400/50 focus:bg-white/15 transition-all"
                   />
 
                   <AnimatePresence mode="wait">
@@ -1144,7 +1144,7 @@ function MessagesContent() {
                         initial={{ scale: 0.5, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.5, opacity: 0 }}
                         transition={{ duration: 0.15 }} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.92 }}
                         onClick={sendMessage} disabled={sendingMsg || !!pendingMedia?.uploading}
-                        className="w-9 h-9 bg-blue-600 text-white rounded-[8px] flex items-center justify-center hover:bg-blue-500 transition-colors shadow-[0_2px_8px_0_rgba(37,99,235,0.3)] disabled:opacity-50 flex-shrink-0">
+                        className="w-10 h-10 bg-blue-600 text-white rounded-full flex items-center justify-center hover:bg-blue-500 transition-colors shadow-[0_2px_10px_rgba(37,99,235,0.4)] disabled:opacity-50 flex-shrink-0">
                         {sendingMsg ? <Loader2 size={15} className="animate-spin" /> : <Send size={15} />}
                       </motion.button>
                     ) : (
@@ -1152,7 +1152,7 @@ function MessagesContent() {
                         initial={{ scale: 0.5, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.5, opacity: 0 }}
                         transition={{ duration: 0.15 }} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.92 }}
                         onMouseDown={startRecording} onTouchStart={startRecording}
-                        className="w-9 h-9 bg-white/10 text-white/70 rounded-[8px] flex items-center justify-center hover:bg-white/20 transition-colors flex-shrink-0"
+                        className="w-10 h-10 bg-white/10 text-white/80 rounded-full flex items-center justify-center hover:bg-white/20 transition-colors flex-shrink-0"
                         title="Hold to record">
                         <Mic size={17} />
                       </motion.button>

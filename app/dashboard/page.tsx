@@ -601,39 +601,39 @@ function PostCard({ post, currentUser, onDelete, onOpenLightbox }: {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.98 }}
       transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-      className="flex gap-3 px-4 pt-4 border-b border-black/8 dark:border-white/8 hover:bg-black/[0.012] dark:hover:bg-white/[0.02] transition-colors cursor-default"
+      className="flex gap-3 px-4 pt-3 border-b border-black/8 dark:border-white/10 hover:bg-black/[0.015] dark:hover:bg-white/[0.025] transition-colors cursor-default"
     >
       {/* Left: Avatar column */}
       <div className="flex-shrink-0 flex flex-col items-center">
         <Link href={`/dashboard/profile/${post.authorId}`} className="block">
-          <Avatar src={post.authorImage} name={post.authorName} size={40} />
+          <Avatar src={post.authorImage} name={post.authorName} size={44} />
         </Link>
       </div>
 
       {/* Right: All content */}
-      <div className="flex-1 min-w-0 pb-3">
+      <div className="flex-1 min-w-0 pb-2.5">
         {/* Repost label */}
         {post.repostedFrom?._id && (
-          <div className="flex items-center gap-1.5 text-[12px] font-medium text-gray-500 dark:text-gray-400 mb-1">
-            <Repeat2 size={12} />
+          <div className="flex items-center gap-1.5 text-[11px] font-medium text-gray-500 dark:text-gray-400 mb-0.5">
+            <Repeat2 size={11} />
             <span>{post.authorName} reposted</span>
           </div>
         )}
 
         {/* Author row */}
-        <div className="flex items-center justify-between mb-1.5">
-          <div className="flex items-center gap-1 min-w-0 flex-wrap leading-tight">
+        <div className="flex items-center justify-between mb-1">
+          <div className="flex items-center gap-1 min-w-0 leading-tight overflow-hidden">
             <Link href={`/dashboard/profile/${post.authorId}`}
-              className="font-bold text-[15px] text-gray-900 dark:text-white hover:underline truncate max-w-[120px]">
+              className="font-bold text-[14px] text-gray-900 dark:text-white hover:underline truncate">
               {post.authorName}
             </Link>
-            <span className="text-gray-500 dark:text-gray-400 text-sm truncate max-w-[100px]">@{post.authorUsername}</span>
-            <span className="text-gray-400 dark:text-gray-600 text-sm">·</span>
-            <span className="text-gray-500 dark:text-gray-400 text-sm flex-shrink-0 whitespace-nowrap">
+            <span className="text-gray-500 dark:text-gray-400 text-[13px] truncate">@{post.authorUsername}</span>
+            <span className="text-gray-400 dark:text-gray-600 text-[13px]">·</span>
+            <span className="text-gray-500 dark:text-gray-400 text-[13px] flex-shrink-0 whitespace-nowrap">
               <ReactTimeago date={post.createdAt} />
             </span>
             {post.category && post.category !== "general" && (
-              <><span className="text-gray-400 dark:text-gray-600 text-sm">·</span><CategoryBadge category={post.category} /></>
+              <><span className="text-gray-400 dark:text-gray-600 text-[13px]">·</span><CategoryBadge category={post.category} /></>
             )}
           </div>
           {isOwner && (
@@ -645,16 +645,16 @@ function PostCard({ post, currentUser, onDelete, onOpenLightbox }: {
         </div>
 
         {/* Text content */}
-        {(post.content || !post.repostedFrom?._id) && (
+        {(post.content || !post.repostedFrom?._id) && post.content && (
           <Linkify
             text={post.content}
-            className="text-[15px] text-gray-800 dark:text-gray-100 leading-normal whitespace-pre-wrap break-words mb-3 block"
+            className="text-[14px] text-gray-900 dark:text-gray-100 leading-[1.45] whitespace-pre-wrap break-words mb-2.5 block"
           />
         )}
 
         {/* Media */}
         {hasMedia && (
-          <div className="rounded-2xl overflow-hidden border border-black/10 dark:border-white/10 mb-3">
+          <div className="rounded-2xl overflow-hidden border border-black/8 dark:border-white/10 mb-2.5 -ml-1 sm:ml-0">
             {validImages.length > 0 && (
               <div className={`grid gap-0.5 ${validImages.length > 1 ? "grid-cols-2" : "grid-cols-1"}`}>
                 {validImages.map((img, i) => (
@@ -662,7 +662,7 @@ function PostCard({ post, currentUser, onDelete, onOpenLightbox }: {
                     key={i}
                     src={img}
                     alt="Post"
-                    className="w-full block"
+                    className={`w-full block ${validImages.length === 1 ? "max-h-[560px] object-cover" : "aspect-square object-cover"}`}
                     onClick={() => onOpenLightbox(allMediaItems, i)}
                   />
                 ))}
