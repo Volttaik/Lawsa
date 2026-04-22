@@ -105,7 +105,7 @@ export default function ClansPage() {
   const [joiningId, setJoiningId] = useState<string | null>(null);
   const [lastMsgTime, setLastMsgTime] = useState<string | null>(null);
   const [clanShareCopied, setClanShareCopied] = useState(false);
-  const [chatBg, setChatBg] = useState(CHAT_BACKGROUNDS[0]);
+  const [chatBg, setChatBg] = useState<typeof CHAT_BACKGROUNDS[number]>(CHAT_BACKGROUNDS[0]);
   const [customBgUrl, setCustomBgUrl] = useState<string | null>(null);
 
   const handleShareClan = (clan: Clan) => {

@@ -4,7 +4,7 @@ import { useParams, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Camera, Edit3, UserPlus, UserCheck, Loader2, X, Save,
-  Shield, ChevronRight, Plus, BookOpen, MessageCircle, Share2, Check,
+  Shield, ChevronRight, Plus, BookOpen, MessageCircle, Share2, Check, Heart,
 } from "lucide-react";
 import { uploadFile } from "@/lib/uploadClient";
 import VideoPlayer from "@/components/VideoPlayer";
