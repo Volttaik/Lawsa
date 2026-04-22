@@ -1093,7 +1093,7 @@ export default function DashboardHome() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto px-4 pb-4">
+    <div className="w-full max-w-[680px] mx-auto pb-4">
 
       {/* Shared post param reader */}
       <Suspense fallback={null}>
@@ -1243,7 +1243,7 @@ export default function DashboardHome() {
       </AnimatePresence>
 
       {/* Category Filter Strip */}
-      <div className="sticky top-12 z-30 -mx-4 px-4 py-2.5 bg-[#e8ecf0]/95 dark:bg-gray-950/95 backdrop-blur-xl border-b border-black/6 dark:border-white/5 mb-4">
+      <div className="sticky top-12 z-30 px-4 py-2.5 bg-white/95 dark:bg-black/95 backdrop-blur-xl border-b border-black/[0.07] dark:border-white/10 mb-2">
         <div ref={filterScrollRef} className="flex gap-2 overflow-x-auto scrollbar-hide pb-0.5">
           {CATEGORIES.map((cat) => {
             const { Icon } = cat;
@@ -1268,7 +1268,7 @@ export default function DashboardHome() {
 
       {/* Stories Bar */}
       {stories.length > 0 && (
-        <div className="mb-4">
+        <div className="mb-2 px-4 pt-2">
           <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-1">
             {currentUser && (
               <Link href={`/dashboard/profile/${currentUser._id}`} className="flex flex-col items-center gap-1.5 flex-shrink-0">
