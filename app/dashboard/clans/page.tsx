@@ -109,7 +109,7 @@ export default function ClansPage() {
   const [customBgUrl, setCustomBgUrl] = useState<string | null>(null);
 
   const handleShareClan = (clan: Clan) => {
-    const text = `Join ${clan.name} on Lawsa Socials!\n${window.location.origin}/dashboard/clans`;
+    const text = `Join ${clan.name} on Sosa Socials!\n${window.location.origin}/dashboard/clans`;
     if (navigator.clipboard) {
       navigator.clipboard.writeText(text).catch(() => {});
     } else {

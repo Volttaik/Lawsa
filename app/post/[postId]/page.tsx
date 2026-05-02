@@ -1,7 +1,6 @@
 import { Metadata } from "next";
 import { headers } from "next/headers";
-import connectDB from "@/lib/db";
-import { Post } from "@/models/post.model";
+import { getPostById } from "@/lib/queries";
 import PostRedirectClient from "./PostRedirectClient";
 
 export async function generateMetadata({
@@ -10,33 +9,28 @@ export async function generateMetadata({
   params: { postId: string };
 }): Promise<Metadata> {
   try {
-    await connectDB();
-    const post = await Post.findById(params.postId).lean() as {
-      authorName?: string;
-      authorUsername?: string;
-      content?: string;
-      images?: string[];
-    } | null;
+    const post = await getPostById(params.postId);
 
     if (!post) {
       return {
-        title: "Post not found — Lawsa Socials",
+        title: "Post not found — Sosa Socials",
         description: "This post is no longer available.",
       };
     }
 
     const headersList = headers();
-    const host = headersList.get("host") || "lawsa.vercel.app";
+    const host = headersList.get("host") || "sosa.vercel.app";
     const protocol = host.includes("localhost") ? "http" : "https";
     const baseUrl = `${protocol}://${host}`;
 
     const authorHandle = post.authorUsername
       ? `@${post.authorUsername}`
       : post.authorName || "Someone";
-    const description = post.content?.slice(0, 200) || "View this post on Lawsa Socials";
-    const title = `${authorHandle} on Lawsa Socials`;
+    const description = post.content?.slice(0, 200) || "View this post on Sosa Socials";
+    const title = `${authorHandle} on Sosa Socials`;
 
-    const rawImage = post.images?.[0];
+    const images: string[] = Array.isArray(post.images) ? post.images : (typeof post.images === "string" ? JSON.parse(post.images || "[]") : []);
+    const rawImage = images[0];
     const ogImage = rawImage
       ? rawImage.startsWith("http")
         ? rawImage
@@ -50,7 +44,7 @@ export async function generateMetadata({
         title,
         description,
         url: `${baseUrl}/post/${params.postId}`,
-        siteName: "Lawsa Socials",
+        siteName: "Sosa Socials",
         images: [{ url: ogImage, width: 1200, height: 630, alt: title }],
         type: "article",
       },
@@ -63,7 +57,7 @@ export async function generateMetadata({
     };
   } catch {
     return {
-      title: "Lawsa Socials — Connect, Share & Grow",
+      title: "Sosa Socials — Connect, Share & Grow",
       description:
         "A modern social networking platform for students and professionals.",
     };

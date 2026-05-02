@@ -1,211 +1,172 @@
 "use client";
 import { useEffect, useState, useCallback } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
-import { Home, MessageCircle, PlusSquare, Users, User, Bell, Loader2 } from "lucide-react";
+import { Home, Search, Bell, Mail, User, Users, Shield, Star, Menu, X, LogOut, BadgeCheck } from "lucide-react";
 
-import { Logo } from "@/components/Logo";
+interface Me { id: string; _id?: string; name: string; username: string; profileImage?: string; isVerified?: boolean; premiumTheme?: boolean; }
 
-interface CurrentUser {
-  _id: string;
-  id?: string;
-  name: string;
-  username: string;
-  email: string;
-  profileImage?: string;
-}
-
-function Avatar({ src, name, size = 24 }: { src?: string; name: string; size?: number }) {
-  if (src) return <img src={src} alt={name} className="rounded-full object-cover flex-shrink-0" style={{ width: size, height: size }} />;
+function Avatar({ src, name, size = 36, gold }: { src?: string; name: string; size?: number; gold?: boolean }) {
+  const ring = gold ? "ring-2 ring-amber-400" : "";
+  if (src) return <img src={src} alt={name} className={`rounded-full object-cover flex-shrink-0 ${ring}`} style={{ width: size, height: size }} />;
   return (
-    <div
-      className="rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-bold flex-shrink-0"
-      style={{ width: size, height: size, fontSize: size / 2.5 }}
-    >
-      {name?.[0]?.toUpperCase() || "?"}
+    <div className={`rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold flex-shrink-0 ${ring}`}
+      style={{ width: size, height: size, fontSize: size / 2.6 }}>
+      {name?.[0]?.toUpperCase() || "S"}
     </div>
   );
 }
 
+const NAV = [
+  { href: "/dashboard",                icon: Home,   label: "Home"          },
+  { href: "/dashboard/explore",        icon: Search, label: "Explore"       },
+  { href: "/dashboard/notifications",  icon: Bell,   label: "Notifications" },
+  { href: "/dashboard/messages",       icon: Mail,   label: "Messages"      },
+  { href: "/dashboard/clans",          icon: Users,  label: "Clans"         },
+  { href: "/dashboard/premium",        icon: Star,   label: "Premium"       },
+];
+
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
-  const [user, setUser] = useState<CurrentUser | null>(null);
+  const [user, setUser] = useState<Me | null>(null);
   const [loading, setLoading] = useState(true);
   const [notifCount, setNotifCount] = useState(0);
+  const [mobileMenu, setMobileMenu] = useState(false);
 
-  const sendHeartbeat = useCallback(async () => {
-    try { await fetch("/api/users/heartbeat", { method: "POST" }); } catch {}
-  }, []);
-
-  const fetchNotifCount = useCallback(async () => {
-    try {
-      const res = await fetch("/api/notifications/count");
-      const data = await res.json();
-      setNotifCount(data.count || 0);
-    } catch {}
+  const heartbeat = useCallback(() => { fetch("/api/users/heartbeat", { method: "POST" }).catch(() => {}); }, []);
+  const fetchCount = useCallback(() => {
+    fetch("/api/notifications/count").then(r => r.json()).then(d => setNotifCount(d.count || 0)).catch(() => {});
   }, []);
 
   useEffect(() => {
-    fetch("/api/auth/me", { credentials: "include" })
-      .then((r) => {
-        if (r.status === 401) { window.location.href = "/login"; return null; }
-        return r.json();
-      })
-      .then((data) => {
-        if (!data) return;
-        if (data.user) { setUser(data.user); }
-        else { window.location.href = "/login"; }
-      })
-      .catch(() => { window.location.href = "/login"; })
-      .finally(() => setLoading(false));
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    fetch("/api/auth/me", { credentials: "include" }).then(r => {
+      if (r.status === 401) { router.replace("/login"); return null; }
+      return r.json();
+    }).then(d => {
+      if (d?.user) { setUser(d.user); setLoading(false); }
+      else if (d) { router.replace("/login"); }
+    }).catch(() => router.replace("/login"));
+    heartbeat();
+    fetchCount();
+    const hb = setInterval(heartbeat, 60000);
+    const nc = setInterval(fetchCount, 30000);
+    return () => { clearInterval(hb); clearInterval(nc); };
+  }, [heartbeat, fetchCount, router]);
 
-  useEffect(() => {
-    fetchNotifCount();
-    const interval = setInterval(fetchNotifCount, 30000);
-    return () => clearInterval(interval);
-  }, [fetchNotifCount]);
+  const logout = async () => {
+    await fetch("/api/auth/logout", { method: "POST" });
+    router.replace("/login");
+  };
 
-  useEffect(() => {
-    sendHeartbeat();
-    const interval = setInterval(sendHeartbeat, 30000);
-    return () => clearInterval(interval);
-  }, [sendHeartbeat]);
+  const uid = user?.id || user?._id || "";
 
-  useEffect(() => {
-    if (pathname === "/dashboard/notifications") setNotifCount(0);
-  }, [pathname]);
+  if (loading) return (
+    <div className="min-h-screen bg-black flex items-center justify-center">
+      <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+    </div>
+  );
 
-  const userId = user?._id || user?.id || "";
-
-  const navItems = [
-    { href: "/dashboard", icon: Home, label: "Home" },
-    { href: "/dashboard/messages", icon: MessageCircle, label: "Chats" },
-    { href: "/dashboard/post", icon: PlusSquare, label: "Post" },
-    { href: "/dashboard/connect", icon: Users, label: "Connect" },
-    { href: `/dashboard/profile/${userId}`, icon: User, label: "Profile" },
-  ];
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-white dark:bg-black flex items-center justify-center">
-        <div className="flex flex-col items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center animate-pulse">
-            <Loader2 className="animate-spin text-white" size={20} />
-          </div>
-          <div className="text-xs text-gray-500 font-medium">Loading…</div>
+  const Sidebar = () => (
+    <div className="flex flex-col h-full px-3 py-4">
+      <Link href="/dashboard" className="flex items-center gap-3 px-3 py-3 mb-2">
+        <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
+          <span className="text-white font-black text-sm">S</span>
         </div>
-      </div>
-    );
-  }
+        <span className="text-white font-black text-xl hidden xl:block">Sosa</span>
+      </Link>
+
+      <nav className="flex-1 space-y-1">
+        {NAV.map(({ href, icon: Icon, label }) => {
+          const active = pathname === href || (href !== "/dashboard" && pathname.startsWith(href));
+          const isNotif = label === "Notifications";
+          return (
+            <Link key={href} href={href} onClick={() => setMobileMenu(false)}
+              className={`flex items-center gap-4 px-3 py-3 rounded-full transition-colors group ${active ? "font-bold" : "hover:bg-[#1a1a1a]"}`}>
+              <div className="relative">
+                <Icon className={`w-6 h-6 ${active ? "text-white" : "text-gray-300 group-hover:text-white"}`} strokeWidth={active ? 2.5 : 2} />
+                {isNotif && notifCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-blue-500 text-white text-[9px] font-bold rounded-full w-4 h-4 flex items-center justify-center">{notifCount > 9 ? "9+" : notifCount}</span>
+                )}
+              </div>
+              <span className={`hidden xl:block text-base ${active ? "text-white" : "text-gray-300 group-hover:text-white"}`}>{label}</span>
+            </Link>
+          );
+        })}
+        <Link href={`/dashboard/profile/${uid}`} onClick={() => setMobileMenu(false)}
+          className={`flex items-center gap-4 px-3 py-3 rounded-full transition-colors group ${pathname.startsWith("/dashboard/profile") ? "font-bold" : "hover:bg-[#1a1a1a]"}`}>
+          <User className={`w-6 h-6 ${pathname.startsWith("/dashboard/profile") ? "text-white" : "text-gray-300 group-hover:text-white"}`} strokeWidth={pathname.startsWith("/dashboard/profile") ? 2.5 : 2} />
+          <span className={`hidden xl:block text-base ${pathname.startsWith("/dashboard/profile") ? "text-white" : "text-gray-300 group-hover:text-white"}`}>Profile</span>
+        </Link>
+      </nav>
+
+      {user && (
+        <div className="mt-4 border-t border-[#222] pt-4">
+          <div className="flex items-center gap-3 px-3 py-2 rounded-full hover:bg-[#1a1a1a] cursor-pointer group">
+            <Avatar src={user.profileImage} name={user.name} size={36} gold={user.premiumTheme} />
+            <div className="hidden xl:block flex-1 min-w-0">
+              <div className="flex items-center gap-1">
+                <p className="text-white font-bold text-sm truncate">{user.name}</p>
+                {user.isVerified && <BadgeCheck className="w-4 h-4 text-blue-400 flex-shrink-0" />}
+              </div>
+              <p className="text-gray-500 text-xs truncate">@{user.username}</p>
+            </div>
+            <button onClick={logout} className="hidden xl:block ml-auto opacity-0 group-hover:opacity-100 transition-opacity">
+              <LogOut className="w-4 h-4 text-gray-400 hover:text-white" />
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
 
   return (
-    <div className="min-h-screen bg-white dark:bg-black">
-      {/* Top Header — flat X-style */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-white/85 dark:bg-black/85 backdrop-blur-xl border-b border-black/[0.08] dark:border-white/10">
-        <div className="max-w-5xl mx-auto px-4 h-12 flex items-center justify-between gap-4">
-          <Link href="/dashboard" className="flex-shrink-0">
-            <Logo size={28} textClass="font-bold text-sm text-gray-900 dark:text-white hidden sm:block" />
-          </Link>
+    <div className="min-h-screen bg-black text-white flex">
+      {/* Desktop sidebar */}
+      <aside className="hidden md:flex flex-col w-[72px] xl:w-[260px] border-r border-[#222] fixed top-0 left-0 h-screen z-30">
+        <Sidebar />
+      </aside>
 
-          <div className="flex-1 max-w-md">
-            <div className="relative group">
-              <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400 group-focus-within:text-blue-500 transition-colors" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
-              </svg>
-              <input
-                type="text"
-                placeholder="Search"
-                className="w-full pl-9 pr-4 h-8 text-[13.5px] rounded-full border border-transparent bg-[#eff3f4] dark:bg-[#202327] text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:outline-none focus:bg-white dark:focus:bg-black focus:border-blue-500 transition-all"
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    const val = (e.target as HTMLInputElement).value;
-                    if (val) router.push(`/dashboard/connect?search=${encodeURIComponent(val)}`);
-                  }
-                }}
-              />
-            </div>
-          </div>
-
-          <div className="flex items-center gap-0.5">
-            <Link href="/dashboard/notifications" onClick={() => setNotifCount(0)}
-              className="relative w-9 h-9 rounded-full flex items-center justify-center text-gray-700 dark:text-gray-200 hover:bg-blue-500/10 hover:text-blue-500 transition-all">
-              <Bell size={17} strokeWidth={2} />
-              {notifCount > 0 && (
-                <span className="absolute top-1 right-1 min-w-[15px] h-[15px] bg-blue-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center px-1 leading-none animate-pop-in ring-2 ring-white dark:ring-black">
-                  {notifCount > 99 ? "99+" : notifCount}
-                </span>
-              )}
-            </Link>
-            <Link href="/dashboard/settings" className="w-9 h-9 rounded-full flex items-center justify-center text-gray-700 dark:text-gray-200 hover:bg-blue-500/10 hover:text-blue-500 transition-all">
-              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/>
-                <circle cx="12" cy="12" r="3"/>
-              </svg>
-            </Link>
-            {user && (
-              <Link href={`/dashboard/profile/${userId}`} className="ml-1 w-8 h-8 rounded-full overflow-hidden flex-shrink-0 ring-2 ring-transparent hover:ring-blue-500/40 transition-all">
-                <Avatar src={user.profileImage} name={user.name} size={32} />
-              </Link>
-            )}
+      {/* Mobile menu overlay */}
+      {mobileMenu && (
+        <div className="fixed inset-0 z-50 md:hidden">
+          <div className="absolute inset-0 bg-black/60" onClick={() => setMobileMenu(false)} />
+          <div className="absolute left-0 top-0 bottom-0 w-72 bg-[#0a0a0a] border-r border-[#222]">
+            <button onClick={() => setMobileMenu(false)} className="absolute top-4 right-4 p-2">
+              <X className="w-5 h-5 text-gray-400" />
+            </button>
+            <Sidebar />
           </div>
         </div>
-      </header>
+      )}
 
-      {/* Main Content — animation is handled by template.tsx */}
-      <main className="pt-12 pb-16" style={{ overflowX: "clip" }}>
+      {/* Main content */}
+      <main className="flex-1 md:ml-[72px] xl:ml-[260px] min-h-screen">
+        {/* Mobile topbar */}
+        <div className="md:hidden flex items-center justify-between px-4 py-3 border-b border-[#222] sticky top-0 bg-black/95 backdrop-blur z-20">
+          <button onClick={() => setMobileMenu(true)}><Menu className="w-6 h-6 text-white" /></button>
+          <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
+            <span className="text-white font-black text-sm">S</span>
+          </div>
+          <Avatar src={user?.profileImage} name={user?.name || "S"} size={30} />
+        </div>
         {children}
       </main>
 
-      {/* Bottom Navigation — flat X-style */}
-      <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white/90 dark:bg-black/90 backdrop-blur-xl border-t border-black/[0.08] dark:border-white/10">
-        <div className="max-w-md mx-auto px-2 h-14 flex items-center justify-around">
-          {navItems.map(({ href, icon: Icon, label }) => {
-            const isActive = label === "Profile"
-              ? pathname.includes("/profile/")
-              : label === "Connect"
-              ? pathname.includes("/connect")
-              : pathname === href;
-
-            return (
-              <Link key={label} href={href} className="flex-1">
-                <motion.div
-                  whileTap={{ scale: 0.84 }}
-                  transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                  className="flex flex-col items-center gap-0.5 py-1"
-                >
-                  {label === "Post" ? (
-                    <motion.div
-                      animate={isActive ? { scale: 1.06 } : { scale: 1 }}
-                      whileHover={{ scale: 1.04 }}
-                      transition={{ type: "spring", stiffness: 400, damping: 20 }}
-                      className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${isActive ? "bg-blue-600 text-white" : "bg-blue-600 text-white hover:bg-blue-700"}`}
-                    >
-                      <Icon size={20} strokeWidth={2.4} />
-                    </motion.div>
-                  ) : label === "Profile" && user ? (
-                    <div className={`rounded-full overflow-hidden ring-2 transition-all ${isActive ? "ring-blue-500" : "ring-transparent"}`}>
-                      <Avatar src={user.profileImage} name={user.name} size={26} />
-                    </div>
-                  ) : (
-                    <div className="relative">
-                      <div className={`w-9 h-9 rounded-full flex items-center justify-center transition-colors ${isActive ? "text-blue-500" : "text-gray-600 dark:text-gray-300"}`}>
-                        <Icon size={22} strokeWidth={isActive ? 2.4 : 1.8} fill={isActive ? "currentColor" : "none"} fillOpacity={isActive ? 0.12 : 0} />
-                      </div>
-                      {label === "Chats" && notifCount > 0 && (
-                        <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-blue-500 rounded-full ring-2 ring-white dark:ring-black animate-pop-in" />
-                      )}
-                    </div>
-                  )}
-                </motion.div>
-              </Link>
-            );
-          })}
-        </div>
+      {/* Mobile bottom nav */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-black border-t border-[#222] z-30 flex items-center justify-around px-2 py-2">
+        {[...NAV.slice(0,4), { href: `/dashboard/profile/${uid}`, icon: User, label: "Profile" }].map(({ href, icon: Icon, label }) => {
+          const active = pathname === href || (href !== "/dashboard" && pathname.startsWith(href));
+          const isNotif = label === "Notifications";
+          return (
+            <Link key={href} href={href} className="flex flex-col items-center gap-0.5 px-3 py-1 relative">
+              <div className="relative">
+                <Icon className={`w-6 h-6 ${active ? "text-white" : "text-gray-500"}`} strokeWidth={active ? 2.5 : 2} />
+                {isNotif && notifCount > 0 && <span className="absolute -top-1 -right-1 bg-blue-500 text-white text-[9px] font-bold rounded-full w-4 h-4 flex items-center justify-center">{notifCount > 9 ? "9+" : notifCount}</span>}
+              </div>
+            </Link>
+          );
+        })}
       </nav>
     </div>
   );
