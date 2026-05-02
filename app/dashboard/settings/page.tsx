@@ -132,7 +132,7 @@ export default function SettingsPage() {
 
       {/* Appearance / Dark Mode */}
       <SettingCard delay={0}>
-        <SectionTitle icon={Moon} title="Appearance" desc="Choose how Sosa Socials looks" />
+        <SectionTitle icon={Moon} title="Appearance" desc="Choose how Sosa looks" />
         <div className="grid grid-cols-3 gap-3">
           {themeOptions.map(({ value, icon: Icon, label }) => (
             <button

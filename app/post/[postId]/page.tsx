@@ -13,7 +13,7 @@ export async function generateMetadata({
 
     if (!post) {
       return {
-        title: "Post not found — Sosa Socials",
+        title: "Post not found — Sosa",
         description: "This post is no longer available.",
       };
     }
@@ -26,8 +26,8 @@ export async function generateMetadata({
     const authorHandle = post.authorUsername
       ? `@${post.authorUsername}`
       : post.authorName || "Someone";
-    const description = post.content?.slice(0, 200) || "View this post on Sosa Socials";
-    const title = `${authorHandle} on Sosa Socials`;
+    const description = post.content?.slice(0, 200) || "View this post on Sosa";
+    const title = `${authorHandle} on Sosa`;
 
     const images: string[] = Array.isArray(post.images) ? post.images : (typeof post.images === "string" ? JSON.parse(post.images || "[]") : []);
     const rawImage = images[0];
@@ -44,7 +44,7 @@ export async function generateMetadata({
         title,
         description,
         url: `${baseUrl}/post/${params.postId}`,
-        siteName: "Sosa Socials",
+        siteName: "Sosa",
         images: [{ url: ogImage, width: 1200, height: 630, alt: title }],
         type: "article",
       },
@@ -57,7 +57,7 @@ export async function generateMetadata({
     };
   } catch {
     return {
-      title: "Sosa Socials — Connect, Share & Grow",
+      title: "Sosa — Connect, Share & Grow",
       description:
         "A modern social networking platform for students and professionals.",
     };

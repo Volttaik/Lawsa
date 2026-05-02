@@ -1,5 +1,5 @@
 const CACHE = "sosa-v1";
-const PRECACHE = ["/", "/icon.jpg", "/manifest.json"];
+const PRECACHE = ["/", "/logo.jpg", "/manifest.json"];
 
 self.addEventListener("install", (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(PRECACHE)));

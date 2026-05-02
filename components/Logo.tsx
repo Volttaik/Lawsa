@@ -3,11 +3,11 @@ import Image from "next/image";
 export function LogoIcon({ size = 28 }: { size?: number }) {
   return (
     <Image
-      src="/logo.jpg"
+      src="@assets/IMG-20260502-WA0043_1777765616549.jpg"
       alt="Sosa Logo"
       width={size}
       height={size}
-      className="rounded-lg object-cover"
+      className="rounded-full object-cover"
       priority
     />
   );

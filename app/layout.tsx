@@ -8,7 +8,7 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "Sosa — Connect, Share & Grow",
   description: "Sosa is a modern social networking platform to connect, collaborate, and share ideas.",
-  icons: { icon: "/icon.jpg", apple: "/icon.jpg" },
+  icons: { icon: "/logo.jpg", apple: "/logo.jpg" },
   openGraph: {
     title: "Sosa — Connect, Share & Grow",
     description: "A modern social networking platform to connect, collaborate, and share ideas.",
@@ -27,7 +27,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <link rel="icon" href="/icon.jpg" type="image/jpeg" />
+        <link rel="icon" href="/logo.jpg" type="image/jpeg" />
         <meta name="theme-color" content="#000000" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />

@@ -85,7 +85,7 @@ export default function LoginPage() {
         <div className="max-w-6xl mx-auto px-5 h-14 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
             <LogoIcon size={28} />
-            <span className="font-bold text-gray-900 text-sm">Sosa Socials</span>
+            <span className="font-bold text-gray-900 text-sm">Sosa</span>
           </Link>
           <nav className="hidden md:flex items-center gap-7 text-sm text-gray-500">
             <Link href="/#features" className="hover:text-blue-600 transition-colors font-medium">Features</Link>

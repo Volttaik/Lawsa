@@ -75,7 +75,7 @@ function Header() {
       <div className="max-w-6xl mx-auto px-5 h-14 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2">
           <LogoIcon size={28} />
-          <span className="font-bold text-gray-900 text-sm">Sosa Socials</span>
+          <span className="font-bold text-gray-900 text-sm">Sosa</span>
         </Link>
         <nav className="hidden md:flex items-center gap-7 text-sm text-gray-500">
           <Link href="/#features" className="hover:text-blue-600 transition-colors font-medium">Features</Link>
@@ -260,7 +260,7 @@ export default function RegisterPage() {
               transition={{ delay: 0.5 }}
               className="text-gray-600 mb-8 leading-relaxed"
             >
-              Welcome to Sosa Socials, <span className="font-semibold text-blue-600">{form.name}</span>!
+              Welcome to Sosa, <span className="font-semibold text-blue-600">{form.name}</span>!
               Your account has been created successfully. You&apos;re now part of our growing community.
             </motion.p>
             <motion.div
@@ -459,7 +459,7 @@ export default function RegisterPage() {
                           autoFocus
                         />
                       </FormField>
-                      <p className="text-xs text-gray-400 mt-2">You must be at least 13 years old to join Sosa Socials.</p>
+                      <p className="text-xs text-gray-400 mt-2">You must be at least 13 years old to join Sosa.</p>
                     </StepWrapper>
                   )}
 

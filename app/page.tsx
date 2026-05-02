@@ -75,7 +75,7 @@ function GuestPostViewerInner() {
             <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-black/6">
               <div className="flex items-center gap-2">
                 <LogoIcon size={22} />
-                <span className="font-bold text-gray-900 text-sm">Sosa Socials</span>
+                <span className="font-bold text-gray-900 text-sm">Sosa</span>
               </div>
               <button onClick={() => setOpen(false)}
                 className="w-7 h-7 rounded-lg flex items-center justify-center text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-all">
@@ -120,7 +120,7 @@ function GuestPostViewerInner() {
                   )}
                 </div>
                 <div className="px-4 pb-4 space-y-2.5">
-                  <p className="text-xs text-center text-gray-400 mb-1">Join Sosa Socials to like, comment and connect</p>
+                  <p className="text-xs text-center text-gray-400 mb-1">Join Sosa to like, comment and connect</p>
                   <Link href="/register" className="block w-full py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold text-center transition-all">
                     Create Account to Continue
                   </Link>
@@ -133,7 +133,7 @@ function GuestPostViewerInner() {
               <div className="p-8 text-center text-gray-400 text-sm">
                 <p>This post is no longer available.</p>
                 <Link href="/register" className="block mt-4 py-2.5 rounded-xl bg-blue-600 text-white text-sm font-semibold">
-                  Join Sosa Socials
+                  Join Sosa
                 </Link>
               </div>
             )}
@@ -168,7 +168,7 @@ export default function LandingPage() {
         <div className="max-w-6xl mx-auto px-5 h-14 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <LogoIcon size={28} />
-            <span className="font-bold text-white text-sm">Sosa Socials</span>
+            <span className="font-bold text-white text-sm">Sosa</span>
           </div>
           <nav className="hidden md:flex items-center gap-7 text-sm text-gray-400">
             <a href="#features" className="hover:text-blue-400 transition-colors font-medium">Features</a>
@@ -204,7 +204,7 @@ export default function LandingPage() {
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-blue-600">Grow Together.</span>
               </motion.h1>
               <motion.p variants={fadeUp} className="text-base text-gray-400 mb-8 leading-relaxed max-w-xl">
-                Sosa Socials is where people come together to share ideas, build meaningful connections, and discover new communities. Connect with people who share your interests.
+                Sosa is where people come together to share ideas, build meaningful connections, and discover new communities. Connect with people who share your interests.
               </motion.p>
               <motion.div variants={fadeUp} className="flex flex-col sm:flex-row gap-3">
                 <Link href="/register">
@@ -409,7 +409,7 @@ export default function LandingPage() {
             <motion.div variants={fadeUp} className="text-blue-400 font-semibold text-xs uppercase tracking-widest mb-3">For Everyone</motion.div>
             <motion.h2 variants={fadeUp} className="text-2xl md:text-3xl font-bold text-white mb-5 leading-tight">Built for everyone. Loved by millions.</motion.h2>
             <motion.p variants={fadeUp} className="text-gray-300 text-sm leading-relaxed mb-8">
-              Whether you're sharing your passion, building your community, or discovering new interests — Sosa Socials is your home.
+              Whether you're sharing your passion, building your community, or discovering new interests — Sosa is your home.
             </motion.p>
             <motion.div variants={fadeUp} className="flex flex-wrap justify-center gap-3 mb-8">
               {[
@@ -490,7 +490,7 @@ export default function LandingPage() {
             <div className="md:col-span-2">
               <div className="flex items-center gap-2 mb-3">
                 <LogoIcon size={28} />
-                <span className="font-bold text-white text-sm">Sosa Socials</span>
+                <span className="font-bold text-white text-sm">Sosa</span>
               </div>
               <p className="text-xs text-gray-400 leading-relaxed max-w-xs">
                 The social platform built for connection, discovery, and community. Share your story today.
@@ -514,7 +514,7 @@ export default function LandingPage() {
             </div>
           </div>
           <div className="border-t border-slate-700/50 pt-6 flex flex-col md:flex-row items-center justify-between gap-3">
-            <div className="text-xs text-gray-400">© 2025 Sosa Socials. All rights reserved.</div>
+            <div className="text-xs text-gray-400">© 2025 Sosa. All rights reserved.</div>
             <div className="flex gap-5 text-xs text-gray-400">
               <a href="#" className="hover:text-blue-400 transition-colors">Privacy</a>
               <a href="#" className="hover:text-blue-400 transition-colors">Terms</a>
