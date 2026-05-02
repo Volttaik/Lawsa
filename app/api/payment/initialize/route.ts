@@ -23,10 +23,11 @@ export async function POST(request: NextRequest) {
     const metadata = { userId: authUser.userId, planId, postId: postId || null, userName: authUser.name, userUsername: authUser.username };
     const callbackUrl = `${process.env.NEXT_PUBLIC_APP_URL || `https://${request.headers.get("host")}`}/dashboard/premium?verified=1`;
 
+    const channels = ["card", "bank", "ussd", "qr", "mobile_money", "bank_transfer"];
     const res = await fetch("https://api.paystack.co/transaction/initialize", {
       method: "POST",
       headers: { Authorization: `Bearer ${secretKey}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ email: user.email, amount: plan.amount, currency: "NGN", metadata, callback_url: callbackUrl, channels: ["card", "bank", "ussd", "qr", "mobile_money", "bank_transfer"][...]
+      body: JSON.stringify({ email: user.email, amount: plan.amount, currency: "NGN", metadata, callback_url: callbackUrl, channels }),
     });
 
     const data = await res.json();
