@@ -1,6 +1,6 @@
-# Lawsa Socials
+# Sosa
 
-A modern professional social networking platform built for law students and professionals. A LinkedIn-style app built with Next.js, MongoDB, and Tailwind CSS.
+A modern social networking platform built with Next.js, Turso, and Tailwind CSS.
 
 ## Project Structure
 
@@ -117,8 +117,8 @@ Pages updated with spring/slide animations, glass headers, muted bg, card lift h
 - `app/globals.css` — full color system, animations, glass utilities, skeleton, post-card-hover
 - `app/layout.tsx` — body background changed to `#e8ecf0`
 - `app/dashboard/layout.tsx` — glass-strong frosted header + spring-animated bottom nav with pill active states
-- `app/dashboard/page.tsx` — PostCard hover lift + heartbeat like bounce + category filter chips
-- `app/dashboard/messages/page.tsx` — white cards on muted bg, staggered fade-in, spring new-chat button
+- `app/dashboard/page.tsx` — feed cards, post actions, and media composer
+- `app/dashboard/messages/page.tsx` — chat interface and conversation list
 - `app/dashboard/profile/[userId]/page.tsx` — full skeleton loader, tab spring animation, card hover lift
 - `app/dashboard/connect/page.tsx` — rounded-2xl cards, styled search input
 - `app/login/page.tsx` — muted background, glass header

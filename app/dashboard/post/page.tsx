@@ -13,7 +13,7 @@ import { uploadFile } from "@/lib/uploadClient";
 
 const CATEGORIES = [
   { id: "general",  label: "General",  Icon: Globe },
-  { id: "law",      label: "Law",      Icon: Scale },
+  { id: "culture",  label: "Culture",  Icon: Scale },
   { id: "tech",     label: "Tech",     Icon: Cpu },
   { id: "sports",   label: "Sports",   Icon: Trophy },
   { id: "news",     label: "News",     Icon: Newspaper },

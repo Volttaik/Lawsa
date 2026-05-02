@@ -1,7 +1,7 @@
 {
-  "name": "Lawsa Socials",
-  "short_name": "Lawsa",
-  "description": "A modern social networking platform for students and professionals in the legal community.",
+  "name": "Sosa",
+  "short_name": "Sosa",
+  "description": "A modern social networking platform for sharing ideas and building community.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#000000",

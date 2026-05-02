@@ -6,18 +6,18 @@ import { ThemeProvider } from "@/components/ThemeProvider";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Sosa Socials — Connect, Share & Grow",
-  description: "Sosa Socials is a modern social networking platform to connect, collaborate, and share ideas.",
+  title: "Sosa — Connect, Share & Grow",
+  description: "Sosa is a modern social networking platform to connect, collaborate, and share ideas.",
   icons: { icon: "/icon.jpg", apple: "/icon.jpg" },
   openGraph: {
-    title: "Sosa Socials — Connect, Share & Grow",
+    title: "Sosa — Connect, Share & Grow",
     description: "A modern social networking platform to connect, collaborate, and share ideas.",
-    images: [{ url: "/logo.jpg", width: 1200, height: 630, alt: "Sosa Socials" }],
+    images: [{ url: "/logo.jpg", width: 1200, height: 630, alt: "Sosa" }],
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Sosa Socials — Connect, Share & Grow",
+    title: "Sosa — Connect, Share & Grow",
     description: "A modern social networking platform to connect, collaborate, and share ideas.",
     images: ["/logo.jpg"],
   },
