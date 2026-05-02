@@ -1,17 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getUserFromRequest } from "@/lib/auth";
 import { getUserById } from "@/lib/queries";
+import { PLANS, PlanId } from "@/lib/payment-plans";
 
 export const dynamic = "force-dynamic";
-
-const PLANS = {
-  verified_badge: { name: "Verified Badge", amount: 250000, description: "Get a blue verified checkmark on your profile" },
-  profile_boost: { name: "Profile Boost (30 days)", amount: 150000, description: "Be featured in suggestions for 30 days" },
-  premium_theme: { name: "Premium Theme", amount: 100000, description: "Unlock gold/purple profile border & theme" },
-  post_boost: { name: "Post Boost", amount: 50000, description: "Boost a post for maximum visibility" },
-};
-
-export type PlanId = keyof typeof PLANS;
 
 export async function POST(request: NextRequest) {
   try {
@@ -34,7 +26,7 @@ export async function POST(request: NextRequest) {
     const res = await fetch("https://api.paystack.co/transaction/initialize", {
       method: "POST",
       headers: { Authorization: `Bearer ${secretKey}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ email: user.email, amount: plan.amount, currency: "NGN", metadata, callback_url: callbackUrl, channels: ["card", "bank", "ussd", "qr", "mobile_money", "bank_transfer"] }),
+      body: JSON.stringify({ email: user.email, amount: plan.amount, currency: "NGN", metadata, callback_url: callbackUrl, channels: ["card", "bank", "ussd", "qr", "mobile_money", "bank_transfer"][...]
     });
 
     const data = await res.json();
@@ -46,5 +38,3 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
-
-export { PLANS };
