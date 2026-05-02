@@ -100,7 +100,7 @@ export default function PWAInstallBanner() {
             {/* App info row */}
             <div className="flex items-center gap-4 mb-5">
               <div className="w-16 h-16 rounded-2xl overflow-hidden flex-shrink-0 border border-white/10 shadow-lg">
-                <Image src="/icon.jpg" alt="Sosa" width={64} height={64} className="object-cover w-full h-full" />
+                <Image src="/logo.jpg" alt="Sosa" width={64} height={64} className="object-cover w-full h-full" />
               </div>
               <div>
                 <p className="text-white font-bold text-lg leading-tight">Sosa</p>

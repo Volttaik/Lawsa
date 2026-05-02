@@ -3,7 +3,7 @@ import Image from "next/image";
 export function LogoIcon({ size = 28 }: { size?: number }) {
   return (
     <Image
-      src="@assets/IMG-20260502-WA0043_1777765616549.jpg"
+      src="/logo.jpg"
       alt="Sosa Logo"
       width={size}
       height={size}
