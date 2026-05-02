@@ -27,7 +27,7 @@
     "jose": "^5.10.0",
     "jsonwebtoken": "^9.0.3",
     "lucide-react": "^0.378.0",
-    "mongoose": "^8.23.0",
+    "mongoose": "^8.23.1",
     "next": "^14.2.35",
     "next-themes": "^0.3.0",
     "pg": "^8.20.0",
