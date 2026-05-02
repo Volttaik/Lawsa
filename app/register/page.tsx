@@ -74,7 +74,7 @@ function Header() {
     <header className="bg-white/95 backdrop-blur-sm border-b border-black/8 shadow-soft flex-shrink-0">
       <div className="max-w-6xl mx-auto px-5 h-14 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2">
-          <LogoIcon size={28} />
+          <LogoIcon size={36} />
           <span className="font-bold text-gray-900 text-sm">Sosa</span>
         </Link>
         <nav className="hidden md:flex items-center gap-7 text-sm text-gray-500">
