@@ -50,11 +50,15 @@ const config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        lawsa: {
-          blue: "#2563EB",
-          "blue-light": "#3B82F6",
-          "blue-dark": "#1D4ED8",
-          "blue-soft": "#EFF6FF",
+        sosa: {
+          violet: "#7C3AED",
+          "violet-light": "#8B5CF6",
+          "violet-dark": "#6D28D9",
+          "violet-soft": "#F5F3FF",
+          green: "#005C4B",
+          "green-bubble": "#005C4B",
+          "chat-bg": "#0B141A",
+          "chat-in": "#1F2C34",
         },
       },
       borderRadius: {

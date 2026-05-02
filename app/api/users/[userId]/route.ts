@@ -1,55 +1,43 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getUserFromRequest } from "@/lib/auth";
-import connectDB from "@/lib/db";
-import { User } from "@/models/user.model";
-import { saveBase64Image } from "@/lib/upload";
-
+import { getUserById, updateUser } from "@/lib/queries";
+import { saveBase64Media } from "@/lib/upload";
 export const dynamic = "force-dynamic";
-
-export async function GET(request: NextRequest, { params }: { params: { userId: string } }) {
-    try {
-        await connectDB();
-        const user = await User.findById(params.userId).select("-password");
-        if (!user) return NextResponse.json({ error: "User not found" }, { status: 404 });
-        return NextResponse.json({ user: JSON.parse(JSON.stringify(user)) });
-    } catch {
-        return NextResponse.json({ error: "Failed to fetch user" }, { status: 500 });
-    }
+export async function GET(_req: NextRequest, { params }: { params: Promise<{ userId: string }> }) {
+  try {
+    const { userId } = await params;
+    const user = await getUserById(userId);
+    if (!user) return NextResponse.json({ error: "User not found" }, { status: 404 });
+    const { password: _pw, ...safe } = user as any;
+    return NextResponse.json({ user: safe });
+  } catch { return NextResponse.json({ error: "Failed to fetch user" }, { status: 500 }); }
 }
-
-export async function PUT(request: NextRequest, { params }: { params: { userId: string } }) {
-    try {
-        const authUser = await getUserFromRequest(request);
-        if (!authUser) return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
-        if (authUser.userId !== params.userId) return NextResponse.json({ error: "Not authorized" }, { status: 403 });
-        await connectDB();
-
-        const body = await request.json();
-        const { name, bio, skills, profileImage, bannerImage } = body;
-
-        const updates: Record<string, any> = {};
-        if (name) updates.name = name;
-        if (bio !== undefined) updates.bio = bio;
-        if (skills) updates.skills = skills;
-        if (profileImage) {
-            if (profileImage.startsWith("data:")) {
-                updates.profileImage = await saveBase64Image(profileImage, "profiles");
-            } else {
-                updates.profileImage = profileImage;
-            }
-        }
-        if (bannerImage) {
-            if (bannerImage.startsWith("data:")) {
-                updates.bannerImage = await saveBase64Image(bannerImage, "banners");
-            } else {
-                updates.bannerImage = bannerImage;
-            }
-        }
-
-        const user = await User.findByIdAndUpdate(params.userId, updates, { new: true }).select("-password");
-        return NextResponse.json({ user: JSON.parse(JSON.stringify(user)) });
-    } catch (error) {
-        console.error(error);
-        return NextResponse.json({ error: "Failed to update user" }, { status: 500 });
-    }
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ userId: string }> }) {
+  try {
+    const authUser = await getUserFromRequest(request);
+    if (!authUser) return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+    const { userId } = await params;
+    if (authUser.userId !== userId) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    const body = await request.json();
+    const updates: any = {};
+    if (body.name) updates.name = body.name;
+    if (body.bio !== undefined) updates.bio = body.bio;
+    if (body.headline !== undefined) updates.headline = body.headline;
+    if (body.website !== undefined) updates.website = body.website;
+    if (body.location !== undefined) updates.location = body.location;
+    if (body.skills !== undefined) updates.skills = body.skills;
+    if (body.experience !== undefined) updates.experience = body.experience;
+    if (body.education !== undefined) updates.education = body.education;
+    if (body.profileImage?.startsWith("data:")) updates.profileImage = await saveBase64Media(body.profileImage, "avatars");
+    else if (body.profileImage) updates.profileImage = body.profileImage;
+    if (body.bannerImage?.startsWith("data:")) updates.bannerImage = await saveBase64Media(body.bannerImage, "banners");
+    else if (body.bannerImage) updates.bannerImage = body.bannerImage;
+    const updated = await updateUser(userId, updates);
+    if (!updated) return NextResponse.json({ error: "User not found" }, { status: 404 });
+    const { password: _pw, ...safe } = updated as any;
+    return NextResponse.json({ user: safe });
+  } catch (e) { console.error(e); return NextResponse.json({ error: "Failed to update user" }, { status: 500 }); }
+}
+export async function PATCH(request: NextRequest, { params }: { params: Promise<{ userId: string }> }) {
+  return PUT(request, { params });
 }

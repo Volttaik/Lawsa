@@ -7,7 +7,7 @@ const authPrefixRoutes = ["/login", "/register"];
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  const token = request.cookies.get("lawsa-token")?.value;
+  const token = request.cookies.get("sosa-token")?.value;
 
   const isProtected = protectedRoutes.some((r) => pathname.startsWith(r));
   const isAuth = pathname === "/" || authPrefixRoutes.some((r) => pathname.startsWith(r));
@@ -17,12 +17,12 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL("/login", request.url));
     }
     try {
-      const secret = new TextEncoder().encode(process.env.JWT_SECRET || "lawsa-socials-secret-key-2024-very-secure");
+      const secret = new TextEncoder().encode(process.env.JWT_SECRET || "sosa-socials-secret-key-2024-very-secure");
       await jwtVerify(token, secret);
       return NextResponse.next();
     } catch {
       const response = NextResponse.redirect(new URL("/login", request.url));
-      response.cookies.set("lawsa-token", "", {
+      response.cookies.set("sosa-token", "", {
         httpOnly: true,
         secure: true,
         sameSite: "none",
@@ -35,7 +35,7 @@ export async function middleware(request: NextRequest) {
 
   if (isAuth && token) {
     try {
-      const secret = new TextEncoder().encode(process.env.JWT_SECRET || "lawsa-socials-secret-key-2024-very-secure");
+      const secret = new TextEncoder().encode(process.env.JWT_SECRET || "sosa-socials-secret-key-2024-very-secure");
       await jwtVerify(token, secret);
       const dashboardUrl = new URL("/dashboard", request.url);
       const postId = request.nextUrl.searchParams.get("post");
@@ -50,7 +50,7 @@ export async function middleware(request: NextRequest) {
 
   if (pathname.startsWith("/post/") && token) {
     try {
-      const secret = new TextEncoder().encode(process.env.JWT_SECRET || "lawsa-socials-secret-key-2024-very-secure");
+      const secret = new TextEncoder().encode(process.env.JWT_SECRET || "sosa-socials-secret-key-2024-very-secure");
       await jwtVerify(token, secret);
       const postId = pathname.replace("/post/", "");
       const dashboardUrl = new URL("/dashboard", request.url);

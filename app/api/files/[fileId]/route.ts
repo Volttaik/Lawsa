@@ -1,35 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
-import { downloadBuffer } from "@/lib/gridfs";
-
+import path from "path";
+import { readFile } from "fs/promises";
 export const dynamic = "force-dynamic";
-
-export async function GET(
-    _request: NextRequest,
-    { params }: { params: { fileId: string } }
-) {
-    try {
-        const { fileId } = params;
-        if (!fileId || !/^[a-f\d]{24}$/i.test(fileId)) {
-            return NextResponse.json({ error: "Invalid file ID" }, { status: 400 });
-        }
-
-        const { buffer, contentType, filename } = await downloadBuffer(fileId);
-
-        const headers = new Headers();
-        headers.set("Content-Type", contentType);
-        headers.set("Content-Length", buffer.length.toString());
-        headers.set("Cache-Control", "public, max-age=31536000, immutable");
-        headers.set(
-            "Content-Disposition",
-            `inline; filename="${encodeURIComponent(filename.split("/").pop() || filename)}"`
-        );
-
-        return new NextResponse(new Uint8Array(buffer), { status: 200, headers });
-    } catch (error: any) {
-        if (error.message === "File not found") {
-            return NextResponse.json({ error: "File not found" }, { status: 404 });
-        }
-        console.error("File serve error:", error);
-        return NextResponse.json({ error: "Failed to retrieve file" }, { status: 500 });
-    }
+export async function GET(_req: NextRequest, { params }: { params: Promise<{ fileId: string }> }) {
+  try {
+    const { fileId } = await params;
+    const filePath = path.join(process.cwd(), "public", "uploads", fileId);
+    const buffer = await readFile(filePath);
+    const ext = fileId.split(".").pop()?.toLowerCase() || "";
+    const mime: Record<string,string> = { jpg:"image/jpeg",jpeg:"image/jpeg",png:"image/png",gif:"image/gif",webp:"image/webp",mp4:"video/mp4",webm:"video/webm",mp3:"audio/mpeg",wav:"audio/wav",ogg:"audio/ogg",pdf:"application/pdf" };
+    return new NextResponse(buffer, { headers: { "Content-Type": mime[ext] || "application/octet-stream", "Cache-Control": "public, max-age=31536000" } });
+  } catch { return NextResponse.json({ error: "File not found" }, { status: 404 }); }
 }

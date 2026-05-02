@@ -2,7 +2,7 @@ import { SignJWT, jwtVerify } from "jose";
 import { NextRequest } from "next/server";
 
 const SECRET = new TextEncoder().encode(
-    process.env.JWT_SECRET || "lawsa-socials-secret-key-2024-very-secure"
+    process.env.JWT_SECRET || "sosa-socials-secret-key-2024-very-secure"
 );
 
 export interface JWTPayload {
@@ -31,7 +31,7 @@ export async function verifyToken(token: string): Promise<JWTPayload | null> {
 }
 
 export async function getUserFromRequest(request: NextRequest): Promise<JWTPayload | null> {
-    const token = request.cookies.get("lawsa-token")?.value;
+    const token = request.cookies.get("sosa-token")?.value;
     if (!token) return null;
     return await verifyToken(token);
 }
