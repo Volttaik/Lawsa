@@ -29,6 +29,7 @@ export default function MessagesPage() {
   const [msgsLoading, setMsgsLoading] = useState(false);
   const [otherOnline, setOtherOnline] = useState(false);
   const [typing, setTyping] = useState(false);
+  const [activeId, setActiveId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [replyTo, setReplyTo] = useState<Message | null>(null);
   const [mediaPreview, setMediaPreview] = useState<string | null>(null);
@@ -44,6 +45,7 @@ export default function MessagesPage() {
   }, []);
 
   const loadMessages = useCallback(async (conv: Conversation) => {
+    setActiveId(conv._id);
     setMsgsLoading(true);
     const res = await fetch(`/api/messages/${conv._id}`, { credentials: "include" });
     const data = await res.json();
@@ -66,8 +68,9 @@ export default function MessagesPage() {
   const sendTyping = useCallback(async () => {
     if (!active) return;
     clearTimeout(typingTimer.current);
+    setTyping(true);
     await fetch(`/api/messages/${active._id}/typing`, { method: "POST", credentials: "include" });
-    typingTimer.current = setTimeout(() => {}, 3000);
+    typingTimer.current = setTimeout(() => setTyping(false), 1500);
   }, [active]);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -98,7 +101,7 @@ export default function MessagesPage() {
   };
 
   const myId = me?.id || me?._id || "";
-  const filtered = convs.filter(c => !search || c.otherUser?.name.toLowerCase().includes(search.toLowerCase()) || c.otherUser?.username.toLowerCase().includes(search.toLowerCase()));
+  const filtered = convs.filter(c => !search || c.otherUser?.name.toLowerCase().includes(search.toLowerCase()) || c.otherUser?.username.toLowerCase().includes(search.toLowerCase()) || c.lastMessage?.toLowerCase().includes(search.toLowerCase()));
 
   const ConvList = (
     <div className="flex flex-col h-full" style={{ background: "#111b21" }}>
@@ -111,13 +114,13 @@ export default function MessagesPage() {
       </div>
       <div className="flex-1 overflow-y-auto">
         {loading ? <div className="flex justify-center pt-8"><Loader2 className="w-5 h-5 text-gray-400 animate-spin" /></div> :
-          filtered.length === 0 ? <div className="text-center pt-12 text-gray-500 text-sm">No conversations yet</div> :
+          filtered.length === 0 ? <div className="text-center pt-12 text-gray-500 text-sm">{search ? "No conversations match your search" : "No conversations yet"}</div> :
           filtered.map(conv => {
             const other = conv.otherUser;
             const isActive = active?._id === conv._id;
             return (
               <button key={conv._id} onClick={() => setActive(conv)} className={`w-full flex items-center gap-3 px-4 py-3 transition-colors text-left ${isActive ? "bg-[#2a3942]" : "hover:bg-[#202c33]"}`}>
-                <Avatar src={other?.profileImage} name={other?.name || "?"} size={48} online={false} />
+                <Avatar src={other?.profileImage} name={other?.name || "?"} size={48} online={isActive || false} />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-1">

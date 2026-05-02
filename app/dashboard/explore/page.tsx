@@ -70,7 +70,7 @@ export default function ExplorePage() {
       <div className="sticky top-0 z-10 bg-black/90 backdrop-blur px-4 py-3 border-b border-[#2f3336]">
         <div className="flex items-center gap-3 bg-[#202327] rounded-full px-4 py-2.5">
           <Search className="w-4 h-4 text-gray-500 flex-shrink-0" />
-          <input value={query} onChange={e => setQuery(e.target.value)} placeholder="Search Sosa Socials"
+          <input value={query} onChange={e => setQuery(e.target.value)} placeholder="Search people, posts, or tags"
             className="flex-1 bg-transparent text-white text-sm outline-none placeholder-gray-600" autoFocus />
           {query && <button onClick={() => setQuery("")}><X className="w-4 h-4 text-gray-500 hover:text-white" /></button>}
         </div>

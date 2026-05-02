@@ -28,7 +28,7 @@ function PostCard({ post, me, onLike, onRepost, onBookmark, onDelete, onEdit }: 
   const imgs = post.repostedFrom?.images || post.images || [];
   const content = post.repostedFrom ? post.repostedFrom.content : post.content;
   const MAX = 280;
-  const isAuthor = (me?.id === post.authorId || me?._id === post.authorId);
+  const isAuthor = (me?.id === post.authorId || me?._id === post.authorId || me?.id === post.repostedFrom?.authorId || me?._id === post.repostedFrom?.authorId);
 
   const submitComment = async (e: any) => {
     e.preventDefault();
@@ -47,7 +47,7 @@ function PostCard({ post, me, onLike, onRepost, onBookmark, onDelete, onEdit }: 
 
   const handleShare = async () => {
     if (navigator.share) {
-      navigator.share({ title: "Sosa Socials", text: content, url: window.location.href });
+      navigator.share({ title: "Sosa", text: content, url: window.location.href });
     } else {
       navigator.clipboard.writeText(`${window.location.origin}/dashboard?post=${post._id}`);
       alert("Link copied to clipboard!");
