@@ -74,7 +74,7 @@ function GuestPostViewerInner() {
             {/* Header */}
             <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-black/6">
               <div className="flex items-center gap-2">
-                <LogoIcon size={32} />
+                <LogoIcon size={40} />
                 <span className="font-bold text-gray-900 text-sm">Sosa</span>
               </div>
               <button onClick={() => setOpen(false)}
@@ -319,7 +319,7 @@ export default function LandingPage() {
                       {post.name[0]}
                     </div>
                     <div>
-                      <div className="font-semibold text-white text-sm">{post.name}</div>
+                <div className="font-semibold text-gray-900 text-sm">{post.name}</div>
                       <div className="text-xs text-gray-500">{post.role} · {post.time}</div>
                     </div>
                   </div>
@@ -339,7 +339,16 @@ export default function LandingPage() {
       </section>
 
       {/* Features Section */}
-      <section id="features" className="py-20 px-5 bg-slate-900/30">
+      <section id="features" className="relative py-20 px-5 overflow-hidden">
+        <div className="absolute inset-0">
+          <Image
+            src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1600&q=80"
+            alt="Team collaboration background"
+            fill
+            className="object-cover opacity-15"
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-white/95 via-white/90 to-white/95" />
+        </div>
         <div className="max-w-6xl mx-auto">
           <motion.div
             initial="hidden"
@@ -348,9 +357,9 @@ export default function LandingPage() {
             variants={stagger}
             className="text-center mb-14"
           >
-            <motion.div variants={fadeUp} className="text-blue-400 font-semibold text-xs uppercase tracking-widest mb-3">Features</motion.div>
-            <motion.h2 variants={fadeUp} className="text-2xl md:text-3xl font-bold text-white mb-3">Everything you need to thrive</motion.h2>
-            <motion.p variants={fadeUp} className="text-sm text-gray-400 max-w-xl mx-auto leading-relaxed">
+            <motion.div variants={fadeUp} className="text-blue-500 font-semibold text-xs uppercase tracking-widest mb-3">Features</motion.div>
+            <motion.h2 variants={fadeUp} className="text-2xl md:text-3xl font-bold text-gray-900 mb-3">Everything you need to thrive</motion.h2>
+            <motion.p variants={fadeUp} className="text-sm text-gray-600 max-w-xl mx-auto leading-relaxed">
               A complete social experience built for meaningful connections and discovery.
             </motion.p>
           </motion.div>
@@ -374,13 +383,13 @@ export default function LandingPage() {
                 key={i}
                 variants={fadeUp}
                 whileHover={{ y: -3 }}
-                className="bg-slate-800/50 rounded-2xl border border-slate-700/50 shadow-lg p-6 transition-all cursor-default group hover:border-blue-500/30 hover:bg-slate-800/70"
+                className="bg-white/90 rounded-2xl border border-black/8 shadow-lg p-6 transition-all cursor-default group hover:border-blue-500/30 hover:bg-white"
               >
-                <div className="w-11 h-11 rounded-xl bg-blue-500/20 group-hover:bg-blue-500 flex items-center justify-center mb-4 transition-all">
-                  <feature.icon className="text-blue-400 group-hover:text-white transition-colors" size={20} />
+                <div className="w-11 h-11 rounded-xl bg-blue-500/10 group-hover:bg-blue-500 flex items-center justify-center mb-4 transition-all">
+                  <feature.icon className="text-blue-500 group-hover:text-white transition-colors" size={20} />
                 </div>
-                <h3 className="font-bold text-white text-base mb-2">{feature.title}</h3>
-                <p className="text-gray-400 text-sm leading-relaxed">{feature.desc}</p>
+                <h3 className="font-bold text-gray-900 text-base mb-2">{feature.title}</h3>
+                <p className="text-gray-600 text-sm leading-relaxed">{feature.desc}</p>
               </motion.div>
             ))}
           </motion.div>
@@ -475,8 +484,8 @@ export default function LandingPage() {
                 height={400}
                 className="w-full h-56 object-cover"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/60 to-transparent flex items-end p-5">
-                <p className="text-white text-sm font-medium">Join our growing community</p>
+              <div className="absolute inset-0 bg-gradient-to-t from-white/75 to-transparent flex items-end p-5">
+                <p className="text-gray-900 text-sm font-medium">Join our growing community</p>
               </div>
             </motion.div>
           </motion.div>
@@ -489,7 +498,7 @@ export default function LandingPage() {
           <div className="grid md:grid-cols-4 gap-8 mb-8">
             <div className="md:col-span-2">
               <div className="flex items-center gap-2 mb-3">
-                <LogoIcon size={36} />
+                <LogoIcon size={40} />
                 <span className="font-bold text-white text-sm">Sosa</span>
               </div>
               <p className="text-xs text-gray-400 leading-relaxed max-w-xs">

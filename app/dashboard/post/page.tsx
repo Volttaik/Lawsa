@@ -242,11 +242,13 @@ export default function CreatePostPage() {
 
     try {
       const images = media
-        .filter((m) => m.type === "image" && m.serverUrl)
-        .map((m) => m.serverUrl);
+        .filter((m) => m.type === "image")
+        .map((m) => m.serverUrl || m.preview)
+        .filter(Boolean);
       const videos = media
-        .filter((m) => m.type === "video" && m.serverUrl)
-        .map((m) => m.serverUrl);
+        .filter((m) => m.type === "video")
+        .map((m) => m.serverUrl || m.preview)
+        .filter(Boolean);
 
       const res = await fetch("/api/posts", {
         method: "POST",

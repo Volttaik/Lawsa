@@ -7,7 +7,7 @@ export function LogoIcon({ size = 28 }: { size?: number }) {
       alt="Sosa Logo"
       width={size}
       height={size}
-      className="rounded-full object-cover"
+      className="rounded-full object-cover object-center"
       priority
     />
   );
