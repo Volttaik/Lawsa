@@ -32,7 +32,7 @@ export const getAllPosts = async () => {
 export const deletePostAction = async (postId: string) => {
   const user = await getServerUser();
   if (!user) throw new Error("User not authenticated.");
-  await deletePost(postId, user.userId);
+  await deletePost(postId);
   revalidatePath("/dashboard");
 };
 

@@ -30,8 +30,10 @@ export async function POST(request: NextRequest) {
     let conv = await findConversationByParticipants(participants);
     if (!conv) conv = await createConversation(participants);
     else await updateConversation(conv._id, { lastMessage: lastMsg, lastMessageTime: new Date() });
+    if (!conv) return NextResponse.json({ error: "Failed to create conversation" }, { status: 500 });
     const me = await getUserById(authUser.userId);
     const msg = await createMessage({ conversationId: conv._id, senderId: authUser.userId, senderName: authUser.name, senderImage: me?.profileImage || "", receiverId: recipientId, content: content?.trim() || "", mediaUrl: savedMediaUrl, mediaType: savedMediaUrl ? (mediaType || "file") : "", replyToId: replyToId || null, replyToContent: replyToContent || "", replyToSender: replyToSender || "" });
+    if (!msg) return NextResponse.json({ error: "Failed to create message" }, { status: 500 });
     await updateConversation(conv._id, { lastMessage: lastMsg, lastMessageTime: new Date() });
     await createNotification({ recipientId, senderId: authUser.userId, senderName: authUser.name, senderImage: me?.profileImage || "", type: "message", message: `${authUser.name} sent you a message` });
     return NextResponse.json({ message: msg, conversationId: conv._id }, { status: 201 });

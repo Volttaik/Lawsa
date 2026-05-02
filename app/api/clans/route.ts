@@ -21,6 +21,7 @@ export async function POST(request: NextRequest) {
     let savedLogo = "";
     if (logo?.startsWith("data:")) savedLogo = await saveBase64Media(logo, "clans");
     const clan = await createClan({ name: name.trim(), slug, description: description?.trim() || "", logo: savedLogo, ownerId: authUser.userId, ownerName: authUser.name });
+    if (!clan) return NextResponse.json({ error: "Failed to create clan" }, { status: 500 });
     await updateUser(authUser.userId, { clanId: clan._id, clanName: clan.name, clanLogo: savedLogo });
     return NextResponse.json({ clan }, { status: 201 });
   } catch (e) { console.error(e); return NextResponse.json({ error: "Failed" }, { status: 500 }); }

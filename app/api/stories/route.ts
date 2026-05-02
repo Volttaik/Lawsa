@@ -10,6 +10,7 @@ export async function GET(request: NextRequest) {
     const stories = await getStories();
     const grouped: Record<string, any> = {};
     for (const s of stories) {
+      if (!s) continue;
       if (!grouped[s.authorId]) grouped[s.authorId] = { authorId: s.authorId, authorName: s.authorName, authorUsername: s.authorUsername, authorImage: s.authorImage || "", stories: [] };
       grouped[s.authorId].stories.push(s);
     }
@@ -26,6 +27,7 @@ export async function POST(request: NextRequest) {
     let savedImage = "";
     if (image?.startsWith("data:")) savedImage = await saveBase64Media(image, "stories");
     const story = await createStory({ authorId: authUser.userId, authorName: authUser.name, authorUsername: authUser.username, authorImage: me?.profileImage || "", content: content?.trim() || "", image: savedImage });
+    if (!story) return NextResponse.json({ error: "Failed to create story" }, { status: 500 });
     return NextResponse.json({ story }, { status: 201 });
   } catch { return NextResponse.json({ error: "Failed" }, { status: 500 }); }
 }

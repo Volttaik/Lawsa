@@ -239,7 +239,8 @@ export async function getPostById(id: string) {
   const rows = await q('SELECT * FROM posts WHERE id = ?', [id])
   if (!rows[0]) return null
   const post = mapPost(rows[0])
-  post.comments = await getCommentsByPostId(id, null)
+  if (!post) return null
+  post.comments = (await getCommentsByPostId(id, null)).filter(c => c !== null) as any
   return post
 }
 

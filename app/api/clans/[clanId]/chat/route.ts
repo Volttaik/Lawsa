@@ -32,6 +32,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     if (!content?.trim()) return NextResponse.json({ error: "Content required" }, { status: 400 });
     const me = await getUserById(authUser.userId);
     const msg = await createWorldChatMessage({ clanId, senderId: authUser.userId, senderName: authUser.name, senderUsername: me?.username || "", senderImage: me?.profileImage || "", content: content.trim() });
+    if (!msg) return NextResponse.json({ error: "Failed to create message" }, { status: 500 });
     return NextResponse.json({ message: msg }, { status: 201 });
   } catch { return NextResponse.json({ error: "Failed" }, { status: 500 }); }
 }

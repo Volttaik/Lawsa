@@ -35,6 +35,7 @@ export async function POST(request: NextRequest) {
       else if (vid) savedVideos.push(vid);
     }
     const post = await createPost({ authorId: authUser.userId, authorName: authUser.name, authorUsername: authUser.username, authorImage: me?.profileImage || "", content: content?.trim() || "", images: savedImages, videos: savedVideos, category: category || "general", poll: poll || null });
+    if (!post) return NextResponse.json({ error: "Failed to create post" }, { status: 500 });
     return NextResponse.json({ post }, { status: 201 });
   } catch (e) { console.error(e); return NextResponse.json({ error: "Failed" }, { status: 500 }); }
 }
