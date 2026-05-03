@@ -23,7 +23,7 @@ export default function LoginPage() {
       const res = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify(form)
       });
       const data = await res.json();
       if (!res.ok) {
@@ -45,39 +45,39 @@ export default function LoginPage() {
     <div className="min-h-screen bg-[#e8ecf0] flex flex-col">
       {/* Success overlay */}
       <AnimatePresence>
-        {success && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="fixed inset-0 z-50 bg-[#e8ecf0] flex flex-col items-center justify-center gap-5"
-          >
+        {success &&
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="fixed inset-0 z-50 bg-[#e8ecf0] flex flex-col items-center justify-center gap-5">
+          
             <motion.div
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ type: "spring", stiffness: 200, damping: 18 }}
-              className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center"
-            >
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ type: "spring", stiffness: 200, damping: 18 }}
+            className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center">
+            
               <CheckCircle2 size={32} className="text-white" />
             </motion.div>
             <motion.p
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="text-lg font-semibold text-gray-900"
-            >
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="text-lg font-semibold text-gray-900">
+            
               Login successful!
             </motion.p>
             <motion.div
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.35 }}
-              className="flex items-center gap-2 text-gray-400 text-sm"
-            >
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.35 }}
+            className="flex items-center gap-2 text-gray-400 text-sm">
+            
               <Loader2 size={16} className="animate-spin text-blue-500" />
               Loading dashboard...
             </motion.div>
           </motion.div>
-        )}
+        }
       </AnimatePresence>
 
       {/* Header — matches home page exactly */}
@@ -109,15 +109,15 @@ export default function LoginPage() {
           initial={{ opacity: 0, x: -40 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.6 }}
-          className="hidden lg:flex flex-col justify-center w-2/5 relative overflow-hidden"
-        >
+          className="hidden lg:flex flex-col justify-center w-2/5 relative overflow-hidden">
+          
           <Image
-            src="https://images.unsplash.com/photo-1568992687947-868a62a9f521?auto=format&fit=crop&w=900&q=80"
+            src="https://img.rocket.new/generatedImages/rocket_gen_img_1e4008aae-1777792166306.png"
             alt="Courtroom professional setting"
             fill
             className="object-cover"
-            priority
-          />
+            priority />
+          
           <div className="absolute inset-0 bg-blue-900/78" />
           <div className="relative z-10 px-12">
             <h2 className="text-2xl font-bold text-white mb-3 leading-snug">
@@ -128,11 +128,11 @@ export default function LoginPage() {
             </p>
             <div className="space-y-5">
               {[
-                { icon: Users, title: "Your Connections", desc: "Reconnect with your network" },
-                { icon: MessageCircle, title: "Messages", desc: "Continue your conversations" },
-                { icon: TrendingUp, title: "Your Feed", desc: "See what's trending" },
-              ].map(({ icon: Icon, title, desc }) => (
-                <div key={title} className="flex items-center gap-4">
+              { icon: Users, title: "Your Connections", desc: "Reconnect with your network" },
+              { icon: MessageCircle, title: "Messages", desc: "Continue your conversations" },
+              { icon: TrendingUp, title: "Your Feed", desc: "See what's trending" }].
+              map(({ icon: Icon, title, desc }: {icon: React.ElementType;title: string;desc: string;}) =>
+              <div key={title} className="flex items-center gap-4">
                   <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center flex-shrink-0 border border-white/10">
                     <Icon className="text-white" size={17} />
                   </div>
@@ -141,7 +141,7 @@ export default function LoginPage() {
                     <div className="text-blue-300 text-xs">{desc}</div>
                   </div>
                 </div>
-              ))}
+              )}
             </div>
           </div>
         </motion.div>
@@ -152,21 +152,21 @@ export default function LoginPage() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.1 }}
-            className="w-full max-w-md"
-          >
+            className="w-full max-w-md">
+            
             <div className="bg-white rounded-2xl border border-black/10 shadow-card p-8">
               <h1 className="text-xl font-bold text-gray-900 mb-1">Sign in</h1>
               <p className="text-gray-500 text-sm mb-8">Enter your details to access your account</p>
 
-              {error && (
-                <motion.div
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="bg-red-50 border border-red-200 text-red-700 rounded-lg p-3 text-sm mb-6"
-                >
+              {error &&
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="bg-red-50 border border-red-200 text-red-700 rounded-lg p-3 text-sm mb-6">
+                
                   {error}
                 </motion.div>
-              )}
+              }
 
               <form onSubmit={handleSubmit} className="space-y-5">
                 <div>
@@ -177,8 +177,8 @@ export default function LoginPage() {
                     onChange={(e) => setForm({ ...form, emailOrUsername: e.target.value })}
                     placeholder="you@example.com or @username"
                     className="form-input"
-                    required
-                  />
+                    required />
+                  
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1.5">Password</label>
@@ -189,13 +189,13 @@ export default function LoginPage() {
                       onChange={(e) => setForm({ ...form, password: e.target.value })}
                       placeholder="Enter your password"
                       className="form-input pr-12"
-                      required
-                    />
+                      required />
+                    
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
-                    >
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors">
+                      
                       {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                     </button>
                   </div>
@@ -205,13 +205,13 @@ export default function LoginPage() {
                   whileTap={{ scale: 0.99 }}
                   type="submit"
                   disabled={loading || success}
-                  className="w-full bg-blue-600 text-white font-semibold py-3 rounded-xl border border-black/10 hover:bg-blue-700 transition-all shadow-btn hover:shadow-btn-hover disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm"
-                >
-                  {loading ? (
-                    <><Loader2 size={18} className="animate-spin" /> Signing in...</>
-                  ) : (
-                    "Sign In"
-                  )}
+                  className="w-full bg-blue-600 text-white font-semibold py-3 rounded-xl border border-black/10 hover:bg-blue-700 transition-all shadow-btn hover:shadow-btn-hover disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm">
+                  
+                  {loading ?
+                  <><Loader2 size={18} className="animate-spin" /> Signing in...</> :
+
+                  "Sign In"
+                  }
                 </motion.button>
               </form>
 
@@ -227,6 +227,6 @@ export default function LoginPage() {
           </motion.div>
         </div>
       </div>
-    </div>
-  );
+    </div>);
+
 }

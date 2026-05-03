@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
-import { Heart, MessageCircle, Repeat2, Share, Loader2, Image as ImageIcon, X, Send, BadgeCheck, MoreHorizontal, Plus, ChevronLeft, ChevronRight, Edit, Trash2 } from "lucide-react";
+import { Heart, MessageCircle, Repeat2, Share, Loader2, Image as ImageIcon, X, BadgeCheck, MoreHorizontal, Plus, Edit, Trash2 } from "lucide-react";
 import ReactTimeago from "react-timeago";
 
 interface Post { _id: string; authorId: string; authorName: string; authorUsername: string; authorImage?: string; content: string; images?: string[]; videos?: string[]; likes?: string[]; comments?:[...any[]] & { length: number }; createdAt: string; reshares?: number; views?: number; repostedFrom?: Post; }

@@ -4,21 +4,17 @@ import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  Users, MessageCircle, Globe, Star, ArrowRight,
-  BookOpen, TrendingUp, Heart, Share2, Bell, CheckCircle2,
-  Sparkles, X, Loader2,
-} from "lucide-react";
+import { MessageCircle, ArrowRight, Heart, Sparkles, X, Loader2 } from "lucide-react";
 import { LogoIcon } from "@/components/Logo";
 import PWAInstallBanner from "@/components/PWAInstallBanner";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 24 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.55, ease: "easeOut" } },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.55, ease: "easeOut" } }
 };
 
 const stagger = {
-  visible: { transition: { staggerChildren: 0.1 } },
+  visible: { transition: { staggerChildren: 0.1 } }
 };
 
 interface GuestPost {
@@ -48,33 +44,33 @@ function GuestPostViewerInner() {
     if (!postId) return;
     setOpen(true);
     setLoading(true);
-    fetch(`/api/posts/${postId}`)
-      .then((r) => r.json())
-      .then((data) => { if (data.post) setPost(data.post); })
-      .catch(() => {})
-      .finally(() => setLoading(false));
+    fetch(`/api/posts/${postId}`).
+    then((r) => r.json()).
+    then((data) => {if (data.post) setPost(data.post);}).
+    catch(() => {}).
+    finally(() => setLoading(false));
   }, [postId]);
 
   if (!open) return null;
 
   return (
     <AnimatePresence>
-      {open && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[500] flex items-center justify-center bg-black/65 backdrop-blur-sm px-4"
-          onClick={() => setOpen(false)}
-        >
+      {open &&
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 z-[500] flex items-center justify-center bg-black/65 backdrop-blur-sm px-4"
+        onClick={() => setOpen(false)}>
+        
           <motion.div
-            initial={{ opacity: 0, scale: 0.91, y: 28 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.91, y: 28 }}
-            transition={{ type: "spring", damping: 22, stiffness: 300 }}
-            className="bg-white rounded-2xl shadow-2xl border border-black/8 w-full max-w-md overflow-hidden"
-            onClick={(e) => e.stopPropagation()}
-          >
+          initial={{ opacity: 0, scale: 0.91, y: 28 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.91, y: 28 }}
+          transition={{ type: "spring", damping: 22, stiffness: 300 }}
+          className="bg-white rounded-2xl shadow-2xl border border-black/8 w-full max-w-md overflow-hidden"
+          onClick={(e) => e.stopPropagation()}>
+          
             <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-black/6">
               <div className="flex items-center gap-2">
                 <LogoIcon size={40} />
@@ -85,15 +81,15 @@ function GuestPostViewerInner() {
               </button>
             </div>
 
-            {loading ? (
-              <div className="flex items-center justify-center h-44">
+            {loading ?
+          <div className="flex items-center justify-center h-44">
                 <Loader2 size={28} className="animate-spin text-blue-500" />
-              </div>
-            ) : post ? (
-              <>
-                {(post.images || []).filter(Boolean).length > 0 && (
-                  <img src={(post.images || [])[0]} alt="Post" className="w-full max-h-52 object-cover" />
-                )}
+              </div> :
+          post ?
+          <>
+                {(post.images || []).filter(Boolean).length > 0 &&
+            <img src={(post.images || [])[0]} alt="Post" className="w-full max-h-52 object-cover" />
+            }
                 <div className="p-4">
                   <div className="flex items-center gap-3 mb-3">
                     {post.authorImage ? <img src={post.authorImage} alt={post.authorName} className="w-10 h-10 rounded-full object-cover flex-shrink-0" /> : <AvatarFallback />}
@@ -103,38 +99,38 @@ function GuestPostViewerInner() {
                     </div>
                   </div>
                   <p className="text-sm text-gray-800 leading-relaxed whitespace-pre-wrap break-words line-clamp-6">{post.content}</p>
-                  {((post.likes?.length || 0) > 0 || (post.comments?.length || 0) > 0) && (
-                    <div className="flex items-center gap-4 mt-3 pt-3 border-t border-black/5 text-xs text-gray-400">
+                  {((post.likes?.length || 0) > 0 || (post.comments?.length || 0) > 0) &&
+              <div className="flex items-center gap-4 mt-3 pt-3 border-t border-black/5 text-xs text-gray-400">
                       {(post.likes?.length || 0) > 0 && <span className="flex items-center gap-1"><Heart size={12} className="fill-red-400 text-red-400" /> {post.likes?.length}</span>}
                       {(post.comments?.length || 0) > 0 && <span className="flex items-center gap-1"><MessageCircle size={12} /> {post.comments?.length} {post.comments?.length === 1 ? "reply" : "replies"}</span>}
                     </div>
-                  )}
+              }
                 </div>
                 <div className="px-4 pb-4 space-y-2.5">
                   <p className="text-xs text-center text-gray-400 mb-1">Join Sosa to like, comment and connect</p>
                   <Link href="/register" className="block w-full py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold text-center transition-all">Create Account to Continue</Link>
                   <Link href="/login" className="block w-full py-2 rounded-xl border border-black/10 text-gray-700 text-sm font-medium text-center hover:border-blue-500 hover:text-blue-600 transition-all">Already have an account? Sign in</Link>
                 </div>
-              </>
-            ) : (
-              <div className="p-8 text-center text-gray-400 text-sm">
+              </> :
+
+          <div className="p-8 text-center text-gray-400 text-sm">
                 <p>This post is no longer available.</p>
                 <Link href="/register" className="block mt-4 py-2.5 rounded-xl bg-blue-600 text-white text-sm font-semibold">Join Sosa</Link>
               </div>
-            )}
+          }
           </motion.div>
         </motion.div>
-      )}
-    </AnimatePresence>
-  );
+      }
+    </AnimatePresence>);
+
 }
 
 function GuestPostViewer() {
   return (
     <Suspense fallback={null}>
       <GuestPostViewerInner />
-    </Suspense>
-  );
+    </Suspense>);
+
 }
 
 export default function LandingPage() {
@@ -180,11 +176,11 @@ export default function LandingPage() {
               </motion.div>
             </motion.div>
             <motion.div initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.7, delay: 0.2 }} className="relative hidden lg:block">
-              <div className="relative rounded-3xl overflow-hidden shadow-2xl border border-black/8"><Image src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=800&q=80" alt="People connecting" width={800} height={560} className="w-full h-80 object-cover" priority /><div className="absolute inset-0 bg-gradient-to-t from-white/60 to-transparent" /></div>
+              <div className="relative rounded-3xl overflow-hidden shadow-2xl border border-black/8"><Image src="https://images.unsplash.com/photo-1549436779-6d582a63f97f" alt="People connecting" width={800} height={560} className="w-full h-80 object-cover" priority /><div className="absolute inset-0 bg-gradient-to-t from-white/60 to-transparent" /></div>
             </motion.div>
           </div>
         </div>
       </section>
-    </div>
-  );
+    </div>);
+
 }

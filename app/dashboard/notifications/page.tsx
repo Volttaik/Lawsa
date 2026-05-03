@@ -126,8 +126,7 @@ export default function NotificationsPage() {
                   onClick={() => !notif.read && markOneRead(notif._id)}
                   className={`bg-white dark:bg-gray-900 border-b border-black/8 dark:border-white/10 p-4 flex items-start gap-3 cursor-pointer transition-all hover:bg-black/[0.03] dark:hover:bg-white/[0.03] ${
                     !notif.read
-                      ? "border-blue-200 dark:border-blue-800 bg-blue-50/40 dark:bg-blue-900/10"
-                      : "border-black/10 dark:border-white/10"
+                      ? "border-blue-200 dark:border-blue-800 bg-blue-50/40 dark:bg-blue-900/10" :"border-black/10 dark:border-white/10"
                   }`}
                 >
                   <div className="relative flex-shrink-0">

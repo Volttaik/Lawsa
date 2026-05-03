@@ -1,5 +1,4 @@
-"use server"
-
+"use server";
 import { revalidatePath } from "next/cache";
 import { getServerUser } from "./server-auth";
 import { createPost, deletePost, createComment } from "./queries";

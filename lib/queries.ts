@@ -1,5 +1,5 @@
-import { turso, ensureSchema } from './db'
-import { randomUUID } from 'crypto'
+import { turso, ensureSchema } from './db';
+import { randomUUID } from 'crypto';
 
 const J = (v: any) => typeof v === 'string' ? v : JSON.stringify(v ?? null)
 const P = (v: any, def: any = null) => {

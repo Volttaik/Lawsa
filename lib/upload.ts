@@ -1,6 +1,6 @@
-import { writeFile, mkdir } from 'fs/promises'
-import path from 'path'
-import { v4 as uuidv4 } from 'uuid'
+import { writeFile, mkdir } from 'fs/promises';
+ import path from'path';
+import { v4 as uuidv4 } from 'uuid';
 
 export async function saveBase64Media(base64: string, subfolder = ''): Promise<string> {
   const match = base64.match(/^data:([^;]+);base64,(.+)$/)

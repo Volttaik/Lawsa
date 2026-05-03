@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getUserFromRequest } from "@/lib/auth";
-import { getClans, createClan, getClanBySlug, updateUser, getUserById } from "@/lib/queries";
+import { getClans, createClan, getClanBySlug, updateUser } from "@/lib/queries";
 export const dynamic = "force-dynamic";
 export async function GET() {
   try {

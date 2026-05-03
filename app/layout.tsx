@@ -33,7 +33,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
-      </head>
+
+        <script type="module" async src="https://static.rocket.new/rocket-web.js?_cfg=https%3A%2F%2Flawsa5292back.builtwithrocket.new&_be=https%3A%2F%2Fappanalytics.rocket.new&_v=0.1.18" />
+        <script type="module" defer src="https://static.rocket.new/rocket-shot.js?v=0.0.2" /></head>
       <body className={inter.className}>
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
           {children}

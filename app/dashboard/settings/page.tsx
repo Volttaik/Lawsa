@@ -140,8 +140,7 @@ export default function SettingsPage() {
               onClick={() => setTheme(value)}
               className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all ${
                 theme === value
-                  ? "border-blue-600 bg-blue-50 dark:bg-blue-900/20 text-blue-600"
-                  : "border-black/10 dark:border-white/10 text-gray-600 dark:text-gray-400 hover:border-blue-300 hover:bg-gray-50 dark:hover:bg-gray-800"
+                  ? "border-blue-600 bg-blue-50 dark:bg-blue-900/20 text-blue-600" :"border-black/10 dark:border-white/10 text-gray-600 dark:text-gray-400 hover:border-blue-300 hover:bg-gray-50 dark:hover:bg-gray-800"
               }`}
             >
               <Icon size={22} />

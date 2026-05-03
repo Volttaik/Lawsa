@@ -2,10 +2,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cache } from "@/lib/cache";
-import {
-  Shield, Plus, Users, Send, Loader2, X, ArrowLeft,
-  Crown, LogOut, Trash2, Check, MessageSquare, Share2,
-} from "lucide-react";
+import { Shield, Plus, Users, Send, Loader2, X, ArrowLeft, Crown, LogOut, Check, MessageSquare, Share2,  } from "lucide-react";
 import Linkify from "@/components/Linkify";
 
 const CHAT_BACKGROUNDS = [
@@ -581,8 +578,7 @@ export default function ClansPage() {
                     </div>
                     <div className={`text-[10px] font-medium px-2 py-0.5 rounded-full ${
                       member.isOnline
-                        ? "bg-green-500/20 text-green-400 border border-green-500/30"
-                        : "bg-white/10 text-white/30 border border-white/10"
+                        ? "bg-green-500/20 text-green-400 border border-green-500/30" :"bg-white/10 text-white/30 border border-white/10"
                     }`}>
                       {member.isOnline ? "Online" : "Offline"}
                     </div>

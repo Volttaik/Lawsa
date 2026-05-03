@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect, useRef, useCallback } from "react";
-import { Send, Loader2, ArrowLeft, Search, Image as ImageIcon, X, CheckCheck, Check, Mic, StopCircle, MoreVertical, Phone, Video, BadgeCheck, Reply, Edit2, Trash2, Smile } from "lucide-react";
-import ReactTimeago from "react-timeago";
+import { Send, Loader2, ArrowLeft, Search, Image as ImageIcon, X, CheckCheck, Check, MoreVertical, BadgeCheck, Reply, Trash2 } from "lucide-react";
+
 
 interface Conversation { _id: string; participants: string[]; lastMessage?: string; lastMessageTime?: string; otherUser?: { _id: string; name: string; username: string; profileImage?: string; isVerified?: boolean; }; }
 interface Message { _id: string; senderId: string; senderName: string; senderImage?: string; content: string; mediaUrl?: string; mediaType?: string; read?: boolean; edited?: boolean; isDeleted?: boolean; replyToId?: string; replyToContent?: string; replyToSender?: string; reactions?: Record<string,string[]>; createdAt: string; }

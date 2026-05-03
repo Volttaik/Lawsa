@@ -1,14 +1,11 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
-import {
-  Camera, Edit3, UserPlus, UserCheck, Loader2, X, Save,
-  Shield, ChevronRight, Plus, BookOpen, MessageCircle, Share2, Check, Heart,
-} from "lucide-react";
-import { uploadFile } from "@/lib/uploadClient";
-import VideoPlayer from "@/components/VideoPlayer";
-import Linkify from "@/components/Linkify";
+import { motion } from "framer-motion";
+import { Edit3, UserPlus, UserCheck, Loader2, MessageCircle,  } from "lucide-react";
+
+
+
 
 interface UserProfile {
   _id: string;

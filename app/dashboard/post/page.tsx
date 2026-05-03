@@ -465,17 +465,16 @@ export default function CreatePostPage() {
                     transition={{ duration: 0.15 }}
                     className="absolute bottom-full mb-2 right-0 bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-black/10 dark:border-white/10 overflow-hidden z-20 w-44 max-h-56 overflow-y-auto scrollbar-hide"
                   >
-                    {CATEGORIES.map(({ id, label, Icon }) => (
+                    {CATEGORIES.map(({ id, label, Icon: CategoryIcon }) => (
                       <button
                         key={id}
                         onClick={() => { setCategory(id); setShowCatMenu(false); }}
                         className={`flex items-center gap-2.5 w-full px-4 py-2.5 text-sm text-left transition-colors ${
                           category === id
-                            ? "bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 font-semibold"
-                            : "text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700"
+                            ? "bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 font-semibold" :"text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700"
                         }`}
                       >
-                        <Icon size={14} />
+                        <CategoryIcon size={14} />
                         {label}
                       </button>
                     ))}
@@ -499,8 +498,7 @@ export default function CreatePostPage() {
                   : hasFailedUploads
                   ? "Fix failed uploads first"
                   : !text.trim()
-                  ? "Write something first"
-                  : "Publish"
+                  ? "Write something first" :"Publish"
               }
               className="w-9 h-9 bg-blue-600 text-white rounded-xl flex items-center justify-center hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-btn"
             >

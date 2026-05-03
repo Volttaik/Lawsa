@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
-import { getUserByEmail, getUserByEmailOrUsername, createUser } from "@/lib/queries";
+import { getUserByEmailOrUsername, createUser } from "@/lib/queries";
 import { signToken } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";

@@ -2,7 +2,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
-import { Home, Search, Bell, Mail, User, Users, Shield, Star, Menu, X, LogOut, BadgeCheck, Settings } from "lucide-react";
+import { Home, Search, Bell, Mail, User, Users, Star, Menu, X, LogOut, BadgeCheck, Settings } from "lucide-react";
 
 interface Me { id: string; _id?: string; name: string; username: string; profileImage?: string; isVerified?: boolean; premiumTheme?: boolean; }
 
@@ -21,48 +21,18 @@ const NAV = [
   { href: "/dashboard/premium",        icon: Star,   label: "Premium"       },
 ];
 
-export default function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const router = useRouter();
-  const pathname = usePathname();
-  const [user, setUser] = useState<Me | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [notifCount, setNotifCount] = useState(0);
-  const [mobileMenu, setMobileMenu] = useState(false);
+interface SidebarProps {
+  compact?: boolean;
+  pathname: string;
+  user: Me | null;
+  notifCount: number;
+  uid: string;
+  logout: () => void;
+  setMobileMenu: (val: boolean) => void;
+}
 
-  const heartbeat = useCallback(() => { fetch("/api/users/heartbeat", { method: "POST" }).catch(() => {}); }, []);
-  const fetchCount = useCallback(() => {
-    fetch("/api/notifications/count").then(r => r.json()).then(d => setNotifCount(d.count || 0)).catch(() => {});
-  }, []);
-
-  useEffect(() => {
-    fetch("/api/auth/me", { credentials: "include" }).then(r => {
-      if (r.status === 401) { router.replace("/login"); return null; }
-      return r.json();
-    }).then(d => {
-      if (d?.user) { setUser(d.user); setLoading(false); }
-      else if (d) { router.replace("/login"); }
-    }).catch(() => router.replace("/login"));
-    heartbeat();
-    fetchCount();
-    const hb = setInterval(heartbeat, 60000);
-    const nc = setInterval(fetchCount, 30000);
-    return () => { clearInterval(hb); clearInterval(nc); };
-  }, [heartbeat, fetchCount, router]);
-
-  const logout = async () => {
-    await fetch("/api/auth/logout", { method: "POST" });
-    router.replace("/login");
-  };
-
-  const uid = user?.id || user?._id || "";
-
-  if (loading) return (
-    <div className="min-h-screen bg-black flex items-center justify-center">
-      <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
-    </div>
-  );
-
-  const Sidebar = ({ compact = false }: { compact?: boolean }) => (
+function Sidebar({ compact = false, pathname, user, notifCount, uid, logout, setMobileMenu }: SidebarProps) {
+  return (
     <div className="flex flex-col min-h-full px-3 py-4">
       <Link href="/dashboard" className="flex items-center gap-3 px-3 py-3 mb-2">
         <img src="/logo.jpg" alt="Sosa" className="w-8 h-8 rounded-full object-cover" />
@@ -125,12 +95,54 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       )}
     </div>
   );
+}
+
+export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const [user, setUser] = useState<Me | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [notifCount, setNotifCount] = useState(0);
+  const [mobileMenu, setMobileMenu] = useState(false);
+
+  const heartbeat = useCallback(() => { fetch("/api/users/heartbeat", { method: "POST" }).catch(() => {}); }, []);
+  const fetchCount = useCallback(() => {
+    fetch("/api/notifications/count").then(r => r.json()).then(d => setNotifCount(d.count || 0)).catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    fetch("/api/auth/me", { credentials: "include" }).then(r => {
+      if (r.status === 401) { router.replace("/login"); return null; }
+      return r.json();
+    }).then(d => {
+      if (d?.user) { setUser(d.user); setLoading(false); }
+      else if (d) { router.replace("/login"); }
+    }).catch(() => router.replace("/login"));
+    heartbeat();
+    fetchCount();
+    const hb = setInterval(heartbeat, 60000);
+    const nc = setInterval(fetchCount, 30000);
+    return () => { clearInterval(hb); clearInterval(nc); };
+  }, [heartbeat, fetchCount, router]);
+
+  const logout = async () => {
+    await fetch("/api/auth/logout", { method: "POST" });
+    router.replace("/login");
+  };
+
+  const uid = user?.id || user?._id || "";
+
+  if (loading) return (
+    <div className="min-h-screen bg-black flex items-center justify-center">
+      <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-black text-white flex">
       {/* Desktop sidebar */}
       <aside className="hidden md:flex flex-col w-[72px] xl:w-[260px] border-r border-[#222] fixed top-0 left-0 h-screen z-30 overflow-y-auto">
-        <Sidebar compact />
+        <Sidebar compact={true} pathname={pathname} user={user} notifCount={notifCount} uid={uid} logout={logout} setMobileMenu={setMobileMenu} />
       </aside>
 
       {/* Mobile menu overlay */}
@@ -141,7 +153,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <button onClick={() => setMobileMenu(false)} className="absolute top-4 right-4 p-2">
               <X className="w-5 h-5 text-gray-400" />
             </button>
-            <Sidebar />
+            <Sidebar compact={false} pathname={pathname} user={user} notifCount={notifCount} uid={uid} logout={logout} setMobileMenu={setMobileMenu} />
           </div>
         </div>
       )}

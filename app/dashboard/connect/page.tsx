@@ -76,8 +76,7 @@ function UserRow({
         disabled={isLoading}
         className={`flex items-center gap-1.5 text-sm font-semibold px-4 py-2 rounded-xl border border-black/10 dark:border-white/10 shadow-btn transition-all flex-shrink-0 ${
           isFollowing
-            ? "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300"
-            : "bg-blue-600 text-white hover:bg-blue-700"
+            ? "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300" :"bg-blue-600 text-white hover:bg-blue-700"
         }`}
       >
         {isLoading ? <Loader2 size={14} className="animate-spin" /> : isFollowing ? <UserCheck size={14} /> : <UserPlus size={14} />}

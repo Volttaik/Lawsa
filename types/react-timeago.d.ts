@@ -18,5 +18,5 @@ declare module "react-timeago" {
   }
 
   const ReactTimeago: ComponentType<ReactTimeagoProps>;
-  export default ReactTimeago;
+  export { ReactTimeago as default };
 }
