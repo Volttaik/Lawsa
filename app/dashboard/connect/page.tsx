@@ -94,15 +94,20 @@ function ConnectPageContent() {
   const [search, setSearch] = useState(searchParams.get("search") || "");
   const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null);
   const [following, setFollowing] = useState<Set<string>>(new Set());
+  const [followers, setFollowers] = useState<Set<string>>(new Set());
   const [followLoading, setFollowLoading] = useState<Set<string>>(new Set());
 
+  const loadMe = async () => {
+    const data = await fetch("/api/auth/me", { credentials: "include" }).then((r) => r.json());
+    if (data.user) {
+      setCurrentUser(data.user);
+      setFollowing(new Set(data.user.following || []));
+      setFollowers(new Set(data.user.followers || []));
+    }
+  };
+
   useEffect(() => {
-    fetch("/api/auth/me").then((r) => r.json()).then((data) => {
-      if (data.user) {
-        setCurrentUser(data.user);
-        setFollowing(new Set(data.user.following || []));
-      }
-    });
+    loadMe();
   }, []);
 
   useEffect(() => {
@@ -113,7 +118,7 @@ function ConnectPageContent() {
   const loadUsers = async () => {
     setLoading(true);
     const url = search ? `/api/users?search=${encodeURIComponent(search)}` : "/api/users";
-    const res = await fetch(url);
+    const res = await fetch(url, { credentials: "include" });
     const data = await res.json();
     setUsers(data.users || []);
     setLoading(false);
@@ -121,21 +126,16 @@ function ConnectPageContent() {
 
   const handleFollow = async (userId: string) => {
     setFollowLoading((prev) => new Set([...prev, userId]));
-    const res = await fetch(`/api/users/${userId}/follow`, { method: "POST" });
+    const res = await fetch(`/api/users/${userId}/follow`, { method: "POST", credentials: "include" });
     const data = await res.json();
     if (data.following) setFollowing((prev) => new Set([...prev, userId]));
     else setFollowing((prev) => { const s = new Set(prev); s.delete(userId); return s; });
-    await Promise.all([
-      fetch("/api/auth/me").then((r) => r.json()).then((d) => {
-        if (d.user) setCurrentUser(d.user);
-      }),
-      loadUsers(),
-    ]);
+    await Promise.all([loadMe(), loadUsers()]);
     setFollowLoading((prev) => { const s = new Set(prev); s.delete(userId); return s; });
   };
 
   const myId = currentUser?._id;
-  const myFollowers = new Set(currentUser?.followers || []);
+  const myFollowers = followers;
 
   const filteredUsers = users.filter((u) => u._id !== myId);
 
@@ -180,7 +180,6 @@ function ConnectPageContent() {
         </div>
       ) : (
         <div className="space-y-6">
-          {/* Follow Requests */}
           <AnimatePresence>
             {followRequests.length > 0 && (
               <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}>
@@ -214,7 +213,6 @@ function ConnectPageContent() {
             )}
           </AnimatePresence>
 
-          {/* Discover */}
           {others.length === 0 && followRequests.length === 0 ? (
             <motion.div
               initial={{ opacity: 0 }}
@@ -239,22 +237,26 @@ function ConnectPageContent() {
                 variants={{ visible: { transition: { staggerChildren: 0.05 } } }}
                 className="space-y-3"
               >
-                {others.map((user) => (
-                  <UserRow
-                    key={user._id}
-                    user={user}
-                    isFollowing={following.has(user._id)}
-                    isLoading={followLoading.has(user._id)}
-                    onFollow={() => handleFollow(user._id)}
-                    badge={
-                      myFollowers.has(user._id) ? (
-                        <span className="text-[10px] bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 px-2 py-0.5 rounded-full font-medium">
-                          Follows you
-                        </span>
-                      ) : undefined
-                    }
-                  />
-                ))}
+                {others.map((user) => {
+                  const canMessage = followers.has(user._id) && following.has(user._id);
+                  const isFollowingThem = following.has(user._id);
+                  return (
+                    <UserRow
+                      key={user._id}
+                      user={user}
+                      isFollowing={isFollowingThem}
+                      isLoading={followLoading.has(user._id)}
+                      onFollow={() => handleFollow(user._id)}
+                      badge={
+                        myFollowers.has(user._id) ? (
+                          <span className="text-[10px] bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 px-2 py-0.5 rounded-full font-medium">
+                            Follows you
+                          </span>
+                        ) : undefined
+                      }
+                    />
+                  );
+                })}
               </motion.div>
             </>
           ) : null}

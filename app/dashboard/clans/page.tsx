@@ -74,7 +74,7 @@ function ClanLogo({ src, name, size = 48 }: { src?: string; name: string; size?:
       className="rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-700 flex items-center justify-center text-white font-bold flex-shrink-0"
       style={{ width: size, height: size, fontSize: size / 2 }}
     >
-      {name?.[0]?.toUpperCase() || "?"}
+      <img src="/logo.jpg" alt="Sosa" className="w-full h-full rounded-2xl object-cover" />
     </div>
   );
 }
