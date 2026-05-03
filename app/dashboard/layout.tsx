@@ -154,16 +154,17 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       </main>
 
       {/* Mobile bottom nav */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-black border-t border-[#222] z-30 flex items-center justify-around px-2 py-2">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-black border-t border-[#222] z-30 flex items-stretch justify-around px-2 py-2">
         {[...NAV.slice(0,4), { href: `/dashboard/profile/${uid}`, icon: User, label: "Profile" }].map(({ href, icon: Icon, label }) => {
           const active = pathname === href || (href !== "/dashboard" && pathname.startsWith(href));
           const isNotif = label === "Notifications";
           return (
-            <Link key={href} href={href} className="flex flex-col items-center gap-0.5 px-3 py-1 relative">
+            <Link key={href} href={href} className="flex flex-col items-center justify-center gap-1 px-2 py-1 relative min-w-0 flex-1">
               <div className="relative">
                 <Icon className={`w-6 h-6 ${active ? "text-white" : "text-gray-500"}`} strokeWidth={active ? 2.5 : 2} />
                 {isNotif && notifCount > 0 && <span className="absolute -top-1 -right-1 bg-blue-500 text-white text-[9px] font-bold rounded-full w-4 h-4 flex items-center justify-center">{notifCount > 9 ? "9+" : notifCount}</span>}
               </div>
+              <span className={`text-[10px] leading-none truncate ${active ? "text-white" : "text-gray-500"}`}>{label}</span>
             </Link>
           );
         })}
