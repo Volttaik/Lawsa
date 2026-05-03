@@ -10,7 +10,7 @@ interface Me { id: string; _id?: string; name: string; username: string; profile
 function Avatar({ src, name, size = 40, gold }: { src?: string; name: string; size?: number; gold?: boolean }) {
   const cls = gold ? "ring-2 ring-amber-400" : "";
   if (src) return <img src={src} alt={name} className={`rounded-full object-cover flex-shrink-0 ${cls}`} style={{ width: size, height: size }} />;
-  return <div className={`rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold flex-shrink-0 ${cls}`} style={{ width: size, height: size, fontSize: size / 2.6 }}>{name?.[0]?.toUpperCase() || "?"}</div>
+  return <img src="/logo.jpg" alt="Sosa" className={`rounded-full object-cover flex-shrink-0 ${cls}`} style={{ width: size, height: size }} />;
 }
 
 function fmt(n: number) { if (n >= 1000000) return (n/1000000).toFixed(1)+"M"; if (n >= 1000) return (n/1000).toFixed(1)+"K"; return String(n); }
@@ -155,7 +155,7 @@ function PostCard({ post, me, onLike, onRepost, onBookmark, onDelete, onEdit }: 
           {showComments && !editing && (
             <div className="mt-3 border-t border-slate-700/50 pt-3">
               <form onSubmit={submitComment} className="flex gap-2 mb-3">
-                <Avatar src={me?.profileImage} name={me?.name || "S"} size={28} />
+                <Avatar src={me?.profileImage} name={me?.name || "Sosa"} size={28} />
                 <div className="flex-1 flex gap-2">
                   <input value={comment} onChange={e => setComment(e.target.value)} placeholder="Reply here..." className="flex-1 bg-slate-800 text-white text-sm placeholder-gray-600 outline-none border border-slate-700 rounded-lg px-3 py-1 focus:border-blue-500" />
                   <button type="submit" disabled={!comment.trim() || commenting} className="bg-blue-500 text-white px-3 py-1 rounded-full text-xs font-bold disabled:opacity-50 hover:bg-blue-600 transition-all">
@@ -212,7 +212,7 @@ function ComposeBox({ me, onPost }: any) {
   return (
     <form onSubmit={submit} className="border-b border-slate-700/50 px-4 py-3">
       <div className="flex gap-3">
-        <Avatar src={me?.profileImage} name={me?.name || "S"} size={40} />
+        <Avatar src={me?.profileImage} name={me?.name || "Sosa"} size={40} />
         <div className="flex-1">
           <textarea value={content} onChange={e => setContent(e.target.value)} placeholder="What's on your mind?" rows={2}
             className="w-full bg-transparent text-white text-lg placeholder-gray-500 outline-none resize-none" />

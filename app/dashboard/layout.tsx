@@ -9,12 +9,7 @@ interface Me { id: string; _id?: string; name: string; username: string; profile
 function Avatar({ src, name, size = 36, gold }: { src?: string; name: string; size?: number; gold?: boolean }) {
   const ring = gold ? "ring-2 ring-amber-400" : "";
   if (src) return <img src={src} alt={name} className={`rounded-full object-cover flex-shrink-0 ${ring}`} style={{ width: size, height: size }} />;
-  return (
-    <div className={`rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold flex-shrink-0 ${ring}`}
-      style={{ width: size, height: size, fontSize: size / 2.6 }}>
-      {name?.[0]?.toUpperCase() || "S"}
-    </div>
-  );
+  return <img src="/logo.jpg" alt="Sosa" className={`rounded-full object-cover flex-shrink-0 ${ring}`} style={{ width: size, height: size }} />;
 }
 
 const NAV = [
@@ -68,11 +63,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   );
 
   const Sidebar = ({ compact = false }: { compact?: boolean }) => (
-    <div className="flex flex-col h-full px-3 py-4">
+    <div className="flex flex-col h-full px-3 py-4 sticky top-0 overflow-y-auto">
       <Link href="/dashboard" className="flex items-center gap-3 px-3 py-3 mb-2">
-        <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
-          <span className="text-white font-black text-sm">S</span>
-        </div>
+        <img src="/logo.jpg" alt="Sosa" className="w-8 h-8 rounded-full object-cover" />
         <span className={`text-white font-black text-xl ${compact ? "hidden xl:block" : "block"}`}>Sosa</span>
       </Link>
 
@@ -136,7 +129,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   return (
     <div className="min-h-screen bg-black text-white flex">
       {/* Desktop sidebar */}
-      <aside className="hidden md:flex flex-col w-[72px] xl:w-[260px] border-r border-[#222] fixed top-0 left-0 h-screen z-30">
+      <aside className="hidden md:flex flex-col w-[72px] xl:w-[260px] border-r border-[#222] fixed top-0 left-0 h-screen z-30 overflow-hidden">
         <Sidebar compact />
       </aside>
 
@@ -158,10 +151,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         {/* Mobile topbar */}
         <div className="md:hidden flex items-center justify-between px-4 py-3 border-b border-[#222] sticky top-0 bg-black/95 backdrop-blur z-20">
           <button onClick={() => setMobileMenu(true)}><Menu className="w-6 h-6 text-white" /></button>
-          <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
-            <span className="text-white font-black text-sm">S</span>
-          </div>
-          <Avatar src={user?.profileImage} name={user?.name || "S"} size={30} />
+          <img src="/logo.jpg" alt="Sosa" className="w-8 h-8 rounded-full object-cover" />
+          <Avatar src={user?.profileImage} name={user?.name || "Sosa"} size={30} />
         </div>
         {children}
       </main>
