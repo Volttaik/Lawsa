@@ -9,6 +9,7 @@ export const metadata: Metadata = {
   title: "Sosa — Connect, Share & Grow",
   description: "Sosa is a modern social networking platform to connect, collaborate, and share ideas.",
   icons: { icon: "/logo.jpg", apple: "/logo.jpg" },
+  manifest: "/manifest.json",
   openGraph: {
     title: "Sosa — Connect, Share & Grow",
     description: "A modern social networking platform to connect, collaborate, and share ideas.",

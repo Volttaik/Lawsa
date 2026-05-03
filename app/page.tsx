@@ -162,6 +162,7 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen bg-[#e8ecf0] flex flex-col">
       <GuestPostViewer />
+      <PWAInstallBanner />
 
       {/* Header */}
       <header className="bg-white/95 backdrop-blur-sm border-b border-black/8 shadow-soft flex-shrink-0">
