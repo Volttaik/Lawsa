@@ -347,7 +347,7 @@ export default function LandingPage() {
             fill
             className="object-cover opacity-15"
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-white/95 via-white/90 to-white/95" />
+          <div className="absolute inset-0 bg-gradient-to-b from-white/50 via-white/25 to-white/50" />
         </div>
         <div className="max-w-6xl mx-auto">
           <motion.div
@@ -383,7 +383,7 @@ export default function LandingPage() {
                 key={i}
                 variants={fadeUp}
                 whileHover={{ y: -3 }}
-                className="bg-white/90 rounded-2xl border border-black/8 shadow-lg p-6 transition-all cursor-default group hover:border-blue-500/30 hover:bg-white"
+                className="bg-white rounded-2xl border border-black/10 shadow-lg p-6 transition-all cursor-default group hover:border-blue-500/30 hover:bg-white"
               >
                 <div className="w-11 h-11 rounded-xl bg-blue-500/10 group-hover:bg-blue-500 flex items-center justify-center mb-4 transition-all">
                   <feature.icon className="text-blue-500 group-hover:text-white transition-colors" size={20} />
@@ -405,7 +405,7 @@ export default function LandingPage() {
             fill
             className="object-cover opacity-20"
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-white via-white/80 to-white" />
+          <div className="absolute inset-0 bg-gradient-to-b from-white/60 via-white/45 to-white/60" />
         </div>
         <div className="relative z-10 max-w-6xl mx-auto">
           <motion.div
@@ -427,7 +427,7 @@ export default function LandingPage() {
                 "Discover what's trending",
                 "Build lasting connections",
               ].map((item, i) => (
-                <div key={i} className="flex items-center gap-2 bg-white border border-black/8 rounded-full px-4 py-1.5 shadow-sm">
+                <div key={i} className="flex items-center gap-2 bg-white border border-black/10 rounded-full px-4 py-1.5 shadow-sm">
                   <div className="w-1.5 h-1.5 rounded-full bg-blue-400 flex-shrink-0" />
                   <span className="text-gray-600 text-xs">{item}</span>
                 </div>
@@ -484,7 +484,7 @@ export default function LandingPage() {
                 height={400}
                 className="w-full h-56 object-cover"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-white/75 to-transparent flex items-end p-5">
+              <div className="absolute inset-0 bg-gradient-to-t from-white/70 to-transparent flex items-end p-5">
                 <p className="text-gray-900 text-sm font-medium">Join our growing community</p>
               </div>
             </motion.div>
