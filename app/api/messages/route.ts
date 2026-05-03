@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getUserFromRequest } from "@/lib/auth";
 import { getConversationsByUser, getUserById, findConversationByParticipants, createConversation, createMessage, updateConversation, createNotification } from "@/lib/queries";
-import { saveBase64Media } from "@/lib/upload";
 export const dynamic = "force-dynamic";
 export async function GET(request: NextRequest) {
   try {
@@ -24,8 +23,7 @@ export async function POST(request: NextRequest) {
     const { recipientId, content, mediaUrl, mediaData, mediaType, replyToId, replyToContent, replyToSender } = await request.json();
     if (!recipientId || (!content?.trim() && !mediaUrl && !mediaData)) return NextResponse.json({ error: "Recipient and content required" }, { status: 400 });
     const participants = [authUser.userId, recipientId].sort();
-    let savedMediaUrl = mediaUrl || "";
-    if (mediaData?.startsWith("data:")) savedMediaUrl = await saveBase64Media(mediaData, "messages");
+    const savedMediaUrl = mediaUrl || mediaData || "";
     const lastMsg = content?.trim() || (mediaType === "image" ? "📷 Photo" : mediaType === "video" ? "🎥 Video" : mediaType === "audio" ? "🎤 Voice note" : "📎 File");
     let conv = await findConversationByParticipants(participants);
     if (!conv) conv = await createConversation(participants);

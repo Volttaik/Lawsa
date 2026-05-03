@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getUserFromRequest } from "@/lib/auth";
 import { getStories, createStory, getUserById } from "@/lib/queries";
-import { saveBase64Media } from "@/lib/upload";
 export const dynamic = "force-dynamic";
 export async function GET(request: NextRequest) {
   try {
@@ -24,9 +23,7 @@ export async function POST(request: NextRequest) {
     const { content, image } = await request.json();
     if (!content?.trim() && !image) return NextResponse.json({ error: "Content or image required" }, { status: 400 });
     const me = await getUserById(authUser.userId);
-    let savedImage = "";
-    if (image?.startsWith("data:")) savedImage = await saveBase64Media(image, "stories");
-    const story = await createStory({ authorId: authUser.userId, authorName: authUser.name, authorUsername: authUser.username, authorImage: me?.profileImage || "", content: content?.trim() || "", image: savedImage });
+    const story = await createStory({ authorId: authUser.userId, authorName: authUser.name, authorUsername: authUser.username, authorImage: me?.profileImage || "", content: content?.trim() || "", image: image || "" });
     if (!story) return NextResponse.json({ error: "Failed to create story" }, { status: 500 });
     return NextResponse.json({ story }, { status: 201 });
   } catch { return NextResponse.json({ error: "Failed" }, { status: 500 }); }

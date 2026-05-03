@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getUserFromRequest } from "@/lib/auth";
 import { getClans, createClan, getClanBySlug, updateUser, getUserById } from "@/lib/queries";
-import { saveBase64Media } from "@/lib/upload";
 export const dynamic = "force-dynamic";
 export async function GET() {
   try {
@@ -18,8 +17,7 @@ export async function POST(request: NextRequest) {
     const slug = name.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
     const existing = await getClanBySlug(slug);
     if (existing) return NextResponse.json({ error: "Clan name taken" }, { status: 409 });
-    let savedLogo = "";
-    if (logo?.startsWith("data:")) savedLogo = await saveBase64Media(logo, "clans");
+    const savedLogo = logo || "";
     const clan = await createClan({ name: name.trim(), slug, description: description?.trim() || "", logo: savedLogo, ownerId: authUser.userId, ownerName: authUser.name });
     if (!clan) return NextResponse.json({ error: "Failed to create clan" }, { status: 500 });
     await updateUser(authUser.userId, { clanId: clan._id, clanName: clan.name, clanLogo: savedLogo });

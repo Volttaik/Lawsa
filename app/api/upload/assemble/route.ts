@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getUserFromRequest } from "@/lib/auth";
 import { getChunks, deleteChunks } from "@/lib/queries";
-import { uploadBufferToStorage } from "@/lib/upload";
-import { v4 as uuidv4 } from "uuid";
 export const dynamic = "force-dynamic";
 export async function POST(request: NextRequest) {
   try {
@@ -17,9 +15,7 @@ export async function POST(request: NextRequest) {
       if (d?.buffer) return Buffer.from(d.buffer); return Buffer.from(d);
     });
     const assembled = Buffer.concat(buffers);
-    const ext = filename.split(".").pop() || "bin";
-    const newFilename = `${uuidv4()}.${ext}`;
-    const url = await uploadBufferToStorage(assembled, newFilename, mimeType, subfolder || "");
+    const url = `data:${mimeType};base64,${assembled.toString("base64")}`;
     await deleteChunks(uploadId);
     return NextResponse.json({ url });
   } catch (e: any) { console.error(e); return NextResponse.json({ error: e.message || "Assembly failed" }, { status: 500 }); }
