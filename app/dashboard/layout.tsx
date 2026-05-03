@@ -2,7 +2,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
-import { Home, Search, Bell, Mail, User, Users, Shield, Star, Menu, X, LogOut, BadgeCheck } from "lucide-react";
+import { Home, Search, Bell, Mail, User, Users, Shield, Star, Menu, X, LogOut, BadgeCheck, Settings } from "lucide-react";
 
 interface Me { id: string; _id?: string; name: string; username: string; profileImage?: string; isVerified?: boolean; premiumTheme?: boolean; }
 
@@ -98,23 +98,36 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <User className={`w-6 h-6 ${pathname.startsWith("/dashboard/profile") ? "text-white" : "text-gray-300 group-hover:text-white"}`} strokeWidth={pathname.startsWith("/dashboard/profile") ? 2.5 : 2} />
           <span className={`${compact ? "hidden xl:block" : "block"} text-base ${pathname.startsWith("/dashboard/profile") ? "text-white" : "text-gray-300 group-hover:text-white"}`}>Profile</span>
         </Link>
+        {!compact && (
+          <Link href="/dashboard/settings" onClick={() => setMobileMenu(false)}
+            className={`flex items-center gap-4 px-3 py-3 rounded-full transition-colors group ${pathname.startsWith("/dashboard/settings") ? "font-bold" : "hover:bg-[#1a1a1a]"}`}>
+            <Settings className={`w-6 h-6 ${pathname.startsWith("/dashboard/settings") ? "text-white" : "text-gray-300 group-hover:text-white"}`} strokeWidth={pathname.startsWith("/dashboard/settings") ? 2.5 : 2} />
+            <span className={`block text-base ${pathname.startsWith("/dashboard/settings") ? "text-white" : "text-gray-300 group-hover:text-white"}`}>Settings</span>
+          </Link>
+        )}
       </nav>
 
       {user && (
         <div className="mt-4 border-t border-[#222] pt-4">
           <div className="flex items-center gap-3 px-3 py-2 rounded-full hover:bg-[#1a1a1a] cursor-pointer group">
             <Avatar src={user.profileImage} name={user.name} size={36} gold={user.premiumTheme} />
-            <div className="hidden xl:block flex-1 min-w-0">
+            <div className={`${compact ? "hidden xl:block" : "block"} flex-1 min-w-0`}>
               <div className="flex items-center gap-1">
                 <p className="text-white font-bold text-sm truncate">{user.name}</p>
                 {user.isVerified && <BadgeCheck className="w-4 h-4 text-blue-400 flex-shrink-0" />}
               </div>
               <p className="text-gray-500 text-xs truncate">@{user.username}</p>
             </div>
-            <button onClick={logout} className="hidden xl:block ml-auto opacity-0 group-hover:opacity-100 transition-opacity">
+            <button onClick={logout} className={`${compact ? "hidden xl:block" : "block"} ml-auto opacity-0 group-hover:opacity-100 transition-opacity`}>
               <LogOut className="w-4 h-4 text-gray-400 hover:text-white" />
             </button>
           </div>
+          {!compact && (
+            <button onClick={logout} className="mt-3 w-full flex items-center gap-3 px-3 py-3 rounded-full hover:bg-[#1a1a1a] text-red-400">
+              <LogOut className="w-5 h-5" />
+              <span className="text-base font-medium">Sign out</span>
+            </button>
+          )}
         </div>
       )}
     </div>
