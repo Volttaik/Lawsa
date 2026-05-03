@@ -24,14 +24,7 @@ interface CurrentUser {
 
 function Avatar({ src, name, size = 48 }: { src?: string; name: string; size?: number }) {
   if (src) return <img src={src} alt={name} className="rounded-full object-cover flex-shrink-0" style={{ width: size, height: size }} />;
-  return (
-    <div
-      className="rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-bold flex-shrink-0"
-      style={{ width: size, height: size, fontSize: size / 2.5 }}
-    >
-      {name?.[0]?.toUpperCase() || "?"}
-    </div>
-  );
+  return <img src="/logo.jpg" alt="Sosa" className="rounded-full object-cover flex-shrink-0" style={{ width: size, height: size }} />;
 }
 
 function UserRow({

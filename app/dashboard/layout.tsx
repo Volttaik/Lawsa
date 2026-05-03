@@ -63,7 +63,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   );
 
   const Sidebar = ({ compact = false }: { compact?: boolean }) => (
-    <div className="flex flex-col h-full px-3 py-4 sticky top-0 overflow-y-auto">
+    <div className="flex flex-col min-h-full px-3 py-4">
       <Link href="/dashboard" className="flex items-center gap-3 px-3 py-3 mb-2">
         <img src="/logo.jpg" alt="Sosa" className="w-8 h-8 rounded-full object-cover" />
         <span className={`text-white font-black text-xl ${compact ? "hidden xl:block" : "block"}`}>Sosa</span>
@@ -129,7 +129,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   return (
     <div className="min-h-screen bg-black text-white flex">
       {/* Desktop sidebar */}
-      <aside className="hidden md:flex flex-col w-[72px] xl:w-[260px] border-r border-[#222] fixed top-0 left-0 h-screen z-30 overflow-hidden">
+      <aside className="hidden md:flex flex-col w-[72px] xl:w-[260px] border-r border-[#222] fixed top-0 left-0 h-screen z-30 overflow-y-auto">
         <Sidebar compact />
       </aside>
 

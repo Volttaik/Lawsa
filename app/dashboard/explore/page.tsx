@@ -9,7 +9,7 @@ interface PostResult { _id: string; authorId: string; authorName: string; author
 
 function Avatar({ src, name, size = 40 }: { src?: string; name: string; size?: number }) {
   if (src) return <img src={src} alt={name} className="rounded-full object-cover flex-shrink-0" style={{ width: size, height: size }} />;
-  return <div className="rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold flex-shrink-0" style={{ width: size, height: size, fontSize: size / 2.5 }}>{name?.[0]?.toUpperCase() || "S"}</div>;
+  return <img src="/logo.jpg" alt="Sosa" className="rounded-full object-cover flex-shrink-0" style={{ width: size, height: size }} />;
 }
 
 const TRENDING = [
@@ -29,15 +29,22 @@ export default function ExplorePage() {
   const [loading, setLoading] = useState(false);
   const [me, setMe] = useState<any>(null);
   const [following, setFollowing] = useState<Set<string>>(new Set());
+  const [followLoading, setFollowLoading] = useState<Set<string>>(new Set());
   const debounceRef = useRef<any>(null);
 
-  useEffect(() => {
-    fetch("/api/auth/me", { credentials: "include" }).then(r => r.json()).then(d => {
-      if (d.user) { setMe(d.user); setFollowing(new Set(d.user.following || [])); }
-    });
+  const refreshMe = useCallback(async () => {
+    const d = await fetch("/api/auth/me", { credentials: "include" }).then(r => r.json());
+    if (d.user) {
+      setMe(d.user);
+      setFollowing(new Set(d.user.following || []));
+    }
   }, []);
 
-  const search = useCallback(async (q: string) => {
+  useEffect(() => {
+    refreshMe();
+  }, [refreshMe]);
+
+  const doSearch = useCallback(async (q: string) => {
     if (!q.trim()) { setUsers([]); setPosts([]); return; }
     setLoading(true);
     const [uRes, pRes] = await Promise.all([
@@ -51,13 +58,18 @@ export default function ExplorePage() {
 
   useEffect(() => {
     clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => search(query), 400);
+    debounceRef.current = setTimeout(() => doSearch(query), 400);
     return () => clearTimeout(debounceRef.current);
-  }, [query, search]);
+  }, [query, doSearch]);
 
   const toggleFollow = async (uid: string) => {
-    await fetch(`/api/users/${uid}/follow`, { method: "POST", credentials: "include" });
-    setFollowing(prev => { const s = new Set(prev); s.has(uid) ? s.delete(uid) : s.add(uid); return s; });
+    setFollowLoading(prev => new Set([...prev, uid]));
+    const res = await fetch(`/api/users/${uid}/follow`, { method: "POST", credentials: "include" });
+    const data = await res.json();
+    if (data.following) setFollowing(prev => new Set([...prev, uid]));
+    else setFollowing(prev => { const s = new Set(prev); s.delete(uid); return s; });
+    await refreshMe();
+    setFollowLoading(prev => { const s = new Set(prev); s.delete(uid); return s; });
   };
 
   const myId = me?.id || me?._id;
@@ -115,7 +127,7 @@ export default function ExplorePage() {
           </div>
 
           {/* Who to follow */}
-          <WhoToFollow myId={myId} following={following} onFollow={toggleFollow} />
+          <WhoToFollow myId={myId} following={following} followLoading={followLoading} onFollow={toggleFollow} />
         </>
       )}
 
@@ -141,8 +153,11 @@ export default function ExplorePage() {
                     {u.bio && <p className="text-gray-400 text-xs mt-0.5 truncate">{u.bio}</p>}
                   </div>
                   {u._id !== myId && (
-                    <button onClick={() => toggleFollow(u._id)}
-                      className={`px-4 py-1.5 rounded-full text-sm font-bold transition-colors flex-shrink-0 ${following.has(u._id) ? "bg-transparent border border-[#333] text-white hover:border-red-500 hover:text-red-400" : "bg-white text-black hover:bg-gray-200"}`}>
+                    <button
+                      onClick={() => toggleFollow(u._id)}
+                      disabled={followLoading.has(u._id)}
+                      className={`px-4 py-1.5 rounded-full text-sm font-bold transition-colors flex-shrink-0 flex items-center gap-1.5 ${following.has(u._id) ? "bg-transparent border border-[#333] text-white hover:border-red-500 hover:text-red-400" : "bg-white text-black hover:bg-gray-200"}`}>
+                      {followLoading.has(u._id) ? <Loader2 className="w-3 h-3 animate-spin" /> : null}
                       {following.has(u._id) ? "Following" : "Follow"}
                     </button>
                   )}
@@ -190,7 +205,12 @@ export default function ExplorePage() {
   );
 }
 
-function WhoToFollow({ myId, following, onFollow }: { myId: string; following: Set<string>; onFollow: (id: string) => void; }) {
+function WhoToFollow({ myId, following, followLoading, onFollow }: {
+  myId: string;
+  following: Set<string>;
+  followLoading: Set<string>;
+  onFollow: (id: string) => void;
+}) {
   const [users, setUsers] = useState<UserResult[]>([]);
   useEffect(() => {
     fetch("/api/users/suggestions?limit=5", { credentials: "include" }).then(r => r.json()).then(d => setUsers(d.users || []));
@@ -215,8 +235,11 @@ function WhoToFollow({ myId, following, onFollow }: { myId: string; following: S
             </div>
             <p className="text-gray-500 text-xs">@{u.username}</p>
           </div>
-          <button onClick={() => onFollow(u._id || u.id || "")}
-            className={`px-4 py-1.5 rounded-full text-sm font-bold transition-colors flex-shrink-0 ${following.has(u._id || u.id || "") ? "bg-transparent border border-[#333] text-white" : "bg-white text-black hover:bg-gray-200"}`}>
+          <button
+            onClick={() => onFollow(u._id || u.id || "")}
+            disabled={followLoading.has(u._id || u.id || "")}
+            className={`px-4 py-1.5 rounded-full text-sm font-bold transition-colors flex-shrink-0 flex items-center gap-1.5 ${following.has(u._id || u.id || "") ? "bg-transparent border border-[#333] text-white" : "bg-white text-black hover:bg-gray-200"}`}>
+            {followLoading.has(u._id || u.id || "") ? <Loader2 className="w-3 h-3 animate-spin" /> : null}
             {following.has(u._id || u.id || "") ? "Following" : "Follow"}
           </button>
         </div>

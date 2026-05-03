@@ -10,7 +10,7 @@ function Avatar({ src, name, size = 40, online }: { src?: string; name: string; 
   return (
     <div className="relative flex-shrink-0" style={{ width: size, height: size }}>
       {src ? <img src={src} alt={name} className="rounded-full object-cover w-full h-full" /> :
-        <div className="rounded-full bg-gradient-to-br from-blue-500 to-purple-600 w-full h-full flex items-center justify-center text-white font-bold" style={{ fontSize: size / 2.5 }}>{name?.[0]?.toUpperCase() || "S"}</div>}
+        <img src="/logo.jpg" alt="Sosa" className="rounded-full object-cover w-full h-full" />}
       {online && <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-[#0B141A]" />}
     </div>
   );
