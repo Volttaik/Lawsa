@@ -478,12 +478,7 @@ export default function RegisterPage() {
                           className="relative w-28 h-28 rounded-full border-2 border-dashed border-black/20 hover:border-blue-500 bg-gray-50 hover:bg-blue-50 transition-all flex flex-col items-center justify-center overflow-hidden"
                         >
                           {form.profileImagePreview ? (
-                            <Image
-                              src={form.profileImagePreview}
-                              alt="Profile preview"
-                              fill
-                              className="object-cover"
-                            />
+                            <Image src={form.profileImagePreview} alt="Profile preview" fill className="object-cover" />
                           ) : (
                             <>
                               <Camera size={28} className="text-gray-400 mb-1" />
@@ -491,27 +486,15 @@ export default function RegisterPage() {
                             </>
                           )}
                         </motion.button>
-                        <input
-                          ref={fileInputRef}
-                          type="file"
-                          accept="image/*"
-                          className="hidden"
-                          onChange={handleImageChange}
-                        />
+                        <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleImageChange} />
                         <div className="text-center">
-                          <button
-                            type="button"
-                            onClick={() => fileInputRef.current?.click()}
-                            className="text-sm font-medium text-blue-600 hover:underline"
-                          >
+                          <button type="button" onClick={() => fileInputRef.current?.click()} className="text-sm font-medium text-blue-600 hover:underline">
                             {form.profileImagePreview ? "Change photo" : "Choose a photo"}
                           </button>
                           <p className="text-xs text-gray-400 mt-1">JPG, PNG or GIF. Max 5MB.</p>
                         </div>
                       </div>
-                      <p className="text-xs text-center text-gray-400 mt-4">
-                        You can always change this later from your profile settings.
-                      </p>
+                      <p className="text-xs text-center text-gray-400 mt-4">You can always change this later from your profile settings.</p>
                     </StepWrapper>
                   )}
 
@@ -527,7 +510,7 @@ export default function RegisterPage() {
                             {form.profileImagePreview ? (
                               <Image src={form.profileImagePreview} alt="Profile" width={56} height={56} className="object-cover w-full h-full" />
                             ) : (
-                              <span className="text-white font-bold text-xl">{form.name?.[0]?.toUpperCase() || "?"}</span>
+                              <img src="/logo.jpg" alt="Sosa" className="w-full h-full object-cover" />
                             )}
                           </div>
                           <div>
