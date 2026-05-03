@@ -22,6 +22,11 @@ export async function POST(request: NextRequest) {
     if (!authUser) return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
     const { recipientId, content, mediaUrl, mediaData, mediaType, replyToId, replyToContent, replyToSender } = await request.json();
     if (!recipientId || (!content?.trim() && !mediaUrl && !mediaData)) return NextResponse.json({ error: "Recipient and content required" }, { status: 400 });
+    const recipient = await getUserById(recipientId);
+    if (!recipient) return NextResponse.json({ error: "Recipient not found" }, { status: 404 });
+    const me = await getUserById(authUser.userId);
+    const canMessage = !!me && !!recipient && (me.following || []).includes(recipientId) && (recipient.following || []).includes(authUser.userId);
+    if (!canMessage) return NextResponse.json({ error: "You can only message mutual followers" }, { status: 403 });
     const participants = [authUser.userId, recipientId].sort();
     const savedMediaUrl = mediaUrl || mediaData || "";
     const lastMsg = content?.trim() || (mediaType === "image" ? "📷 Photo" : mediaType === "video" ? "🎥 Video" : mediaType === "audio" ? "🎤 Voice note" : "📎 File");
@@ -29,7 +34,6 @@ export async function POST(request: NextRequest) {
     if (!conv) conv = await createConversation(participants);
     else await updateConversation(conv._id, { lastMessage: lastMsg, lastMessageTime: new Date() });
     if (!conv) return NextResponse.json({ error: "Failed to create conversation" }, { status: 500 });
-    const me = await getUserById(authUser.userId);
     const msg = await createMessage({ conversationId: conv._id, senderId: authUser.userId, senderName: authUser.name, senderImage: me?.profileImage || "", receiverId: recipientId, content: content?.trim() || "", mediaUrl: savedMediaUrl, mediaType: savedMediaUrl ? (mediaType || "file") : "", replyToId: replyToId || null, replyToContent: replyToContent || "", replyToSender: replyToSender || "" });
     if (!msg) return NextResponse.json({ error: "Failed to create message" }, { status: 500 });
     await updateConversation(conv._id, { lastMessage: lastMsg, lastMessageTime: new Date() });
