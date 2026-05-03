@@ -276,21 +276,20 @@ export default function FeedPage() {
 
   const handleLike = async (postId: string) => {
     const res = await fetch(`/api/posts/${postId}/like`, { method: "POST", credentials: "include" });
-    const data = await res.json();
     if (!res.ok) return;
-    setPosts(prev => prev.map(p => p._id === postId ? { ...p, likes: data.likesCount !== undefined ? (data.liked ? [...(p.likes || []), (me?.id || me?._id || "")] : (p.likes || []).filter(id => id !== (me?.id || me?._id || ""))) : p.likes } : p));
+    await loadPosts(1, true);
   };
 
   const handleRepost = async (postId: string) => {
     const res = await fetch(`/api/posts/${postId}/repost`, { method: "POST", credentials: "include" });
-    const data = await res.json();
     if (!res.ok) return;
-    setPosts(prev => prev.map(p => p._id === postId ? { ...p, reshares: data.reshares || p.reshares } : p));
+    await loadPosts(1, true);
   };
 
   const handleBookmark = async (postId: string) => {
     const res = await fetch(`/api/posts/${postId}/bookmark`, { method: "POST", credentials: "include" });
     if (!res.ok) return;
+    await loadPosts(1, true);
   };
 
   const handleDelete = async (postId: string) => {

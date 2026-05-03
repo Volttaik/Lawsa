@@ -130,11 +130,14 @@ function ConnectPageContent() {
     setFollowLoading((prev) => new Set([...prev, userId]));
     const res = await fetch(`/api/users/${userId}/follow`, { method: "POST" });
     const data = await res.json();
-    if (data.following) {
-      setFollowing((prev) => new Set([...prev, userId]));
-    } else {
-      setFollowing((prev) => { const s = new Set(prev); s.delete(userId); return s; });
-    }
+    if (data.following) setFollowing((prev) => new Set([...prev, userId]));
+    else setFollowing((prev) => { const s = new Set(prev); s.delete(userId); return s; });
+    await Promise.all([
+      fetch("/api/auth/me").then((r) => r.json()).then((d) => {
+        if (d.user) setCurrentUser(d.user);
+      }),
+      loadUsers(),
+    ]);
     setFollowLoading((prev) => { const s = new Set(prev); s.delete(userId); return s; });
   };
 
