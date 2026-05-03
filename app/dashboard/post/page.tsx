@@ -4,24 +4,24 @@ import { useRouter } from "next/navigation";
 import { cache } from "@/lib/cache";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  ImageIcon, Video, X, Send, Loader2, ArrowLeft, Play, ChevronDown,
-  Globe, Scale, Cpu, Trophy, Newspaper, BookOpen, Briefcase,
-  CalendarDays, HeartPulse, Music, Palette, CheckCircle2, AlertCircle,
-  Film, FileImage, RotateCcw, HardDrive,
-} from "lucide-react";
+  Image as ImageIcon, VideoCamera, X, PaperPlaneTilt, SpinnerGap, ArrowLeft, Play, CaretDown,
+  Globe, Scales, Cpu, Trophy, Newspaper, BookOpen, Briefcase,
+  CalendarBlank, HeartPulse, MusicNote, Palette, CheckCircle, WarningCircle,
+  FilmSlate, FileImage, ArrowCounterClockwise, HardDrive,
+} from "@phosphor-icons/react";
 import { uploadFile } from "@/lib/uploadClient";
 
 const CATEGORIES = [
   { id: "general",  label: "General",  Icon: Globe },
-  { id: "culture",  label: "Culture",  Icon: Scale },
+  { id: "culture",  label: "Culture",  Icon: Scales },
   { id: "tech",     label: "Tech",     Icon: Cpu },
   { id: "sports",   label: "Sports",   Icon: Trophy },
   { id: "news",     label: "News",     Icon: Newspaper },
   { id: "lectures", label: "Lectures", Icon: BookOpen },
   { id: "career",   label: "Career",   Icon: Briefcase },
-  { id: "events",   label: "Events",   Icon: CalendarDays },
+  { id: "events",   label: "Events",   Icon: CalendarBlank },
   { id: "health",   label: "Health",   Icon: HeartPulse },
-  { id: "music",    label: "Music",    Icon: Music },
+  { id: "music",    label: "Music",    Icon: MusicNote },
   { id: "art",      label: "Art",      Icon: Palette },
 ];
 
@@ -85,14 +85,14 @@ function MediaCard({ item, onRemove, onRetry }: {
 
         {isUploading && (
           <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center gap-2">
-            <Loader2 size={20} className="text-white animate-spin" />
+            <SpinnerGap size={20} className="text-white animate-spin" />
             <span className="text-[10px] text-white/90 font-semibold">Uploading…</span>
           </div>
         )}
 
         {isError && (
           <div className="absolute inset-0 bg-red-900/80 flex flex-col items-center justify-center gap-1">
-            <AlertCircle size={18} className="text-red-200" />
+            <WarningCircle size={18} className="text-red-200" />
             <span className="text-[9px] text-red-200 font-semibold">Failed</span>
           </div>
         )}
@@ -117,7 +117,7 @@ function MediaCard({ item, onRemove, onRetry }: {
 
       {isDone && (
         <div className="absolute top-1 left-1 w-5 h-5 bg-green-500 rounded-full flex items-center justify-center shadow-sm z-10">
-          <CheckCircle2 size={11} className="text-white" />
+          <CheckCircle size={11} className="text-white" />
         </div>
       )}
 
@@ -301,7 +301,7 @@ export default function CreatePostPage() {
               initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }}
               className="flex items-start gap-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 text-sm rounded-xl p-3 mb-4"
             >
-              <AlertCircle size={15} className="flex-shrink-0 mt-0.5" />
+              <WarningCircle size={15} className="flex-shrink-0 mt-0.5" />
               <span className="flex-1">{globalError}</span>
               <button onClick={() => setGlobalError("")} className="flex-shrink-0 ml-1">
                 <X size={14} />
@@ -334,13 +334,13 @@ export default function CreatePostPage() {
                   <span>{media.length} file{media.length !== 1 ? "s" : ""} · {formatBytes(totalSize)}</span>
                   {uploadingCount > 0 && (
                     <span className="flex items-center gap-1 text-blue-600 dark:text-blue-400">
-                      <Loader2 size={11} className="animate-spin" />
+                      <SpinnerGap size={11} className="animate-spin" />
                       {uploadingCount} uploading…
                     </span>
                   )}
                   {uploadingCount === 0 && doneCount > 0 && hasFailedUploads === false && (
                     <span className="flex items-center gap-1 text-green-600 dark:text-green-400">
-                      <CheckCircle2 size={11} />
+                      <CheckCircle size={11} />
                       All uploaded
                     </span>
                   )}
@@ -371,7 +371,7 @@ export default function CreatePostPage() {
                   initial={{ opacity: 0 }} animate={{ opacity: 1 }}
                   className="mt-3 flex items-center gap-2 text-xs text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-xl px-3 py-2"
                 >
-                  <AlertCircle size={12} />
+                  <WarningCircle size={12} />
                   Some uploads failed. Tap the orange retry button or remove the failed files.
                 </motion.div>
               )}
@@ -504,7 +504,7 @@ export default function CreatePostPage() {
               }
               className="w-9 h-9 bg-blue-600 text-white rounded-xl flex items-center justify-center hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-btn"
             >
-              {submitting ? <Loader2 size={15} className="animate-spin" /> : <Send size={15} />}
+              {submitting ? <SpinnerGap size={15} className="animate-spin" /> : <Send size={15} />}
             </motion.button>
           </div>
         </div>

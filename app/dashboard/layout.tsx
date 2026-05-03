@@ -2,7 +2,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
-import { Home, Search, Bell, Mail, User, Users, Shield, Star, Menu, X, LogOut, BadgeCheck, Settings } from "lucide-react";
+import { House, MagnifyingGlass, Bell, Envelope, User, UsersThree, Star, List, X, SignOut, SealCheck, Gear } from "@phosphor-icons/react";
 
 interface Me { id: string; _id?: string; name: string; username: string; profileImage?: string; isVerified?: boolean; premiumTheme?: boolean; }
 
@@ -13,12 +13,12 @@ function Avatar({ src, name, size = 36, gold }: { src?: string; name: string; si
 }
 
 const NAV = [
-  { href: "/dashboard",                icon: Home,   label: "Home"          },
-  { href: "/dashboard/explore",        icon: Search, label: "Explore"       },
-  { href: "/dashboard/notifications",  icon: Bell,   label: "Notifications" },
-  { href: "/dashboard/messages",       icon: Mail,   label: "Messages"      },
-  { href: "/dashboard/clans",          icon: Users,  label: "Clans"         },
-  { href: "/dashboard/premium",        icon: Star,   label: "Premium"       },
+  { href: "/dashboard",                icon: House,           label: "Home"          },
+  { href: "/dashboard/explore",        icon: MagnifyingGlass, label: "Explore"       },
+  { href: "/dashboard/notifications",  icon: Bell,            label: "Notifications" },
+  { href: "/dashboard/messages",       icon: Envelope,        label: "Messages"      },
+  { href: "/dashboard/clans",          icon: UsersThree,      label: "Clans"         },
+  { href: "/dashboard/premium",        icon: Star,            label: "Premium"       },
 ];
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -77,7 +77,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <Link key={href} href={href} onClick={() => setMobileMenu(false)}
               className={`flex items-center gap-4 px-3 py-3 rounded-full transition-colors group ${active ? "font-bold" : "hover:bg-[#1a1a1a]"}`}>
               <div className="relative">
-                <Icon className={`w-6 h-6 ${active ? "text-white" : "text-gray-300 group-hover:text-white"}`} strokeWidth={active ? 2.5 : 2} />
+                <Icon className={`w-6 h-6 ${active ? "text-white" : "text-gray-300 group-hover:text-white"}`} weight={active ? "fill" : "regular"} />
                 {isNotif && notifCount > 0 && (
                   <span className="absolute -top-1 -right-1 bg-blue-500 text-white text-[9px] font-bold rounded-full w-4 h-4 flex items-center justify-center">{notifCount > 9 ? "9+" : notifCount}</span>
                 )}
@@ -88,13 +88,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         })}
         <Link href={`/dashboard/profile/${uid}`} onClick={() => setMobileMenu(false)}
           className={`flex items-center gap-4 px-3 py-3 rounded-full transition-colors group ${pathname.startsWith("/dashboard/profile") ? "font-bold" : "hover:bg-[#1a1a1a]"}`}>
-          <User className={`w-6 h-6 ${pathname.startsWith("/dashboard/profile") ? "text-white" : "text-gray-300 group-hover:text-white"}`} strokeWidth={pathname.startsWith("/dashboard/profile") ? 2.5 : 2} />
+          <User className={`w-6 h-6 ${pathname.startsWith("/dashboard/profile") ? "text-white" : "text-gray-300 group-hover:text-white"}`} weight={pathname.startsWith("/dashboard/profile") ? "fill" : "regular"} />
           <span className={`${compact ? "hidden xl:block" : "block"} text-base ${pathname.startsWith("/dashboard/profile") ? "text-white" : "text-gray-300 group-hover:text-white"}`}>Profile</span>
         </Link>
         {!compact && (
           <Link href="/dashboard/settings" onClick={() => setMobileMenu(false)}
             className={`flex items-center gap-4 px-3 py-3 rounded-full transition-colors group ${pathname.startsWith("/dashboard/settings") ? "font-bold" : "hover:bg-[#1a1a1a]"}`}>
-            <Settings className={`w-6 h-6 ${pathname.startsWith("/dashboard/settings") ? "text-white" : "text-gray-300 group-hover:text-white"}`} strokeWidth={pathname.startsWith("/dashboard/settings") ? 2.5 : 2} />
+            <Gear className={`w-6 h-6 ${pathname.startsWith("/dashboard/settings") ? "text-white" : "text-gray-300 group-hover:text-white"}`} weight={pathname.startsWith("/dashboard/settings") ? "fill" : "regular"} />
             <span className={`block text-base ${pathname.startsWith("/dashboard/settings") ? "text-white" : "text-gray-300 group-hover:text-white"}`}>Settings</span>
           </Link>
         )}
@@ -107,17 +107,17 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <div className={`${compact ? "hidden xl:block" : "block"} flex-1 min-w-0`}>
               <div className="flex items-center gap-1">
                 <p className="text-white font-bold text-sm truncate">{user.name}</p>
-                {user.isVerified && <BadgeCheck className="w-4 h-4 text-blue-400 flex-shrink-0" />}
+                {user.isVerified && <SealCheck className="w-4 h-4 text-blue-400 flex-shrink-0" weight="fill" />}
               </div>
               <p className="text-gray-500 text-xs truncate">@{user.username}</p>
             </div>
             <button onClick={logout} className={`${compact ? "hidden xl:block" : "block"} ml-auto opacity-0 group-hover:opacity-100 transition-opacity`}>
-              <LogOut className="w-4 h-4 text-gray-400 hover:text-white" />
+              <SignOut className="w-4 h-4 text-gray-400 hover:text-white" />
             </button>
           </div>
           {!compact && (
             <button onClick={logout} className="mt-3 w-full flex items-center gap-3 px-3 py-3 rounded-full hover:bg-[#1a1a1a] text-red-400">
-              <LogOut className="w-5 h-5" />
+              <SignOut className="w-5 h-5" />
               <span className="text-base font-medium">Sign out</span>
             </button>
           )}
@@ -150,7 +150,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <main className="flex-1 md:ml-[72px] xl:ml-[260px] min-h-screen">
         {/* Mobile topbar */}
         <div className="md:hidden flex items-center justify-between px-4 py-3 border-b border-[#222] sticky top-0 bg-black/95 backdrop-blur z-20">
-          <button onClick={() => setMobileMenu(true)}><Menu className="w-6 h-6 text-white" /></button>
+          <button onClick={() => setMobileMenu(true)}><List className="w-6 h-6 text-white" /></button>
           <img src="/logo.jpg" alt="Sosa" className="w-8 h-8 rounded-full object-cover" />
           <Avatar src={user?.profileImage} name={user?.name || "Sosa"} size={30} />
         </div>
@@ -165,7 +165,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           return (
             <Link key={href} href={href} className="flex flex-col items-center justify-center gap-1 px-2 py-1 relative min-w-0 flex-1">
               <div className="relative">
-                <Icon className={`w-6 h-6 ${active ? "text-white" : "text-gray-500"}`} strokeWidth={active ? 2.5 : 2} />
+                <Icon className={`w-6 h-6 ${active ? "text-white" : "text-gray-500"}`} weight={active ? "fill" : "regular"} />
                 {isNotif && notifCount > 0 && <span className="absolute -top-1 -right-1 bg-blue-500 text-white text-[9px] font-bold rounded-full w-4 h-4 flex items-center justify-center">{notifCount > 9 ? "9+" : notifCount}</span>}
               </div>
               <span className={`text-[10px] leading-none truncate ${active ? "text-white" : "text-gray-500"}`}>{label}</span>

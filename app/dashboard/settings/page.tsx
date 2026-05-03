@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { User, Lock, Bell, Shield, LogOut, Loader2, Check, Eye, EyeOff, Moon, Sun, Monitor } from "lucide-react";
+import { User, Lock, Bell, Shield, SignOut, SpinnerGap, Check, Eye, EyeSlash, Moon, Sun, Desktop } from "@phosphor-icons/react";
 import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 
@@ -116,11 +116,11 @@ export default function SettingsPage() {
   const themeOptions = [
     { value: "light", icon: Sun, label: "Light" },
     { value: "dark", icon: Moon, label: "Dark" },
-    { value: "system", icon: Monitor, label: "System" },
+    { value: "system", icon: Desktop, label: "System" },
   ];
 
   if (loading) {
-    return <div className="flex justify-center py-20"><Loader2 className="animate-spin text-blue-600" size={28} /></div>;
+    return <div className="flex justify-center py-20"><SpinnerGap className="animate-spin text-blue-600" size={28} /></div>;
   }
 
   return (
@@ -183,7 +183,7 @@ export default function SettingsPage() {
           <motion.button whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}
             onClick={handleSaveProfile} disabled={saving}
             className="flex items-center gap-2 bg-blue-600 text-white text-sm font-semibold px-5 py-2.5 rounded-xl hover:bg-blue-700 disabled:opacity-70 transition-all shadow-btn">
-            {saving ? <Loader2 size={14} className="animate-spin" /> : saved ? <Check size={14} /> : null}
+            {saving ? <SpinnerGap size={14} className="animate-spin" /> : saved ? <Check size={14} /> : null}
             {saved ? "Saved!" : "Save Changes"}
           </motion.button>
         </div>
@@ -207,7 +207,7 @@ export default function SettingsPage() {
                 {i === 0 && (
                   <button type="button" onClick={() => setShowPasswords(!showPasswords)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
-                    {showPasswords ? <EyeOff size={15} /> : <Eye size={15} />}
+                    {showPasswords ? <EyeSlash size={15} /> : <Eye size={15} />}
                   </button>
                 )}
               </div>
@@ -270,7 +270,7 @@ export default function SettingsPage() {
             onClick={handleLogout}
             className="flex items-center gap-2 text-sm font-semibold text-red-600 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 px-4 py-2 rounded-xl hover:bg-red-100 dark:hover:bg-red-900/40 transition-all"
           >
-            <LogOut size={15} />
+            <SignOut size={15} />
             Sign Out
           </motion.button>
         </div>
