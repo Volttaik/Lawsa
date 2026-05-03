@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getUserFromRequest } from "@/lib/auth";
 import { getPosts, countPosts, getUserById, createPost } from "@/lib/queries";
-import { saveBase64Media } from "@/lib/upload";
 export const dynamic = "force-dynamic";
 export async function GET(request: NextRequest) {
   try {
@@ -26,13 +25,11 @@ export async function POST(request: NextRequest) {
     const me = await getUserById(authUser.userId);
     const savedImages: string[] = [];
     for (const img of (images || [])) {
-      if (img.startsWith("data:")) savedImages.push(await saveBase64Media(img, "posts"));
-      else if (img) savedImages.push(img);
+      if (img) savedImages.push(img);
     }
     const savedVideos: string[] = [];
     for (const vid of (videos || [])) {
-      if (vid.startsWith("data:")) savedVideos.push(await saveBase64Media(vid, "posts"));
-      else if (vid) savedVideos.push(vid);
+      if (vid) savedVideos.push(vid);
     }
     const post = await createPost({ authorId: authUser.userId, authorName: authUser.name, authorUsername: authUser.username, authorImage: me?.profileImage || "", content: content?.trim() || "", images: savedImages, videos: savedVideos, category: category || "general", poll: poll || null });
     if (!post) return NextResponse.json({ error: "Failed to create post" }, { status: 500 });
