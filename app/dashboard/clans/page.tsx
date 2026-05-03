@@ -2,7 +2,20 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cache } from "@/lib/cache";
-import { Shield, Plus, Users, Send, Loader2, X, ArrowLeft, Crown, LogOut, Check, MessageSquare, Share2,  } from "lucide-react";
+import {
+  ShieldStar,
+  Plus,
+  Users,
+  PaperPlaneTilt,
+  SpinnerGap,
+  X,
+  ArrowLeft,
+  Crown,
+  SignOut,
+  Check,
+  ChatCircle,
+  ShareNetwork,
+} from "@phosphor-icons/react";
 import Linkify from "@/components/Linkify";
 
 const CHAT_BACKGROUNDS = [
@@ -287,7 +300,7 @@ export default function ClansPage() {
   const isInAnyClan = !!currentUser?.clanId;
 
   if (loading) {
-    return <div className="flex justify-center py-20"><Loader2 className="animate-spin text-blue-600" size={28} /></div>;
+    return <div className="flex justify-center py-20"><SpinnerGap className="animate-spin text-blue-600" size={28} /></div>;
   }
 
   return (
@@ -296,7 +309,7 @@ export default function ClansPage() {
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2.5">
           <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-700 flex items-center justify-center">
-            <Shield size={18} className="text-white" />
+            <ShieldStar size={18} className="text-white" />
           </div>
           <div>
             <h1 className="text-xl font-bold text-gray-900 dark:text-white">Clans</h1>
@@ -329,7 +342,7 @@ export default function ClansPage() {
             }}
             className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 transition-all"
           >
-            <MessageSquare size={12} /> Open
+            <ChatCircle size={12} /> Open
           </button>
         </div>
       )}
@@ -338,7 +351,7 @@ export default function ClansPage() {
       {clans.length === 0 ? (
         <div className="bg-transparent border-b border-black/8 dark:border-white/10 p-12 text-center">
           <div className="w-14 h-14 rounded-2xl bg-indigo-50 dark:bg-indigo-900/20 flex items-center justify-center mx-auto mb-4">
-            <Shield size={24} className="text-indigo-500" />
+            <ShieldStar size={24} className="text-indigo-500" />
           </div>
           <h3 className="font-semibold text-gray-800 dark:text-white mb-2">No clans yet</h3>
           <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">Be the first to create one!</p>
@@ -384,7 +397,7 @@ export default function ClansPage() {
                       onClick={() => openClan(clan)}
                       className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 transition-all"
                     >
-                      <MessageSquare size={11} /> Chat
+                      <ChatCircle size={11} /> Chat
                     </button>
                   )}
                   {!isMember(clan) && !isInAnyClan && (
@@ -394,7 +407,7 @@ export default function ClansPage() {
                       disabled={joiningId === clan._id}
                       className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 transition-all disabled:opacity-60"
                     >
-                      {joiningId === clan._id ? <Loader2 size={11} className="animate-spin" /> : <Plus size={11} />}
+                      {joiningId === clan._id ? <SpinnerGap size={11} className="animate-spin" /> : <Plus size={11} />}
                       Join
                     </motion.button>
                   )}
@@ -405,7 +418,7 @@ export default function ClansPage() {
                       disabled={joiningId === clan._id}
                       className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 transition-all disabled:opacity-60"
                     >
-                      {joiningId === clan._id ? <Loader2 size={11} className="animate-spin" /> : <LogOut size={11} />}
+                      {joiningId === clan._id ? <SpinnerGap size={11} className="animate-spin" /> : <SignOut size={11} />}
                       Leave
                     </motion.button>
                   )}
@@ -446,7 +459,7 @@ export default function ClansPage() {
                 <div className="w-16 h-16 rounded-2xl overflow-hidden bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-900/40 dark:to-purple-900/40 flex items-center justify-center">
                   {(createForm.logoPreview || createForm.logo)
                     ? <img src={createForm.logoPreview || createForm.logo} alt="" className="w-full h-full object-cover" />
-                    : <Shield size={24} className="text-indigo-400" />
+                    : <ShieldStar size={24} className="text-indigo-400" />
                   }
                 </div>
                 <label className="text-xs font-medium text-indigo-600 dark:text-indigo-400 cursor-pointer px-3 py-2 rounded-xl border border-indigo-200 dark:border-indigo-800 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-all">
@@ -483,7 +496,7 @@ export default function ClansPage() {
                 disabled={creating || !createForm.name.trim()}
                 className="w-full mt-4 py-2.5 bg-indigo-600 text-white font-semibold text-sm rounded-xl hover:bg-indigo-700 disabled:opacity-60 flex items-center justify-center gap-2 transition-all"
               >
-                {creating ? <Loader2 size={15} className="animate-spin" /> : <Shield size={15} />}
+                {creating ? <SpinnerGap size={15} className="animate-spin" /> : <ShieldStar size={15} />}
                 Create Clan
               </motion.button>
             </motion.div>
@@ -525,7 +538,7 @@ export default function ClansPage() {
                 onClick={() => handleShareClan(selectedClan)}
                 className={`w-9 h-9 flex-shrink-0 rounded-[8px] flex items-center justify-center transition-colors ${clanShareCopied ? "bg-green-500/30 text-green-400" : "text-white/70 hover:bg-white/10"}`}
               >
-                {clanShareCopied ? <Check size={16} /> : <Share2 size={16} />}
+                {clanShareCopied ? <Check size={16} /> : <ShareNetwork size={16} />}
               </motion.button>
 
               {/* Tab buttons */}
@@ -602,7 +615,7 @@ export default function ClansPage() {
                   {chatMessages.length === 0 ? (
                     <div className="flex flex-col items-center justify-center h-full gap-3 py-20 text-center">
                       <div className="w-14 h-14 rounded-[8px] bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center shadow-[0_2px_12px_0_rgba(0,0,0,0.2)]">
-                        <MessageSquare size={24} className="text-white/80" />
+                        <ChatCircle size={24} className="text-white/80" />
                       </div>
                       <div>
                         <p className="font-semibold text-white text-sm drop-shadow">Welcome to {selectedClan.name}!</p>
@@ -663,7 +676,7 @@ export default function ClansPage() {
                     disabled={sendingChat || !chatText.trim()}
                     className="w-9 h-9 bg-blue-600 text-white rounded-[8px] flex items-center justify-center hover:bg-blue-500 transition-colors disabled:opacity-50 flex-shrink-0 shadow-[0_2px_6px_0_rgba(37,99,235,0.3)]"
                   >
-                    {sendingChat ? <Loader2 size={15} className="animate-spin" /> : <Send size={15} />}
+                    {sendingChat ? <SpinnerGap size={15} className="animate-spin" /> : <PaperPlaneTilt size={15} />}
                   </motion.button>
                 </div>
               </>

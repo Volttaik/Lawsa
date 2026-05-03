@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Download, Share, Plus } from "lucide-react";
+import { X, DownloadSimple, ShareNetwork, Plus } from "@phosphor-icons/react";
 import Image from "next/image";
 
 interface BeforeInstallPromptEvent extends Event {
@@ -129,7 +129,7 @@ export default function PWAInstallBanner() {
                     <span className="text-blue-400 font-bold text-sm">1</span>
                   </div>
                   <p className="text-white/80 text-sm">
-                    Tap the <span className="inline-flex items-center gap-1 bg-white/10 px-1.5 py-0.5 rounded text-white text-xs font-medium"><Share size={11} /> Share</span> button in Safari
+                    Tap the <span className="inline-flex items-center gap-1 bg-white/10 px-1.5 py-0.5 rounded text-white text-xs font-medium"><ShareNetwork size={11} /> Share</span> button in Safari
                   </p>
                 </div>
                 <div className="flex items-center gap-3">
@@ -164,7 +164,7 @@ export default function PWAInstallBanner() {
                 onClick={install}
                 className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-2xl py-4 mb-3 transition-colors shadow-lg shadow-blue-600/30"
               >
-                <Download size={18} />
+                <DownloadSimple size={18} />
                 Install App
               </motion.button>
             )}

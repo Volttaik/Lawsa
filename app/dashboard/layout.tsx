@@ -1,24 +1,35 @@
 "use client";
 import { useEffect, useState, useCallback } from "react";
+import React from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
-import { Home, Search, Bell, Mail, User, Users, Star, Menu, X, LogOut, BadgeCheck, Settings } from "lucide-react";
+import {
+  House, MagnifyingGlass, Bell, Envelope, User, Users, Star,
+  List, X, SignOut, SealCheck, Gear
+} from "@phosphor-icons/react";
 
 interface Me { id: string; _id?: string; name: string; username: string; profileImage?: string; isVerified?: boolean; premiumTheme?: boolean; }
 
 function Avatar({ src, name, size = 36, gold }: { src?: string; name: string; size?: number; gold?: boolean }) {
   const ring = gold ? "ring-2 ring-amber-400" : "";
   if (src) return <img src={src} alt={name} className={`rounded-full object-cover flex-shrink-0 ${ring}`} style={{ width: size, height: size }} />;
-  return <img src="/logo.jpg" alt="Sosa" className={`rounded-full object-cover flex-shrink-0 ${ring}`} style={{ width: size, height: size }} />;
+  return (
+    <div
+      className={`rounded-full bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center text-white font-bold flex-shrink-0 ${ring}`}
+      style={{ width: size, height: size, fontSize: size * 0.38 }}
+    >
+      {name?.[0]?.toUpperCase() || "?"}
+    </div>
+  );
 }
 
-const NAV = [
-  { href: "/dashboard",                icon: Home,   label: "Home"          },
-  { href: "/dashboard/explore",        icon: Search, label: "Explore"       },
-  { href: "/dashboard/notifications",  icon: Bell,   label: "Notifications" },
-  { href: "/dashboard/messages",       icon: Mail,   label: "Messages"      },
-  { href: "/dashboard/clans",          icon: Users,  label: "Clans"         },
-  { href: "/dashboard/premium",        icon: Star,   label: "Premium"       },
+const NAV: { href: string; icon: React.ElementType; label: string }[] = [
+  { href: "/dashboard",               icon: House,   label: "Home"          },
+  { href: "/dashboard/explore",       icon: MagnifyingGlass, label: "Explore" },
+  { href: "/dashboard/notifications", icon: Bell,    label: "Notifications" },
+  { href: "/dashboard/messages",      icon: Envelope, label: "Messages"     },
+  { href: "/dashboard/clans",         icon: Users,   label: "Clans"         },
+  { href: "/dashboard/premium",       icon: Star,    label: "Premium"       },
 ];
 
 interface SidebarProps {
@@ -44,28 +55,60 @@ function Sidebar({ compact = false, pathname, user, notifCount, uid, logout, set
           const active = pathname === href || (href !== "/dashboard" && pathname.startsWith(href));
           const isNotif = label === "Notifications";
           return (
-            <Link key={href} href={href} onClick={() => setMobileMenu(false)}
-              className={`flex items-center gap-4 px-3 py-3 rounded-full transition-colors group ${active ? "font-bold" : "hover:bg-[#1a1a1a]"}`}>
+            <Link
+              key={href}
+              href={href}
+              onClick={() => setMobileMenu(false)}
+              className={`flex items-center gap-4 px-3 py-3 rounded-full transition-colors group ${active ? "font-bold" : "hover:bg-[#1a1a1a]"}`}
+            >
               <div className="relative">
-                <Icon className={`w-6 h-6 ${active ? "text-white" : "text-gray-300 group-hover:text-white"}`} strokeWidth={active ? 2.5 : 2} />
+                <Icon
+                  size={24}
+                  weight={active ? "fill" : "regular"}
+                  className={active ? "text-white" : "text-gray-300 group-hover:text-white"}
+                />
                 {isNotif && notifCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-blue-500 text-white text-[9px] font-bold rounded-full w-4 h-4 flex items-center justify-center">{notifCount > 9 ? "9+" : notifCount}</span>
+                  <span className="absolute -top-1 -right-1 bg-blue-500 text-white text-[9px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
+                    {notifCount > 9 ? "9+" : notifCount}
+                  </span>
                 )}
               </div>
-              <span className={`${compact ? "hidden xl:block" : "block"} text-base ${active ? "text-white" : "text-gray-300 group-hover:text-white"}`}>{label}</span>
+              <span className={`${compact ? "hidden xl:block" : "block"} text-base ${active ? "text-white" : "text-gray-300 group-hover:text-white"}`}>
+                {label}
+              </span>
             </Link>
           );
         })}
-        <Link href={`/dashboard/profile/${uid}`} onClick={() => setMobileMenu(false)}
-          className={`flex items-center gap-4 px-3 py-3 rounded-full transition-colors group ${pathname.startsWith("/dashboard/profile") ? "font-bold" : "hover:bg-[#1a1a1a]"}`}>
-          <User className={`w-6 h-6 ${pathname.startsWith("/dashboard/profile") ? "text-white" : "text-gray-300 group-hover:text-white"}`} strokeWidth={pathname.startsWith("/dashboard/profile") ? 2.5 : 2} />
-          <span className={`${compact ? "hidden xl:block" : "block"} text-base ${pathname.startsWith("/dashboard/profile") ? "text-white" : "text-gray-300 group-hover:text-white"}`}>Profile</span>
+
+        <Link
+          href={`/dashboard/profile/${uid}`}
+          onClick={() => setMobileMenu(false)}
+          className={`flex items-center gap-4 px-3 py-3 rounded-full transition-colors group ${pathname.startsWith("/dashboard/profile") ? "font-bold" : "hover:bg-[#1a1a1a]"}`}
+        >
+          <User
+            size={24}
+            weight={pathname.startsWith("/dashboard/profile") ? "fill" : "regular"}
+            className={pathname.startsWith("/dashboard/profile") ? "text-white" : "text-gray-300 group-hover:text-white"}
+          />
+          <span className={`${compact ? "hidden xl:block" : "block"} text-base ${pathname.startsWith("/dashboard/profile") ? "text-white" : "text-gray-300 group-hover:text-white"}`}>
+            Profile
+          </span>
         </Link>
+
         {!compact && (
-          <Link href="/dashboard/settings" onClick={() => setMobileMenu(false)}
-            className={`flex items-center gap-4 px-3 py-3 rounded-full transition-colors group ${pathname.startsWith("/dashboard/settings") ? "font-bold" : "hover:bg-[#1a1a1a]"}`}>
-            <Settings className={`w-6 h-6 ${pathname.startsWith("/dashboard/settings") ? "text-white" : "text-gray-300 group-hover:text-white"}`} strokeWidth={pathname.startsWith("/dashboard/settings") ? 2.5 : 2} />
-            <span className={`block text-base ${pathname.startsWith("/dashboard/settings") ? "text-white" : "text-gray-300 group-hover:text-white"}`}>Settings</span>
+          <Link
+            href="/dashboard/settings"
+            onClick={() => setMobileMenu(false)}
+            className={`flex items-center gap-4 px-3 py-3 rounded-full transition-colors group ${pathname.startsWith("/dashboard/settings") ? "font-bold" : "hover:bg-[#1a1a1a]"}`}
+          >
+            <Gear
+              size={24}
+              weight={pathname.startsWith("/dashboard/settings") ? "fill" : "regular"}
+              className={pathname.startsWith("/dashboard/settings") ? "text-white" : "text-gray-300 group-hover:text-white"}
+            />
+            <span className={`block text-base ${pathname.startsWith("/dashboard/settings") ? "text-white" : "text-gray-300 group-hover:text-white"}`}>
+              Settings
+            </span>
           </Link>
         )}
       </nav>
@@ -77,17 +120,23 @@ function Sidebar({ compact = false, pathname, user, notifCount, uid, logout, set
             <div className={`${compact ? "hidden xl:block" : "block"} flex-1 min-w-0`}>
               <div className="flex items-center gap-1">
                 <p className="text-white font-bold text-sm truncate">{user.name}</p>
-                {user.isVerified && <BadgeCheck className="w-4 h-4 text-blue-400 flex-shrink-0" />}
+                {user.isVerified && <SealCheck size={16} weight="fill" className="text-blue-400 flex-shrink-0" />}
               </div>
               <p className="text-gray-500 text-xs truncate">@{user.username}</p>
             </div>
-            <button onClick={logout} className={`${compact ? "hidden xl:block" : "block"} ml-auto opacity-0 group-hover:opacity-100 transition-opacity`}>
-              <LogOut className="w-4 h-4 text-gray-400 hover:text-white" />
+            <button
+              onClick={logout}
+              className={`${compact ? "hidden xl:block" : "block"} ml-auto opacity-0 group-hover:opacity-100 transition-opacity`}
+            >
+              <SignOut size={16} className="text-gray-400 hover:text-white" />
             </button>
           </div>
           {!compact && (
-            <button onClick={logout} className="mt-3 w-full flex items-center gap-3 px-3 py-3 rounded-full hover:bg-[#1a1a1a] text-red-400">
-              <LogOut className="w-5 h-5" />
+            <button
+              onClick={logout}
+              className="mt-3 w-full flex items-center gap-3 px-3 py-3 rounded-full hover:bg-[#1a1a1a] text-red-400"
+            >
+              <SignOut size={20} />
               <span className="text-base font-medium">Sign out</span>
             </button>
           )}
@@ -105,7 +154,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [notifCount, setNotifCount] = useState(0);
   const [mobileMenu, setMobileMenu] = useState(false);
 
-  const heartbeat = useCallback(() => { fetch("/api/users/heartbeat", { method: "POST" }).catch(() => {}); }, []);
+  const heartbeat = useCallback(() => {
+    fetch("/api/users/heartbeat", { method: "POST" }).catch(() => {});
+  }, []);
+
   const fetchCount = useCallback(() => {
     fetch("/api/notifications/count").then(r => r.json()).then(d => setNotifCount(d.count || 0)).catch(() => {});
   }, []);
@@ -151,7 +203,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <div className="absolute inset-0 bg-black/60" onClick={() => setMobileMenu(false)} />
           <div className="absolute left-0 top-0 bottom-0 w-72 bg-[#0a0a0a] border-r border-[#222]">
             <button onClick={() => setMobileMenu(false)} className="absolute top-4 right-4 p-2">
-              <X className="w-5 h-5 text-gray-400" />
+              <X size={20} className="text-gray-400" />
             </button>
             <Sidebar compact={false} pathname={pathname} user={user} notifCount={notifCount} uid={uid} logout={logout} setMobileMenu={setMobileMenu} />
           </div>
@@ -162,7 +214,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <main className="flex-1 md:ml-[72px] xl:ml-[260px] min-h-screen">
         {/* Mobile topbar */}
         <div className="md:hidden flex items-center justify-between px-4 py-3 border-b border-[#222] sticky top-0 bg-black/95 backdrop-blur z-20">
-          <button onClick={() => setMobileMenu(true)}><Menu className="w-6 h-6 text-white" /></button>
+          <button onClick={() => setMobileMenu(true)}>
+            <List size={24} className="text-white" />
+          </button>
           <img src="/logo.jpg" alt="Sosa" className="w-8 h-8 rounded-full object-cover" />
           <Avatar src={user?.profileImage} name={user?.name || "Sosa"} size={30} />
         </div>
@@ -171,14 +225,22 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
       {/* Mobile bottom nav */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-black border-t border-[#222] z-30 flex items-stretch justify-around px-2 py-2">
-        {[...NAV.slice(0,4), { href: `/dashboard/profile/${uid}`, icon: User, label: "Profile" }].map(({ href, icon: Icon, label }) => {
+        {[...NAV.slice(0, 4), { href: `/dashboard/profile/${uid}`, icon: User, label: "Profile" }].map(({ href, icon: Icon, label }) => {
           const active = pathname === href || (href !== "/dashboard" && pathname.startsWith(href));
           const isNotif = label === "Notifications";
           return (
             <Link key={href} href={href} className="flex flex-col items-center justify-center gap-1 px-2 py-1 relative min-w-0 flex-1">
               <div className="relative">
-                <Icon className={`w-6 h-6 ${active ? "text-white" : "text-gray-500"}`} strokeWidth={active ? 2.5 : 2} />
-                {isNotif && notifCount > 0 && <span className="absolute -top-1 -right-1 bg-blue-500 text-white text-[9px] font-bold rounded-full w-4 h-4 flex items-center justify-center">{notifCount > 9 ? "9+" : notifCount}</span>}
+                <Icon
+                  size={24}
+                  weight={active ? "fill" : "regular"}
+                  className={active ? "text-white" : "text-gray-500"}
+                />
+                {isNotif && notifCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-blue-500 text-white text-[9px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
+                    {notifCount > 9 ? "9+" : notifCount}
+                  </span>
+                )}
               </div>
               <span className={`text-[10px] leading-none truncate ${active ? "text-white" : "text-gray-500"}`}>{label}</span>
             </Link>

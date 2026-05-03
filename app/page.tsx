@@ -4,7 +4,7 @@ import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
-import { MessageCircle, ArrowRight, Heart, Sparkles, X, Loader2 } from "lucide-react";
+import { ChatCircle, ArrowRight, Heart, Sparkle, X, SpinnerGap } from "@phosphor-icons/react";
 import { LogoIcon } from "@/components/Logo";
 import PWAInstallBanner from "@/components/PWAInstallBanner";
 
@@ -83,7 +83,7 @@ function GuestPostViewerInner() {
 
             {loading ?
           <div className="flex items-center justify-center h-44">
-                <Loader2 size={28} className="animate-spin text-blue-500" />
+                <SpinnerGap size={28} className="animate-spin text-blue-500" />
               </div> :
           post ?
           <>
@@ -102,7 +102,7 @@ function GuestPostViewerInner() {
                   {((post.likes?.length || 0) > 0 || (post.comments?.length || 0) > 0) &&
               <div className="flex items-center gap-4 mt-3 pt-3 border-t border-black/5 text-xs text-gray-400">
                       {(post.likes?.length || 0) > 0 && <span className="flex items-center gap-1"><Heart size={12} className="fill-red-400 text-red-400" /> {post.likes?.length}</span>}
-                      {(post.comments?.length || 0) > 0 && <span className="flex items-center gap-1"><MessageCircle size={12} /> {post.comments?.length} {post.comments?.length === 1 ? "reply" : "replies"}</span>}
+                      {(post.comments?.length || 0) > 0 && <span className="flex items-center gap-1"><ChatCircle size={12} /> {post.comments?.length} {post.comments?.length === 1 ? "reply" : "replies"}</span>}
                     </div>
               }
                 </div>
@@ -163,7 +163,7 @@ export default function LandingPage() {
           <div className="grid lg:grid-cols-2 gap-10 items-center">
             <motion.div initial="hidden" animate="visible" variants={stagger}>
               <motion.div variants={fadeUp} className="inline-flex items-center gap-2 bg-blue-500/10 border border-blue-500/30 rounded-full px-4 py-1.5 text-sm text-blue-500 font-medium mb-5">
-                <Sparkles size={13} className="fill-blue-400" />
+                <Sparkle size={13} className="fill-blue-400" />
                 The Social Platform for Everyone
               </motion.div>
               <motion.h1 variants={fadeUp} className="text-3xl md:text-5xl font-bold text-gray-900 leading-tight mb-5">

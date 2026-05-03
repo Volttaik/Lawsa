@@ -4,11 +4,11 @@ import { useRouter } from "next/navigation";
 import { cache } from "@/lib/cache";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  ImageIcon, Video, X, Send, Loader2, ArrowLeft, Play, ChevronDown,
-  Globe, Scale, Cpu, Trophy, Newspaper, BookOpen, Briefcase,
-  CalendarDays, HeartPulse, Music, Palette, CheckCircle2, AlertCircle,
-  Film, FileImage, RotateCcw, HardDrive,
-} from "lucide-react";
+  Image as ImageIcon, Video, X, PaperPlaneTilt, SpinnerGap, ArrowLeft, Play, CaretDown,
+  Globe, Scales, Cpu, Trophy, Newspaper, BookOpen, Briefcase,
+  CalendarBlank, HeartStraight, MusicNote, Palette, CheckCircle, WarningCircle,
+  FilmStrip, FileImage, ArrowCounterClockwise, HardDrive,
+} from "@phosphor-icons/react";
 import { uploadFile } from "@/lib/uploadClient";
 
 const CATEGORIES = [

@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Eye, EyeOff, Loader2, Users, MessageCircle, TrendingUp, CheckCircle2 } from "lucide-react";
+import { Eye, EyeOff, SpinnerGap, Users, ChatCircle, TrendingUp, CheckCircle } from "@phosphor-icons/react";
 import { LogoIcon } from "@/components/Logo";
 
 export default function LoginPage() {
@@ -57,7 +57,7 @@ export default function LoginPage() {
             transition={{ type: "spring", stiffness: 200, damping: 18 }}
             className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center">
             
-              <CheckCircle2 size={32} className="text-white" />
+              <CheckCircle size={32} weight="fill" className="text-white" />
             </motion.div>
             <motion.p
             initial={{ opacity: 0, y: 8 }}
@@ -73,7 +73,7 @@ export default function LoginPage() {
             transition={{ delay: 0.35 }}
             className="flex items-center gap-2 text-gray-400 text-sm">
             
-              <Loader2 size={16} className="animate-spin text-blue-500" />
+              <SpinnerGap size={16} className="animate-spin text-blue-500" />
               Loading dashboard...
             </motion.div>
           </motion.div>
@@ -129,7 +129,7 @@ export default function LoginPage() {
             <div className="space-y-5">
               {[
               { icon: Users, title: "Your Connections", desc: "Reconnect with your network" },
-              { icon: MessageCircle, title: "Messages", desc: "Continue your conversations" },
+              { icon: ChatCircle, title: "Messages", desc: "Continue your conversations" },
               { icon: TrendingUp, title: "Your Feed", desc: "See what's trending" }].
               map(({ icon: Icon, title, desc }: {icon: React.ElementType;title: string;desc: string;}) =>
               <div key={title} className="flex items-center gap-4">
@@ -208,7 +208,7 @@ export default function LoginPage() {
                   className="w-full bg-blue-600 text-white font-semibold py-3 rounded-xl border border-black/10 hover:bg-blue-700 transition-all shadow-btn hover:shadow-btn-hover disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm">
                   
                   {loading ?
-                  <><Loader2 size={18} className="animate-spin" /> Signing in...</> :
+                  <><SpinnerGap size={18} className="animate-spin" /> Signing in...</> :
 
                   "Sign In"
                   }

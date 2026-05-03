@@ -1,7 +1,7 @@
 "use client";
 import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Play, Pause, Maximize } from "lucide-react";
+import { Play, Pause, ArrowsOut } from "@phosphor-icons/react";
 
 interface VideoPlayerProps {
   src: string;
@@ -204,7 +204,7 @@ export default function VideoPlayer({ src, onExpand }: VideoPlayerProps) {
                 onClick={handleExpand}
                 className="w-7 h-7 flex items-center justify-center text-white hover:text-white/80 transition-colors flex-shrink-0"
               >
-                <Maximize size={14} />
+                <ArrowsOut size={14} />
               </button>
             </div>
           </motion.div>

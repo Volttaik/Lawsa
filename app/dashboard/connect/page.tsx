@@ -2,7 +2,9 @@
 import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { UserPlus, UserCheck, Search, Loader2, Users, SearchX, Shield } from "lucide-react";
+import {
+  UserPlus, UserCheck, MagnifyingGlass, SpinnerGap, Users, MagnifyingGlassSlash, Shield
+} from "@phosphor-icons/react";
 import Link from "next/link";
 
 interface UserCard {
@@ -24,7 +26,14 @@ interface CurrentUser {
 
 function Avatar({ src, name, size = 48 }: { src?: string; name: string; size?: number }) {
   if (src) return <img src={src} alt={name} className="rounded-full object-cover flex-shrink-0" style={{ width: size, height: size }} />;
-  return <img src="/logo.jpg" alt="Sosa" className="rounded-full object-cover flex-shrink-0" style={{ width: size, height: size }} />;
+  return (
+    <div
+      className="rounded-full bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center text-white font-bold flex-shrink-0"
+      style={{ width: size, height: size, fontSize: size * 0.38 }}
+    >
+      {name?.[0]?.toUpperCase() || "?"}
+    </div>
+  );
 }
 
 function UserRow({
@@ -61,7 +70,7 @@ function UserRow({
         {user.bio && <p className="text-xs text-gray-600 dark:text-gray-400 mt-0.5 line-clamp-1">{user.bio}</p>}
         {user.skills && user.skills.length > 0 && (
           <div className="flex flex-wrap gap-1 mt-1.5">
-            {user.skills.slice(0, 3).map((skill) => (
+            {user.skills.slice(0, 3).map(skill => (
               <span key={skill} className="text-xs bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border border-blue-100 dark:border-blue-800 px-2 py-0.5 rounded-full">
                 {skill}
               </span>
@@ -74,12 +83,17 @@ function UserRow({
         whileTap={{ scale: 0.97 }}
         onClick={onFollow}
         disabled={isLoading}
-        className={`flex items-center gap-1.5 text-sm font-semibold px-4 py-2 rounded-xl border border-black/10 dark:border-white/10 shadow-btn transition-all flex-shrink-0 ${
+        className={`flex items-center gap-1.5 text-sm font-semibold px-4 py-2 rounded-xl border border-black/10 dark:border-white/10 transition-all flex-shrink-0 ${
           isFollowing
             ? "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300" :"bg-blue-600 text-white hover:bg-blue-700"
         }`}
       >
-        {isLoading ? <Loader2 size={14} className="animate-spin" /> : isFollowing ? <UserCheck size={14} /> : <UserPlus size={14} />}
+        {isLoading
+          ? <SpinnerGap size={14} className="animate-spin" />
+          : isFollowing
+            ? <UserCheck size={14} weight="bold" />
+            : <UserPlus size={14} weight="bold" />
+        }
         <span className="hidden sm:block">{isFollowing ? "Following" : "Follow"}</span>
       </motion.button>
     </motion.div>
@@ -97,7 +111,7 @@ function ConnectPageContent() {
   const [followLoading, setFollowLoading] = useState<Set<string>>(new Set());
 
   const loadMe = async () => {
-    const data = await fetch("/api/auth/me", { credentials: "include" }).then((r) => r.json());
+    const data = await fetch("/api/auth/me", { credentials: "include" }).then(r => r.json());
     if (data.user) {
       setCurrentUser(data.user);
       setFollowing(new Set(data.user.following || []));
@@ -105,9 +119,7 @@ function ConnectPageContent() {
     }
   };
 
-  useEffect(() => {
-    loadMe();
-  }, []);
+  useEffect(() => { loadMe(); }, []);
 
   useEffect(() => {
     loadUsers();
@@ -124,24 +136,22 @@ function ConnectPageContent() {
   };
 
   const handleFollow = async (userId: string) => {
-    setFollowLoading((prev) => new Set([...prev, userId]));
+    setFollowLoading(prev => new Set([...prev, userId]));
     const res = await fetch(`/api/users/${userId}/follow`, { method: "POST", credentials: "include" });
     const data = await res.json();
-    if (data.following) setFollowing((prev) => new Set([...prev, userId]));
-    else setFollowing((prev) => { const s = new Set(prev); s.delete(userId); return s; });
+    if (data.following) setFollowing(prev => new Set([...prev, userId]));
+    else setFollowing(prev => { const s = new Set(prev); s.delete(userId); return s; });
     await Promise.all([loadMe(), loadUsers()]);
-    setFollowLoading((prev) => { const s = new Set(prev); s.delete(userId); return s; });
+    setFollowLoading(prev => { const s = new Set(prev); s.delete(userId); return s; });
   };
 
   const myId = currentUser?._id;
   const myFollowers = followers;
-
-  const filteredUsers = users.filter((u) => u._id !== myId);
-
+  const filteredUsers = users.filter(u => u._id !== myId);
   const followRequests = !search
-    ? filteredUsers.filter((u) => myFollowers.has(u._id) && !following.has(u._id))
+    ? filteredUsers.filter(u => myFollowers.has(u._id) && !following.has(u._id))
     : [];
-  const others = filteredUsers.filter((u) => !followRequests.find((r) => r._id === u._id));
+  const others = filteredUsers.filter(u => !followRequests.find(r => r._id === u._id));
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-6">
@@ -154,20 +164,20 @@ function ConnectPageContent() {
           <motion.div
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-600 text-white text-sm font-semibold shadow-btn hover:bg-blue-700 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700 transition-colors"
           >
-            <Shield size={15} />
+            <Shield size={15} weight="bold" />
             <span>Clans</span>
           </motion.div>
         </Link>
       </motion.div>
 
       <div className="relative mb-6">
-        <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+        <MagnifyingGlass size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
         <input
           type="text"
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          onChange={e => setSearch(e.target.value)}
           placeholder="Search by name or username..."
           className="w-full pl-11 pr-4 py-3 rounded-full border border-black/8 dark:border-white/10 bg-[#eef0f4] dark:bg-gray-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-400/30 transition-all"
         />
@@ -175,7 +185,7 @@ function ConnectPageContent() {
 
       {loading ? (
         <div className="flex justify-center py-12">
-          <Loader2 className="animate-spin text-blue-600" size={28} />
+          <SpinnerGap size={28} className="animate-spin text-blue-600" />
         </div>
       ) : (
         <div className="space-y-6">
@@ -193,7 +203,7 @@ function ConnectPageContent() {
                   variants={{ visible: { transition: { staggerChildren: 0.05 } } }}
                   className="space-y-3"
                 >
-                  {followRequests.map((user) => (
+                  {followRequests.map(user => (
                     <UserRow
                       key={user._id}
                       user={user}
@@ -219,7 +229,7 @@ function ConnectPageContent() {
               className="bg-transparent border-b border-black/8 dark:border-white/10 p-12 text-center"
             >
               <div className="w-14 h-14 rounded-2xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center mx-auto mb-4">
-                <SearchX size={24} className="text-gray-400 dark:text-gray-500" />
+                <MagnifyingGlassSlash size={24} className="text-gray-400 dark:text-gray-500" />
               </div>
               <p className="text-gray-500 dark:text-gray-400 text-sm">No users found{search ? ` for "${search}"` : ""}.</p>
             </motion.div>
@@ -236,8 +246,7 @@ function ConnectPageContent() {
                 variants={{ visible: { transition: { staggerChildren: 0.05 } } }}
                 className="space-y-3"
               >
-                {others.map((user) => {
-                  const canMessage = followers.has(user._id) && following.has(user._id);
+                {others.map(user => {
                   const isFollowingThem = following.has(user._id);
                   return (
                     <UserRow
@@ -269,7 +278,7 @@ export default function ConnectPage() {
   return (
     <Suspense fallback={
       <div className="flex justify-center py-12">
-        <Loader2 className="animate-spin text-blue-600" size={28} />
+        <SpinnerGap size={28} className="animate-spin text-blue-600" />
       </div>
     }>
       <ConnectPageContent />

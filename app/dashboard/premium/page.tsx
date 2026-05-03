@@ -1,6 +1,9 @@
 "use client";
 import { useState, useEffect } from "react";
-import { CheckCircle, BadgeCheck, Zap, Palette, TrendingUp, Star, Lock, ArrowRight, Loader2, Shield } from "lucide-react";
+import {
+  CheckCircle, SealCheck, Lightning, Palette, TrendingUp, Star,
+  Lock, ArrowRight, SpinnerGap, ShieldStar
+} from "@phosphor-icons/react";
 
 interface User { id: string; name: string; email: string; isVerified?: boolean; isBoosted?: boolean; premiumTheme?: boolean; }
 
@@ -10,7 +13,7 @@ const PLANS = [
     name: "Verified Badge",
     price: "₦2,500",
     amount: 250000,
-    icon: BadgeCheck,
+    icon: SealCheck,
     color: "from-blue-500 to-blue-700",
     iconColor: "text-blue-400",
     borderColor: "border-blue-500/30",
@@ -89,7 +92,7 @@ export default function PremiumPage() {
 
   if (loading) return (
     <div className="min-h-screen bg-black flex items-center justify-center">
-      <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
+      <SpinnerGap className="w-8 h-8 text-blue-500 animate-spin" />
     </div>
   );
 
@@ -100,14 +103,14 @@ export default function PremiumPage() {
       <div className="max-w-4xl mx-auto px-4 py-8">
         {verified && (
           <div className="mb-6 bg-green-500/10 border border-green-500/30 rounded-2xl p-4 flex items-center gap-3">
-            <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0" />
+            <CheckCircle size={20} weight="fill" className="text-green-400 flex-shrink-0" />
             <p className="text-green-400 font-medium">Payment successful! Your feature has been activated.</p>
           </div>
         )}
 
         <div className="text-center mb-10">
           <div className="inline-flex items-center gap-2 bg-blue-500/10 border border-blue-500/20 rounded-full px-4 py-2 mb-4">
-            <Star className="w-4 h-4 text-blue-400" />
+            <Star size={16} className="text-blue-400" />
             <span className="text-blue-400 text-sm font-medium">Sosa Premium</span>
           </div>
           <h1 className="text-4xl font-bold mb-3 bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">
@@ -131,7 +134,7 @@ export default function PremiumPage() {
                 )}
 
                 <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${plan.color} flex items-center justify-center mb-4`}>
-                  <Icon className="w-6 h-6 text-white" />
+              <Icon size={24} className="text-white" />
                 </div>
 
                 <h3 className="text-xl font-bold text-white mb-1">{plan.name}</h3>
@@ -141,7 +144,7 @@ export default function PremiumPage() {
                 <ul className="space-y-2 mb-6">
                   {plan.features.map(f => (
                     <li key={f} className="flex items-center gap-2 text-sm text-gray-300">
-                      <CheckCircle className="w-4 h-4 text-green-400 flex-shrink-0" />
+                      <CheckCircle size={16} weight="fill" className="text-green-400 flex-shrink-0" />
                       {f}
                     </li>
                   ))}
@@ -149,7 +152,7 @@ export default function PremiumPage() {
 
                 {active ? (
                   <div className="flex items-center justify-center gap-2 bg-green-500/10 border border-green-500/30 rounded-xl py-3 text-green-400 font-semibold">
-                    <Shield className="w-4 h-4" />
+                    <ShieldStar size={16} />
                     Active
                   </div>
                 ) : (
@@ -158,7 +161,7 @@ export default function PremiumPage() {
                     disabled={!!paying}
                     className={`w-full bg-gradient-to-r ${plan.color} text-white font-bold py-3 rounded-xl flex items-center justify-center gap-2 hover:opacity-90 transition-opacity disabled:opacity-60`}
                   >
-                    {paying === plan.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Zap className="w-4 h-4" />{plan.popular ? "Get Verified" : "Activate"}<ArrowRight className="w-4 h-4" /></>}
+                    {paying === plan.id ? <SpinnerGap size={16} className="animate-spin" /> : <><Lightning size={16} />{plan.popular ? "Get Verified" : "Activate"}<ArrowRight size={16} /></>}
                   </button>
                 )}
               </div>
@@ -168,7 +171,7 @@ export default function PremiumPage() {
 
         <div className="mt-10 bg-[#111] border border-[#222] rounded-2xl p-6">
           <div className="flex items-center gap-3 mb-3">
-            <Lock className="w-5 h-5 text-gray-400" />
+            <Lock size={20} className="text-gray-400" />
             <h3 className="font-semibold text-gray-300">Secure payments by Paystack</h3>
           </div>
           <p className="text-gray-500 text-sm">All payments are processed securely by Paystack. We accept cards, bank transfers, USSD, and more. Your payment info is never stored on our servers.</p>

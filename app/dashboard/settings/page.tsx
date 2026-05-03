@@ -1,7 +1,9 @@
 "use client";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { User, Lock, Bell, Shield, LogOut, Loader2, Check, Eye, EyeOff, Moon, Sun, Monitor } from "lucide-react";
+import {
+  User, Lock, Bell, Shield, SignOut, SpinnerGap, Check, Eye, EyeOff, Moon, Sun, Desktop
+} from "@phosphor-icons/react";
 import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 
@@ -31,7 +33,7 @@ function SectionTitle({ icon: Icon, title, desc }: { icon: React.ElementType; ti
   return (
     <div className="flex items-center gap-3 mb-5">
       <div className="w-9 h-9 rounded-xl bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center text-blue-600">
-        <Icon size={18} />
+        <Icon size={18} weight={"duotone"} />
       </div>
       <div>
         <h2 className="font-bold text-gray-900 dark:text-white">{title}</h2>
@@ -63,7 +65,7 @@ const NOTIFICATION_ITEMS = [
 
 const PRIVACY_ITEMS = [
   { label: "Public Profile", desc: "Allow anyone to view your profile" },
-  { label: "Show online status", desc: "Let others know when you're active" },
+  { label: "Show online status", desc: "Let others know when you\'re active" },
   { label: "Allow messages from non-followers", desc: "Receive messages from anyone" },
 ];
 
@@ -80,9 +82,9 @@ export default function SettingsPage() {
   const [privacyToggles, setPrivacyToggles] = useState<boolean[]>(PRIVACY_ITEMS.map(() => true));
 
   useEffect(() => {
-    fetch("/api/auth/me")
-      .then((r) => r.json())
-      .then((data) => {
+    fetch("/api/auth/me", { credentials: "include" })
+      .then(r => r.json())
+      .then(data => {
         if (data.user) {
           setUser(data.user);
           setProfileForm({ name: data.user.name || "", bio: data.user.bio || "" });
@@ -102,6 +104,7 @@ export default function SettingsPage() {
     const res = await fetch(`/api/users/${user._id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
+      credentials: "include",
       body: JSON.stringify({ name: profileForm.name, bio: profileForm.bio }),
     });
     const data = await res.json();
@@ -116,11 +119,15 @@ export default function SettingsPage() {
   const themeOptions = [
     { value: "light", icon: Sun, label: "Light" },
     { value: "dark", icon: Moon, label: "Dark" },
-    { value: "system", icon: Monitor, label: "System" },
+    { value: "system", icon: Desktop, label: "System" },
   ];
 
   if (loading) {
-    return <div className="flex justify-center py-20"><Loader2 className="animate-spin text-blue-600" size={28} /></div>;
+    return (
+      <div className="flex justify-center py-20">
+        <SpinnerGap size={28} className="animate-spin text-blue-600" />
+      </div>
+    );
   }
 
   return (
@@ -130,7 +137,7 @@ export default function SettingsPage() {
         <p className="text-gray-500 dark:text-gray-400 text-sm">Manage your account preferences</p>
       </motion.div>
 
-      {/* Appearance / Dark Mode */}
+      {/* Appearance */}
       <SettingCard delay={0}>
         <SectionTitle icon={Moon} title="Appearance" desc="Choose how Sosa looks" />
         <div className="grid grid-cols-3 gap-3">
@@ -143,7 +150,7 @@ export default function SettingsPage() {
                   ? "border-blue-600 bg-blue-50 dark:bg-blue-900/20 text-blue-600" :"border-black/10 dark:border-white/10 text-gray-600 dark:text-gray-400 hover:border-blue-300 hover:bg-gray-50 dark:hover:bg-gray-800"
               }`}
             >
-              <Icon size={22} />
+              <Icon size={22} weight={theme === value ? "fill" : "regular"} />
               <span className="text-sm font-medium">{label}</span>
             </button>
           ))}
@@ -156,33 +163,50 @@ export default function SettingsPage() {
         <div className="space-y-4">
           <div>
             <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 block">Full Name</label>
-            <input value={profileForm.name} onChange={(e) => setProfileForm({ ...profileForm, name: e.target.value })}
-              className="w-full px-4 py-2.5 text-sm rounded-xl border border-black/10 dark:border-white/10 bg-white dark:bg-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all" />
+            <input
+              value={profileForm.name}
+              onChange={e => setProfileForm({ ...profileForm, name: e.target.value })}
+              className="w-full px-4 py-2.5 text-sm rounded-xl border border-black/10 dark:border-white/10 bg-white dark:bg-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+            />
           </div>
           <div>
             <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 block">Username</label>
             <div className="relative">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">@</span>
-              <input value={user?.username || ""} readOnly
-                className="w-full pl-7 pr-4 py-2.5 text-sm rounded-xl border border-black/10 dark:border-white/10 bg-gray-50 dark:bg-gray-800 text-gray-500 cursor-not-allowed" />
+              <input
+                value={user?.username || ""}
+                readOnly
+                className="w-full pl-7 pr-4 py-2.5 text-sm rounded-xl border border-black/10 dark:border-white/10 bg-gray-50 dark:bg-gray-800 text-gray-500 cursor-not-allowed"
+              />
             </div>
             <p className="text-xs text-gray-400 mt-1">Username cannot be changed</p>
           </div>
           <div>
             <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 block">Email</label>
-            <input value={user?.email || ""} readOnly
-              className="w-full px-4 py-2.5 text-sm rounded-xl border border-black/10 dark:border-white/10 bg-gray-50 dark:bg-gray-800 text-gray-500 cursor-not-allowed" />
+            <input
+              value={user?.email || ""}
+              readOnly
+              className="w-full px-4 py-2.5 text-sm rounded-xl border border-black/10 dark:border-white/10 bg-gray-50 dark:bg-gray-800 text-gray-500 cursor-not-allowed"
+            />
           </div>
           <div>
             <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 block">Bio</label>
-            <textarea value={profileForm.bio} onChange={(e) => setProfileForm({ ...profileForm, bio: e.target.value })}
+            <textarea
+              value={profileForm.bio}
+              onChange={e => setProfileForm({ ...profileForm, bio: e.target.value })}
               placeholder="Write something about yourself..."
-              className="w-full px-4 py-2.5 text-sm rounded-xl border border-black/10 dark:border-white/10 bg-white dark:bg-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all resize-none" rows={3} />
+              className="w-full px-4 py-2.5 text-sm rounded-xl border border-black/10 dark:border-white/10 bg-white dark:bg-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all resize-none"
+              rows={3}
+            />
           </div>
-          <motion.button whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}
-            onClick={handleSaveProfile} disabled={saving}
-            className="flex items-center gap-2 bg-blue-600 text-white text-sm font-semibold px-5 py-2.5 rounded-xl hover:bg-blue-700 disabled:opacity-70 transition-all shadow-btn">
-            {saving ? <Loader2 size={14} className="animate-spin" /> : saved ? <Check size={14} /> : null}
+          <motion.button
+            whileHover={{ scale: 1.01 }}
+            whileTap={{ scale: 0.99 }}
+            onClick={handleSaveProfile}
+            disabled={saving}
+            className="flex items-center gap-2 bg-blue-600 text-white text-sm font-semibold px-5 py-2.5 rounded-xl hover:bg-blue-700 disabled:opacity-70 transition-all"
+          >
+            {saving ? <SpinnerGap size={14} className="animate-spin" /> : saved ? <Check size={14} weight="bold" /> : null}
             {saved ? "Saved!" : "Save Changes"}
           </motion.button>
         </div>
@@ -204,15 +228,18 @@ export default function SettingsPage() {
                   className="w-full px-4 py-2.5 pr-10 text-sm rounded-xl border border-black/10 dark:border-white/10 bg-white dark:bg-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
                 />
                 {i === 0 && (
-                  <button type="button" onClick={() => setShowPasswords(!showPasswords)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
+                  <button
+                    type="button"
+                    onClick={() => setShowPasswords(!showPasswords)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
+                  >
                     {showPasswords ? <EyeOff size={15} /> : <Eye size={15} />}
                   </button>
                 )}
               </div>
             </div>
           ))}
-          <button className="bg-blue-600 text-white text-sm font-semibold px-5 py-2.5 rounded-xl hover:bg-blue-700 transition-all shadow-btn">
+          <button className="bg-blue-600 text-white text-sm font-semibold px-5 py-2.5 rounded-xl hover:bg-blue-700 transition-all">
             Update Password
           </button>
         </div>
@@ -230,7 +257,7 @@ export default function SettingsPage() {
               </div>
               <Toggle
                 checked={notifToggles[i]}
-                onChange={(v) => setNotifToggles((prev) => prev.map((x, j) => j === i ? v : x))}
+                onChange={v => setNotifToggles(prev => prev.map((x, j) => j === i ? v : x))}
               />
             </div>
           ))}
@@ -249,7 +276,7 @@ export default function SettingsPage() {
               </div>
               <Toggle
                 checked={privacyToggles[i]}
-                onChange={(v) => setPrivacyToggles((prev) => prev.map((x, j) => j === i ? v : x))}
+                onChange={v => setPrivacyToggles(prev => prev.map((x, j) => j === i ? v : x))}
               />
             </div>
           ))}
@@ -269,7 +296,7 @@ export default function SettingsPage() {
             onClick={handleLogout}
             className="flex items-center gap-2 text-sm font-semibold text-red-600 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 px-4 py-2 rounded-xl hover:bg-red-100 dark:hover:bg-red-900/40 transition-all"
           >
-            <LogOut size={15} />
+            <SignOut size={15} weight="bold" />
             Sign Out
           </motion.button>
         </div>
