@@ -48,3 +48,5 @@ externalPort = 3003
 JWT_SECRET = "sosa-socials-secret-key-2024-very-secure"
 MONGO_URI = "mongodb+srv://Dev:0DCVQfc00TpRQ6d2@cluster0.moflf.mongodb.net/lawsa?appName=Cluster0"
 MONGODB_URI = "mongodb+srv://Dev:0DCVQfc00TpRQ6d2@cluster0.moflf.mongodb.net/lawsa?appName=Cluster0"
+TURSO_DATABASE_URL = "libsql://database-coral-globe-vercel-icfg-1scupbwep7ldn9ks63krws8s.aws-us-east-1.turso.io"
+TURSO_AUTH_TOKEN = "eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJhIjoicnciLCJpYXQiOjE3Nzc3NTAzNTMsImlkIjoiMDE5ZGVhMmItMmYwMS03NDU2LWI4NjQtNjFmYzlkOWU1YWFiIiwicmlkIjoiZWIxYzBmMTMtMTNhYi00Y2E3LWIwYmUtYmQyM2ZkZDBmODExIn0.2zU8qpn7lgXLVqAnhVClDmgr6UyOBnBzdtzJFwOXCSY-ZbHR9il1-hHe_Ci1LzZkBQHCOmd-J9zNTIotDhhZBQ"
