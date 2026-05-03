@@ -273,14 +273,15 @@ export default function ProfilePage() {
     setFollowLoading(true);
     const res = await fetch(`/api/users/${profile._id}/follow`, { method: "POST" });
     const data = await res.json();
-    setIsFollowing(data.following);
-    setProfile((prev) => {
-      if (!prev) return prev;
-      const followers = data.following
-        ? [...(prev.followers || []), currentUser._id]
-        : (prev.followers || []).filter((id) => id !== currentUser._id);
-      return { ...prev, followers };
-    });
+    setIsFollowing(!!data.following);
+    await Promise.all([
+      fetch(`/api/users/${userId}`).then((r) => r.json()).then((d) => {
+        if (d.user) setProfile(d.user);
+      }),
+      fetch("/api/auth/me").then((r) => r.json()).then((d) => {
+        if (d.user) setCurrentUser(d.user);
+      }),
+    ]);
     setFollowLoading(false);
   };
 
@@ -309,12 +310,19 @@ export default function ProfilePage() {
       });
       const data = await res.json();
       if (data.user) {
-        setProfile(data.user);
         setEditing(false);
         setProfileImagePreview(null);
         setBannerPreview(null);
         setProfileImageFile(null);
         setBannerImageFile(null);
+        await Promise.all([
+          fetch(`/api/users/${userId}`).then((r) => r.json()).then((d) => {
+            if (d.user) setProfile(d.user);
+          }),
+          fetch("/api/auth/me").then((r) => r.json()).then((d) => {
+            if (d.user) setCurrentUser(d.user);
+          }),
+        ]);
       }
     } catch (err) {
       console.error("Save profile error:", err);
