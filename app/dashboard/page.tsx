@@ -275,23 +275,22 @@ export default function FeedPage() {
   useEffect(() => { loadPosts(1, true); }, [loadPosts]);
 
   const handleLike = async (postId: string) => {
-    await fetch(`/api/posts/${postId}/like`, { method: "POST", credentials: "include" });
-    const uid = me?.id || me?._id || "";
-    setPosts(prev => prev.map(p => {
-      if (p._id !== postId) return p;
-      const liked = (p.likes || []).includes(uid);
-      return { ...p, likes: liked ? (p.likes || []).filter(id => id !== uid) : [...(p.likes || []), uid] };
-    }));
+    const res = await fetch(`/api/posts/${postId}/like`, { method: "POST", credentials: "include" });
+    const data = await res.json();
+    if (!res.ok) return;
+    setPosts(prev => prev.map(p => p._id === postId ? { ...p, likes: data.likesCount !== undefined ? (data.liked ? [...(p.likes || []), (me?.id || me?._id || "")] : (p.likes || []).filter(id => id !== (me?.id || me?._id || ""))) : p.likes } : p));
   };
 
   const handleRepost = async (postId: string) => {
     const res = await fetch(`/api/posts/${postId}/repost`, { method: "POST", credentials: "include" });
     const data = await res.json();
+    if (!res.ok) return;
     setPosts(prev => prev.map(p => p._id === postId ? { ...p, reshares: data.reshares || p.reshares } : p));
   };
 
   const handleBookmark = async (postId: string) => {
-    await fetch(`/api/posts/${postId}/bookmark`, { method: "POST", credentials: "include" });
+    const res = await fetch(`/api/posts/${postId}/bookmark`, { method: "POST", credentials: "include" });
+    if (!res.ok) return;
   };
 
   const handleDelete = async (postId: string) => {
