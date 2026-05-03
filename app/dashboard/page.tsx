@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
-import { Heart, MessageCircle, Repeat2, Share, Loader2, Image as ImageIcon, X, Send, BadgeCheck, MoreHorizontal, Plus, ChevronLeft, ChevronRight, Edit, Trash2 } from "lucide-react";
+import { Heart, ChatCircle, ArrowsClockwise, ShareNetwork, SpinnerGap, Image as ImageIcon, X, PaperPlaneTilt, SealCheck, DotsThree, Plus, CaretLeft, CaretRight, PencilSimple, Trash } from "@phosphor-icons/react";
 import ReactTimeago from "react-timeago";
 
 interface Post { _id: string; authorId: string; authorName: string; authorUsername: string; authorImage?: string; content: string; images?: string[]; videos?: string[]; likes?: string[]; comments?:[...any[]] & { length: number }; createdAt: string; reshares?: number; views?: number; repostedFrom?: Post; }
@@ -59,7 +59,7 @@ function PostCard({ post, me, onLike, onRepost, onBookmark, onDelete, onEdit }: 
     <article className="border-b border-slate-700/50 px-4 py-3 hover:bg-slate-900/50 transition-colors">
       {post.repostedFrom && (
         <div className="flex items-center gap-2 text-gray-400 text-xs mb-2 ml-10">
-          <Repeat2 className="w-3.5 h-3.5" />
+          <ArrowsClockwise className="w-3.5 h-3.5" />
           <span>{post.authorName} reposted</span>
         </div>
       )}
@@ -71,7 +71,7 @@ function PostCard({ post, me, onLike, onRepost, onBookmark, onDelete, onEdit }: 
           <div className="flex items-start justify-between gap-2">
             <div className="flex items-center gap-1 flex-wrap">
               <Link href={`/dashboard/profile/${post.authorId}`} className="font-bold text-white hover:underline text-sm">{post.repostedFrom ? post.repostedFrom.authorName : post.authorName}</Link>
-              {post.isVerified && <BadgeCheck className="w-4 h-4 text-blue-400 flex-shrink-0" />}
+              {post.isVerified && <SealCheck className="w-4 h-4 text-blue-400 flex-shrink-0" weight="fill" />}
               <span className="text-gray-500 text-sm">@{post.repostedFrom ? post.repostedFrom.authorUsername : post.authorUsername}</span>
               <span className="text-gray-500 text-sm">·</span>
               <span className="text-gray-500 text-sm"><ReactTimeago date={post.createdAt} /></span>
@@ -79,18 +79,18 @@ function PostCard({ post, me, onLike, onRepost, onBookmark, onDelete, onEdit }: 
             {isAuthor && (
               <div className="relative">
                 <button onClick={() => setShowMenu(!showMenu)} className="text-gray-600 hover:text-blue-400 transition-colors p-1 rounded-full hover:bg-blue-400/10 flex-shrink-0">
-                  <MoreHorizontal className="w-4 h-4" />
+                  <DotsThree className="w-4 h-4" weight="bold" />
                 </button>
                 {showMenu && (
                   <div className="absolute right-0 top-8 bg-slate-800 border border-slate-700 rounded-xl shadow-lg z-20 min-w-[150px] overflow-hidden">
                     <button onClick={() => { setEditing(true); setShowMenu(false); }} className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-300 hover:bg-slate-700 transition-colors">
-                      <Edit className="w-4 h-4" /> Edit
+                      <PencilSimple className="w-4 h-4" /> Edit
                     </button>
                     <button onClick={handleShare} className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-300 hover:bg-slate-700 transition-colors">
-                      <Share className="w-4 h-4" /> Share
+                      <ShareNetwork className="w-4 h-4" /> Share
                     </button>
                     <button onClick={() => { onDelete(post._id); setShowMenu(false); }} className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-400 hover:bg-red-500/10 transition-colors">
-                      <Trash2 className="w-4 h-4" /> Delete
+                      <Trash className="w-4 h-4" /> Delete
                     </button>
                   </div>
                 )}
@@ -129,25 +129,25 @@ function PostCard({ post, me, onLike, onRepost, onBookmark, onDelete, onEdit }: 
             <div className="flex items-center justify-between mt-3 max-w-[300px] text-gray-500">
               <button onClick={() => setShowComments(!showComments)} className="flex items-center gap-1.5 hover:text-blue-400 transition-colors group">
                 <div className="p-2 rounded-full group-hover:bg-blue-400/10 transition-colors">
-                  <MessageCircle className="w-4 h-4" />
+                  <ChatCircle className="w-4 h-4" />
                 </div>
                 <span className="text-xs">{fmt((post.comments || []).length)}</span>
               </button>
               <button onClick={() => onRepost(post._id)} className="flex items-center gap-1.5 hover:text-green-400 transition-colors group">
                 <div className="p-2 rounded-full group-hover:bg-green-400/10 transition-colors">
-                  <Repeat2 className="w-4 h-4" />
+                  <ArrowsClockwise className="w-4 h-4" />
                 </div>
                 <span className="text-xs">{fmt(post.reshares || 0)}</span>
               </button>
               <button onClick={() => onLike(post._id)} className={`flex items-center gap-1.5 transition-colors group ${liked ? "text-pink-500" : "hover:text-pink-400"}`}>
                 <div className={`p-2 rounded-full transition-colors ${liked ? "bg-pink-500/10" : "group-hover:bg-pink-400/10"}`}>
-                  <Heart className={`w-4 h-4 ${liked ? "fill-pink-500" : ""}`} />
+                  <Heart className={`w-4 h-4`} weight={liked ? "fill" : "regular"} />
                 </div>
                 <span className="text-xs">{fmt((post.likes || []).length)}</span>
               </button>
               <button onClick={handleShare} className="flex items-center gap-1.5 hover:text-blue-400 transition-colors group">
                 <div className="p-2 rounded-full group-hover:bg-blue-400/10 transition-colors">
-                  <Share className="w-4 h-4" />
+                  <ShareNetwork className="w-4 h-4" />
                 </div>
               </button>
             </div>
@@ -159,7 +159,7 @@ function PostCard({ post, me, onLike, onRepost, onBookmark, onDelete, onEdit }: 
                 <div className="flex-1 flex gap-2">
                   <input value={comment} onChange={e => setComment(e.target.value)} placeholder="Reply here..." className="flex-1 bg-slate-800 text-white text-sm placeholder-gray-600 outline-none border border-slate-700 rounded-lg px-3 py-1 focus:border-blue-500" />
                   <button type="submit" disabled={!comment.trim() || commenting} className="bg-blue-500 text-white px-3 py-1 rounded-full text-xs font-bold disabled:opacity-50 hover:bg-blue-600 transition-all">
-                    {commenting ? <Loader2 className="w-3 h-3 animate-spin" /> : "Reply"}
+                    {commenting ? <SpinnerGap className="w-3 h-3 animate-spin" /> : "Reply"}
                   </button>
                 </div>
               </form>
@@ -235,7 +235,7 @@ function ComposeBox({ me, onPost }: any) {
               {content.length > 0 && <span className={`text-sm ${content.length > 270 ? "text-red-400" : "text-gray-500"}`}>{280 - content.length}</span>}
               <button type="submit" disabled={(!content.trim() && !images.length) || posting || content.length > 280}
                 className="bg-blue-500 hover:bg-blue-600 text-white font-bold px-4 py-1.5 rounded-full text-sm disabled:opacity-50 transition-colors flex items-center gap-1.5">
-                {posting ? <Loader2 className="w-4 h-4 animate-spin" /> : "Post"}
+                {posting ? <SpinnerGap className="w-4 h-4 animate-spin" /> : "Post"}
               </button>
             </div>
           </div>
@@ -328,10 +328,10 @@ export default function FeedPage() {
 
       {/* Posts */}
       {loading ? (
-        <div className="flex justify-center py-12"><Loader2 className="w-6 h-6 text-blue-500 animate-spin" /></div>
+        <div className="flex justify-center py-12"><SpinnerGap className="w-6 h-6 text-blue-500 animate-spin" /></div>
       ) : displayPosts.length === 0 ? (
         <div className="text-center py-16 text-gray-500">
-          <MessageCircle className="w-12 h-12 mx-auto mb-3 opacity-30" />
+          <ChatCircle className="w-12 h-12 mx-auto mb-3 opacity-30" />
           <p className="font-semibold">{tab === "following" ? "Follow people to see their posts" : "No posts yet"}</p>
         </div>
       ) : (
@@ -343,7 +343,7 @@ export default function FeedPage() {
           {hasMore && (
             <button onClick={() => { const next = page + 1; setPage(next); loadPosts(next); }} disabled={loadingMore}
               className="w-full py-4 text-blue-400 text-sm hover:bg-slate-800/50 transition-colors">
-              {loadingMore ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : "Show more"}
+              {loadingMore ? <SpinnerGap className="w-4 h-4 animate-spin mx-auto" /> : "Show more"}
             </button>
           )}
         </>
@@ -360,15 +360,15 @@ export default function FeedPage() {
           <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-lg mx-4" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between p-4 border-b border-slate-700">
               <button onClick={() => setShowCompose(false)}><X className="w-5 h-5 text-gray-400" /></button>
-              <span className="font-bold text-white">New post</span>
-              <div />
+              <span className="text-white font-bold">New Post</span>
+              <div className="w-5" />
             </div>
-            {me && <ComposeBox me={me} onPost={handleNewPost} />}
+            <div className="p-4">
+              <ComposeBox me={me} onPost={handleNewPost} />
+            </div>
           </div>
         </div>
       )}
-
-      <div className="h-20 md:h-8" />
     </div>
   );
 }

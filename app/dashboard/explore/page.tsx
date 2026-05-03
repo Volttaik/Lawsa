@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect, useCallback, useRef } from "react";
-import { Search, TrendingUp, Users, Hash, Loader2, X, BadgeCheck } from "lucide-react";
+import { MagnifyingGlass, TrendingUp, Users, Hash, SpinnerGap, X, SealCheck } from "@phosphor-icons/react";
 import Link from "next/link";
 import ReactTimeago from "react-timeago";
 
@@ -64,11 +64,26 @@ export default function ExplorePage() {
 
   const toggleFollow = async (uid: string) => {
     setFollowLoading(prev => new Set([...prev, uid]));
-    const res = await fetch(`/api/users/${uid}/follow`, { method: "POST", credentials: "include" });
-    const data = await res.json();
-    if (data.following) setFollowing(prev => new Set([...prev, uid]));
-    else setFollowing(prev => { const s = new Set(prev); s.delete(uid); return s; });
-    await refreshMe();
+    try {
+      const res = await fetch(`/api/users/${uid}/follow`, { method: "POST", credentials: "include" });
+      const data = await res.json();
+      
+      // Update local state immediately based on response
+      if (data.following) {
+        setFollowing(prev => new Set([...prev, uid]));
+      } else {
+        setFollowing(prev => { 
+          const s = new Set(prev); 
+          s.delete(uid); 
+          return s; 
+        });
+      }
+      
+      // Refresh me data to get accurate following list
+      await refreshMe();
+    } catch (err) {
+      console.error("Follow toggle failed", err);
+    }
     setFollowLoading(prev => { const s = new Set(prev); s.delete(uid); return s; });
   };
 
@@ -80,7 +95,7 @@ export default function ExplorePage() {
     <div className="max-w-[600px] mx-auto border-x border-[#2f3336] min-h-screen">
       <div className="sticky top-0 z-10 bg-black/90 backdrop-blur px-4 py-3 border-b border-[#2f3336]">
         <div className="flex items-center gap-3 bg-[#202327] rounded-full px-4 py-2.5">
-          <Search className="w-4 h-4 text-gray-500 flex-shrink-0" />
+          <MagnifyingGlass className="w-4 h-4 text-gray-500 flex-shrink-0" />
           <input value={query} onChange={e => setQuery(e.target.value)} placeholder="Search people, posts, or tags" className="flex-1 bg-transparent text-white text-sm outline-none placeholder-gray-600" autoFocus />
           {query && <button onClick={() => setQuery("")}><X className="w-4 h-4 text-gray-500 hover:text-white" /></button>}
         </div>
@@ -95,7 +110,7 @@ export default function ExplorePage() {
           </div>
         )}
       </div>
-      {loading && <div className="flex justify-center py-8"><Loader2 className="w-5 h-5 text-blue-500 animate-spin" /></div>}
+      {loading && <div className="flex justify-center py-8"><SpinnerGap className="w-5 h-5 text-blue-500 animate-spin" /></div>}
       {!query && (
         <>
           <div className="px-4 py-3 border-b border-[#2f3336]">
@@ -123,7 +138,7 @@ export default function ExplorePage() {
                     <Link href={`/dashboard/profile/${u._id || u.id}`}><Avatar src={u.profileImage} name={u.name} size={44} /></Link>
                     <div className="flex-1 min-w-0">
                       <Link href={`/dashboard/profile/${u._id || u.id}`}>
-                        <div className="flex items-center gap-1"><p className="text-white font-bold text-sm hover:underline truncate">{u.name}</p>{u.isVerified && <BadgeCheck className="w-4 h-4 text-blue-400 flex-shrink-0" />}</div>
+                        <div className="flex items-center gap-1"><p className="text-white font-bold text-sm hover:underline truncate">{u.name}</p>{u.isVerified && <SealCheck className="w-4 h-4 text-blue-400 flex-shrink-0" weight="fill" />}</div>
                         <p className="text-gray-500 text-xs">@{u.username}</p>
                       </Link>
                       {u.bio && <p className="text-gray-400 text-xs mt-0.5 truncate">{u.bio}</p>}
@@ -131,7 +146,7 @@ export default function ExplorePage() {
                     </div>
                     {u._id !== myId && (
                       <button onClick={() => toggleFollow(u._id)} disabled={followLoading.has(u._id)} className={`px-4 py-1.5 rounded-full text-sm font-bold transition-colors flex-shrink-0 flex items-center gap-1.5 ${isFollowing ? "bg-transparent border border-[#333] text-white hover:border-red-500 hover:text-red-400" : "bg-white text-black hover:bg-gray-200"}`}>
-                        {followLoading.has(u._id) ? <Loader2 className="w-3 h-3 animate-spin" /> : null}
+                        {followLoading.has(u._id) ? <SpinnerGap className="w-3 h-3 animate-spin" /> : null}
                         {isFollowing ? "Following" : "Follow"}
                       </button>
                     )}
@@ -164,7 +179,7 @@ export default function ExplorePage() {
           )}
         </div>
       )}
-      {noResults && <div className="text-center py-16 text-gray-500"><Search className="w-12 h-12 mx-auto mb-3 opacity-20" /><p className="font-semibold text-gray-400">No results for "{query}"</p><p className="text-sm mt-1">Try different keywords</p></div>}
+      {noResults && <div className="text-center py-16 text-gray-500"><MagnifyingGlass className="w-12 h-12 mx-auto mb-3 opacity-20" /><p className="font-semibold text-gray-400">No results for &quot;{query}&quot;</p><p className="text-sm mt-1">Try different keywords</p></div>}
       <div className="h-20" />
     </div>
   );
@@ -172,24 +187,33 @@ export default function ExplorePage() {
 
 function WhoToFollow({ myId, following, followLoading, onFollow }: { myId: string; following: Set<string>; followLoading: Set<string>; onFollow: (id: string) => void; }) {
   const [users, setUsers] = useState<UserResult[]>([]);
-  useEffect(() => { fetch("/api/users/suggestions?limit=5", { credentials: "include" }).then(r => r.json()).then(d => setUsers(d.users || [])); }, []);
+  
+  useEffect(() => { 
+    fetch("/api/users/suggestions?limit=5", { credentials: "include" })
+      .then(r => r.json())
+      .then(d => setUsers(d.users || [])); 
+  }, []);
+  
   if (!users.length) return null;
+  
   return (
     <div className="px-4 py-3">
       <div className="flex items-center gap-2 mb-4"><Users className="w-5 h-5 text-blue-400" /><h2 className="font-bold text-white text-lg">Who to follow</h2></div>
       {users.filter(u => (u._id || u.id) !== myId).map(u => {
         const id = u._id || u.id || "";
+        const isFollowing = following.has(id);
+        const followsYou = !!u.followers?.includes(myId);
         return (
           <div key={id} className="flex items-center gap-3 py-3 border-b border-[#1a1a1a] last:border-0">
             <Link href={`/dashboard/profile/${id}`}><Avatar src={u.profileImage} name={u.name} size={44} /></Link>
             <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-1"><Link href={`/dashboard/profile/${id}`} className="font-bold text-white text-sm hover:underline truncate">{u.name}</Link>{u.isVerified && <BadgeCheck className="w-4 h-4 text-blue-400 flex-shrink-0" />}</div>
+              <div className="flex items-center gap-1"><Link href={`/dashboard/profile/${id}`} className="font-bold text-white text-sm hover:underline truncate">{u.name}</Link>{u.isVerified && <SealCheck className="w-4 h-4 text-blue-400 flex-shrink-0" weight="fill" />}</div>
               <p className="text-gray-500 text-xs">@{u.username}</p>
-              {u.followers?.includes(myId) && <span className="mt-1 inline-flex text-[10px] bg-[#202327] text-gray-300 border border-[#2f3336] rounded-full px-2 py-0.5">Follows you</span>}
+              {followsYou && <span className="mt-1 inline-flex text-[10px] bg-[#202327] text-gray-300 border border-[#2f3336] rounded-full px-2 py-0.5">Follows you</span>}
             </div>
-            <button onClick={() => onFollow(id)} disabled={followLoading.has(id)} className={`px-4 py-1.5 rounded-full text-sm font-bold transition-colors flex-shrink-0 flex items-center gap-1.5 ${following.has(id) ? "bg-transparent border border-[#333] text-white" : "bg-white text-black hover:bg-gray-200"}`}>
-              {followLoading.has(id) ? <Loader2 className="w-3 h-3 animate-spin" /> : null}
-              {following.has(id) ? "Following" : "Follow"}
+            <button onClick={() => onFollow(id)} disabled={followLoading.has(id)} className={`px-4 py-1.5 rounded-full text-sm font-bold transition-colors flex-shrink-0 flex items-center gap-1.5 ${isFollowing ? "bg-transparent border border-[#333] text-white hover:border-red-500 hover:text-red-400" : "bg-white text-black hover:bg-gray-200"}`}>
+              {followLoading.has(id) ? <SpinnerGap className="w-3 h-3 animate-spin" /> : null}
+              {isFollowing ? "Following" : "Follow"}
             </button>
           </div>
         );

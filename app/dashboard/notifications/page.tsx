@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Heart, MessageCircle, UserPlus, Share2, Bell, Loader2, Check } from "lucide-react";
+import { Heart, ChatCircle, UserPlus, ShareNetwork, Bell, SpinnerGap, Check } from "@phosphor-icons/react";
 import Link from "next/link";
 
 interface Notification {
@@ -23,10 +23,10 @@ function Avatar({ src, name, size = 40 }: { src?: string; name: string; size?: n
 
 const typeIcons: Record<string, { icon: React.ElementType; color: string; bg: string }> = {
   like:    { icon: Heart,          color: "text-red-500",    bg: "bg-red-50 dark:bg-red-900/30"     },
-  comment: { icon: MessageCircle,  color: "text-blue-600",   bg: "bg-blue-50 dark:bg-blue-900/30"   },
+  comment: { icon: ChatCircle,     color: "text-blue-600",   bg: "bg-blue-50 dark:bg-blue-900/30"   },
   follow:  { icon: UserPlus,       color: "text-green-600",  bg: "bg-green-50 dark:bg-green-900/30" },
-  reshare: { icon: Share2,         color: "text-purple-600", bg: "bg-purple-50 dark:bg-purple-900/30" },
-  reply:   { icon: MessageCircle,  color: "text-blue-600",   bg: "bg-blue-50 dark:bg-blue-900/30"   },
+  reshare: { icon: ShareNetwork,   color: "text-purple-600", bg: "bg-purple-50 dark:bg-purple-900/30" },
+  reply:   { icon: ChatCircle,     color: "text-blue-600",   bg: "bg-blue-50 dark:bg-blue-900/30"   },
 };
 
 const POLL_MS = 20_000;
@@ -97,7 +97,7 @@ export default function NotificationsPage() {
 
       {loading ? (
         <div className="flex justify-center py-12">
-          <Loader2 className="animate-spin text-blue-600" size={28} />
+          <SpinnerGap className="animate-spin text-blue-600" size={28} />
         </div>
       ) : notifications.length === 0 ? (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
@@ -135,7 +135,7 @@ export default function NotificationsPage() {
                       <Avatar src={notif.senderImage} name={notif.senderName} size={44} />
                     </Link>
                     <div className={`absolute -bottom-1 -right-1 w-5 h-5 rounded-full ${typeInfo.bg} flex items-center justify-center border-2 border-white dark:border-gray-900`}>
-                      <TypeIcon size={10} className={typeInfo.color} />
+                      <TypeIcon size={10} className={typeInfo.color} weight="fill" />
                     </div>
                   </div>
                   <div className="flex-1 min-w-0">
