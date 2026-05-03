@@ -67,13 +67,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     </div>
   );
 
-  const Sidebar = () => (
+  const Sidebar = ({ compact = false }: { compact?: boolean }) => (
     <div className="flex flex-col h-full px-3 py-4">
       <Link href="/dashboard" className="flex items-center gap-3 px-3 py-3 mb-2">
         <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
           <span className="text-white font-black text-sm">S</span>
         </div>
-        <span className="text-white font-black text-xl hidden xl:block">Sosa</span>
+        <span className={`text-white font-black text-xl ${compact ? "hidden xl:block" : "block"}`}>Sosa</span>
       </Link>
 
       <nav className="flex-1 space-y-1">
@@ -89,14 +89,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   <span className="absolute -top-1 -right-1 bg-blue-500 text-white text-[9px] font-bold rounded-full w-4 h-4 flex items-center justify-center">{notifCount > 9 ? "9+" : notifCount}</span>
                 )}
               </div>
-              <span className={`hidden xl:block text-base ${active ? "text-white" : "text-gray-300 group-hover:text-white"}`}>{label}</span>
+              <span className={`${compact ? "hidden xl:block" : "block"} text-base ${active ? "text-white" : "text-gray-300 group-hover:text-white"}`}>{label}</span>
             </Link>
           );
         })}
         <Link href={`/dashboard/profile/${uid}`} onClick={() => setMobileMenu(false)}
           className={`flex items-center gap-4 px-3 py-3 rounded-full transition-colors group ${pathname.startsWith("/dashboard/profile") ? "font-bold" : "hover:bg-[#1a1a1a]"}`}>
           <User className={`w-6 h-6 ${pathname.startsWith("/dashboard/profile") ? "text-white" : "text-gray-300 group-hover:text-white"}`} strokeWidth={pathname.startsWith("/dashboard/profile") ? 2.5 : 2} />
-          <span className={`hidden xl:block text-base ${pathname.startsWith("/dashboard/profile") ? "text-white" : "text-gray-300 group-hover:text-white"}`}>Profile</span>
+          <span className={`${compact ? "hidden xl:block" : "block"} text-base ${pathname.startsWith("/dashboard/profile") ? "text-white" : "text-gray-300 group-hover:text-white"}`}>Profile</span>
         </Link>
       </nav>
 
@@ -124,7 +124,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     <div className="min-h-screen bg-black text-white flex">
       {/* Desktop sidebar */}
       <aside className="hidden md:flex flex-col w-[72px] xl:w-[260px] border-r border-[#222] fixed top-0 left-0 h-screen z-30">
-        <Sidebar />
+        <Sidebar compact />
       </aside>
 
       {/* Mobile menu overlay */}
