@@ -92,6 +92,12 @@ export default function LayoutShell({ children }: { children: React.ReactNode })
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  useEffect(() => {
+    const handler = () => { if (user) setShowCompose(true); };
+    window.addEventListener("lawsa-compose", handler);
+    return () => window.removeEventListener("lawsa-compose", handler);
+  }, [user]);
+
   const uid = user?.id || user?._id || "";
 
   const Sidebar = ({ compact = false }: { compact?: boolean }) => (
