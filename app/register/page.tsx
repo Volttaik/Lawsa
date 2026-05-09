@@ -96,14 +96,14 @@ export default function RegisterPage() {
           <h2 className="text-2xl font-bold text-white mb-3">Check your email!</h2>
           <p className="text-gray-400 text-sm leading-relaxed mb-6">
             We sent a verification link to <span className="text-white font-semibold">{form.email}</span>.
-            Click the link to verify your email — you can keep using the app in the meantime.
+            Please verify your email before signing in.
           </p>
-          <div className="flex items-center gap-2 bg-amber-500/10 border border-amber-500/20 rounded-xl p-3 text-amber-400 text-xs">
+          <div className="flex items-center gap-2 bg-amber-500/10 border border-amber-500/20 rounded-xl p-3 text-amber-400 text-xs mb-6">
             <Mail size={14} className="flex-shrink-0" />
             <span>Check your spam folder if you don&apos;t see it within a minute.</span>
           </div>
-          <Link href="/dashboard" className="mt-6 block w-full py-3.5 rounded-full bg-white text-black font-bold text-sm text-center hover:bg-gray-200 transition-colors">
-            Go to Dashboard
+          <Link href="/login" className="block w-full py-3.5 rounded-full bg-white text-black font-bold text-sm text-center hover:bg-gray-200 transition-colors">
+            Go to Sign In
           </Link>
         </div>
       </div>

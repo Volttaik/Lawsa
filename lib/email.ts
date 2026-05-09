@@ -1,7 +1,7 @@
 import nodemailer, { Transporter } from "nodemailer";
 
-const APP_NAME = "LAWSA";
-const APP_TAGLINE = "Law Student Association, University of Delta, Agbor";
+const APP_NAME = "Sosa";
+const APP_TAGLINE = "Connect, Share & Grow with your community";
 
 let _transport: Transporter | null = null;
 

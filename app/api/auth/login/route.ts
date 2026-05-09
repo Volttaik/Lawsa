@@ -1,9 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
-import { getUserByEmailOrUsername } from "@/lib/queries";
+import { getUserByEmailOrUsername, updateUser } from "@/lib/queries";
 import { signToken } from "@/lib/auth";
+import { sendVerificationEmail } from "@/lib/email";
+import { randomUUID } from "crypto";
 
 export const dynamic = "force-dynamic";
+
+function getBaseUrl(req: NextRequest): string {
+  const proto = req.headers.get("x-forwarded-proto") || "https";
+  const host = req.headers.get("x-forwarded-host") || req.headers.get("host") || "localhost:5000";
+  return `${proto}://${host}`;
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -16,6 +24,15 @@ export async function POST(request: NextRequest) {
 
     const valid = await bcrypt.compare(password, user.password);
     if (!valid) return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
+
+    if (!user.emailVerified) {
+      const verificationToken = randomUUID();
+      const baseUrl = getBaseUrl(request);
+      updateUser(user.id, { emailVerificationToken: verificationToken })
+        .then(() => sendVerificationEmail(user.email, user.name, verificationToken, baseUrl))
+        .catch((err) => console.error("[login] Failed to resend verification email:", err.message));
+      return NextResponse.json({ error: "Please verify your email before signing in. A new verification link has been sent to your inbox.", requiresVerification: true }, { status: 403 });
+    }
 
     const jwtToken = await signToken({
       userId: user.id,

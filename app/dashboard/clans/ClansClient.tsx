@@ -6,6 +6,7 @@ import {
   Crown, SignOut, Trash, Check, ChatCircle, ShareNetwork, Smiley, Lock,
 } from "@phosphor-icons/react";
 import Linkify from "@/components/Linkify";
+import StickerPicker from "@/components/StickerPicker";
 
 const CHAT_BACKGROUNDS = [
   { id: "midnight", bgColor: "#0f0c29", imgValue: "linear-gradient(145deg,#0f0c29 0%,#302b63 55%,#24243e 100%)" },
@@ -372,16 +373,32 @@ export default function ClansClient({ initialClans, currentUser: initialUser }: 
                 <div className="flex-1 overflow-y-auto px-3 py-3 space-y-1" style={{ backgroundColor: "rgba(0,0,0,0.5)" }}>
                   {chatMessages.length === 0
                     ? <div className="flex items-center justify-center h-full"><p className="text-white/40 text-sm">No messages yet. Say something!</p></div>
-                    : chatMessages.map(msg => {
+                    : chatMessages.map((msg, i) => {
                         const isMine = msg.senderId === uid;
+                        const prevMsg = chatMessages[i - 1];
+                        const nextMsg = chatMessages[i + 1];
+                        const showHeader = !isMine && (i === 0 || prevMsg?.senderId !== msg.senderId);
+                        const isLast = !nextMsg || nextMsg.senderId !== msg.senderId;
                         return (
-                          <div key={msg._id} className={`flex items-end gap-2 ${isMine ? "flex-row-reverse" : ""}`}>
-                            {!isMine && <Avatar src={msg.senderImage} name={msg.senderName} size={26} />}
-                            <div className={`max-w-[78%] px-3 py-2 rounded-2xl text-white ${isMine ? "rounded-br-sm" : "rounded-bl-sm"}`}
-                              style={{ backgroundColor: isMine ? "#000000" : "#111111" }}>
-                              {!isMine && <p className="text-[11px] font-semibold text-indigo-300 mb-0.5">{msg.senderName}</p>}
-                              <p className="text-[14px] leading-relaxed whitespace-pre-wrap break-words">{msg.content}</p>
-                              <p className="text-[10px] mt-0.5 text-white/40 text-right">{timeAgo(msg.createdAt)}</p>
+                          <div key={msg._id} className={`flex items-end gap-2 ${isMine ? "flex-row-reverse" : ""} ${i > 0 && prevMsg?.senderId === msg.senderId ? "mt-0.5" : "mt-3"}`}>
+                            <div className="flex-shrink-0" style={{ width: 30 }}>
+                              {!isMine && showHeader && <Avatar src={msg.senderImage} name={msg.senderName} size={28} />}
+                              {!isMine && !showHeader && isLast && <Avatar src={msg.senderImage} name={msg.senderName} size={28} />}
+                            </div>
+                            <div className="max-w-[75%]">
+                              {showHeader && (
+                                <div className="flex items-center gap-1.5 mb-1 ml-1">
+                                  <span className="text-[11px] font-bold text-white/90">{msg.senderName}</span>
+                                  <span className="text-[10px] text-white/35">@{msg.senderUsername}</span>
+                                </div>
+                              )}
+                              <div className={`px-3 py-2 text-white ${isMine ? "rounded-2xl rounded-br-sm" : "rounded-2xl rounded-bl-sm"}`}
+                                style={{ backgroundColor: isMine ? "#1d4ed8" : "#1c1c1e" }}>
+                                <p className="text-[14px] leading-relaxed whitespace-pre-wrap break-words">{msg.content}</p>
+                              </div>
+                              {isLast && (
+                                <p className={`text-[10px] mt-0.5 text-white/30 ${isMine ? "text-right pr-1" : "text-left pl-1"}`}>{timeAgo(msg.createdAt)}</p>
+                              )}
                             </div>
                           </div>
                         );
@@ -392,16 +409,12 @@ export default function ClansClient({ initialClans, currentUser: initialUser }: 
                 {isMember(selectedClan) && (
                   <div className="flex-shrink-0 border-t border-white/10" style={{ backgroundColor: "#000" }}>
                     {showStickerPicker && (
-                      <div className="px-3 pt-2 pb-1">
-                        <div className="flex gap-1 flex-wrap">
-                          {["👋","🔥","❤️","😂","🤯","😎","👊","🎉","🙏","💪","😭","🧢","✅","🤤","🤫","🌊"].map(s => (
-                            <button key={s} type="button"
-                              onClick={() => { setChatText(prev => prev + s); setShowStickerPicker(false); }}
-                              className="text-2xl p-1.5 rounded-xl hover:bg-white/10 transition-colors leading-none">
-                              {s}
-                            </button>
-                          ))}
-                        </div>
+                      <div className="px-2 pt-2 pb-1">
+                        <StickerPicker
+                          onSelectSticker={(val) => { setChatText(prev => prev + val); setShowStickerPicker(false); }}
+                          onSelectEmoji={(e) => { setChatText(prev => prev + e); setShowStickerPicker(false); }}
+                          onClose={() => setShowStickerPicker(false)}
+                        />
                       </div>
                     )}
                     <div className="flex items-center gap-2 px-3 py-2.5">

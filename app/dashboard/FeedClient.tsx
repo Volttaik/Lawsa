@@ -497,7 +497,7 @@ function ComposeBox({ me, onPost }: any) {
       const url = await uploadFile(file, "posts", p => setVideoProgress(p));
       setVideos(prev => [...prev, url]);
     } catch {
-      alert("Video upload failed. Please try a smaller file.");
+      alert("Video upload failed. Please check your connection and try again.");
     }
     setVideoProgress(null);
   };

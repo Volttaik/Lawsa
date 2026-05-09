@@ -5,7 +5,7 @@ import Link from "next/link";
 import {
   House, MagnifyingGlass, Bell, Envelope, User, UsersThree,
   Star, List, X, SignOut, SealCheck, Gear, Broadcast, Phone,
-  PhoneDisconnect, VideoCamera, Globe, PencilSimpleLine,
+  PhoneDisconnect, VideoCamera, Globe, PencilSimpleLine, ShoppingBag, Sparkle,
 } from "@phosphor-icons/react";
 import DiamondBadge from "@/components/DiamondBadge";
 import { useSession } from "@/components/SessionProvider";
@@ -50,6 +50,7 @@ const NAV = [
   { href: "/dashboard/messages",      icon: Envelope,        label: "Messages",      authRequired: true },
   { href: "/dashboard/clans",         icon: UsersThree,      label: "Clans"         },
   { href: "/dashboard/live",          icon: Broadcast,       label: "Live"          },
+  { href: "/dashboard/store",         icon: ShoppingBag,     label: "Store"         },
   { href: "/dashboard/premium",       icon: Star,            label: "Premium",       authRequired: true },
 ];
 
@@ -62,6 +63,8 @@ export default function LayoutShell({ user: initialUser, children }: { user: She
   const [mobileMenu, setMobileMenu] = useState(false);
   const [showCompose, setShowCompose] = useState(false);
   const [incomingCall, setIncomingCall] = useState<IncomingCall | null>(null);
+  const [fabVisible, setFabVisible] = useState(true);
+  const lastScrollY = useRef(0);
   const callSinceRef = useRef(new Date(Date.now() - 5000).toISOString());
   const dismissedSessionsRef = useRef<Set<string>>(new Set());
 
@@ -109,6 +112,18 @@ export default function LayoutShell({ user: initialUser, children }: { user: She
   }, [heartbeat, fetchCounts, checkIncomingCalls, isLoggedIn]);
 
   useEffect(() => {
+    const handleScroll = () => {
+      const currentY = window.scrollY;
+      if (currentY < 60) { setFabVisible(true); }
+      else if (currentY > lastScrollY.current + 8) { setFabVisible(false); }
+      else if (currentY < lastScrollY.current - 8) { setFabVisible(true); }
+      lastScrollY.current = currentY;
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  useEffect(() => {
     if (!isLoggedIn) return;
     if (pathname === "/dashboard/notifications") {
       setNotifCount(0);
@@ -124,8 +139,8 @@ export default function LayoutShell({ user: initialUser, children }: { user: She
   const Sidebar = ({ compact = false }: { compact?: boolean }) => (
     <div className="flex flex-col min-h-full px-3 py-4">
       <Link href="/dashboard" className="flex items-center gap-3 px-3 py-3 mb-2">
-        <img src="/logo.png" alt="LAWSA" className="w-8 h-8 rounded-full object-cover" />
-        <span className={`text-white font-black text-xl ${compact ? "hidden xl:block" : "block"}`}>LAWSA</span>
+        <img src="/logo.png" alt="Sosa" className="w-8 h-8 rounded-full object-cover" />
+        <span className={`text-white font-black text-xl ${compact ? "hidden xl:block" : "block"}`}>Sosa</span>
       </Link>
 
       <nav className="flex-1 space-y-1">
@@ -161,11 +176,18 @@ export default function LayoutShell({ user: initialUser, children }: { user: She
               <span className={`${compact ? "hidden xl:block" : "block"} text-base ${pathname.startsWith("/dashboard/profile") ? "text-white" : "text-gray-300 group-hover:text-white"}`}>Profile</span>
             </Link>
             {!compact && (
-              <Link href="/dashboard/settings" onClick={() => setMobileMenu(false)}
-                className={`flex items-center gap-4 px-3 py-3 rounded-full transition-colors group ${pathname.startsWith("/dashboard/settings") ? "font-bold" : "hover:bg-[#1a1a1a]"}`}>
-                <Gear className={`w-6 h-6 ${pathname.startsWith("/dashboard/settings") ? "text-white" : "text-gray-300 group-hover:text-white"}`} weight={pathname.startsWith("/dashboard/settings") ? "fill" : "regular"} />
-                <span className={`block text-base ${pathname.startsWith("/dashboard/settings") ? "text-white" : "text-gray-300 group-hover:text-white"}`}>Settings</span>
-              </Link>
+              <>
+                <Link href="/dashboard/customize" onClick={() => setMobileMenu(false)}
+                  className={`flex items-center gap-4 px-3 py-3 rounded-full transition-colors group ${pathname.startsWith("/dashboard/customize") ? "font-bold" : "hover:bg-[#1a1a1a]"}`}>
+                  <Sparkle className={`w-6 h-6 ${pathname.startsWith("/dashboard/customize") ? "text-white" : "text-gray-300 group-hover:text-white"}`} weight={pathname.startsWith("/dashboard/customize") ? "fill" : "regular"} />
+                  <span className={`block text-base ${pathname.startsWith("/dashboard/customize") ? "text-white" : "text-gray-300 group-hover:text-white"}`}>Wardrobe</span>
+                </Link>
+                <Link href="/dashboard/settings" onClick={() => setMobileMenu(false)}
+                  className={`flex items-center gap-4 px-3 py-3 rounded-full transition-colors group ${pathname.startsWith("/dashboard/settings") ? "font-bold" : "hover:bg-[#1a1a1a]"}`}>
+                  <Gear className={`w-6 h-6 ${pathname.startsWith("/dashboard/settings") ? "text-white" : "text-gray-300 group-hover:text-white"}`} weight={pathname.startsWith("/dashboard/settings") ? "fill" : "regular"} />
+                  <span className={`block text-base ${pathname.startsWith("/dashboard/settings") ? "text-white" : "text-gray-300 group-hover:text-white"}`}>Settings</span>
+                </Link>
+              </>
             )}
             {(user as any).isSpecial && (
               <Link href="/dashboard/world" onClick={() => setMobileMenu(false)}
@@ -268,7 +290,7 @@ export default function LayoutShell({ user: initialUser, children }: { user: She
         {!pathname.startsWith("/dashboard/messages") && !/^\/dashboard\/live\/.+/.test(pathname) && (
           <div className="md:hidden flex items-center justify-between px-4 py-3 border-b border-[#222] sticky top-0 bg-black/95 backdrop-blur z-20">
             <button onClick={() => setMobileMenu(true)}><List className="w-6 h-6 text-white" /></button>
-            <img src="/logo.png" alt="LAWSA" className="w-8 h-8 rounded-full object-cover" />
+            <img src="/logo.png" alt="Sosa" className="w-8 h-8 rounded-full object-cover" />
             {user
               ? <Avatar src={user.profileImage} name={user.name} size={30} />
               : <Link href="/login" className="text-white text-xs font-bold px-3 py-1.5 rounded-full border border-white/30">Sign in</Link>
@@ -312,7 +334,7 @@ export default function LayoutShell({ user: initialUser, children }: { user: She
       {user && !pathname.startsWith("/dashboard/messages") && !/^\/dashboard\/live\/.+/.test(pathname) && (
         <button
           onClick={() => setShowCompose(true)}
-          className="md:hidden fixed bottom-[72px] right-4 z-40 w-14 h-14 rounded-full bg-white shadow-2xl flex items-center justify-center hover:bg-gray-100 transition-all active:scale-95"
+          className={`md:hidden fixed bottom-[72px] right-4 z-40 w-14 h-14 rounded-full bg-white shadow-2xl flex items-center justify-center hover:bg-gray-100 active:scale-95 transition-all duration-300 ${fabVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4 pointer-events-none"}`}
           aria-label="New post"
         >
           <PencilSimpleLine className="w-6 h-6 text-black" weight="bold" />

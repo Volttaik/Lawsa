@@ -11,7 +11,7 @@ interface Props {
   text?: string;
 }
 
-export default function ShareModal({ open, onClose, url, title = "LAWSA", text = "" }: Props) {
+export default function ShareModal({ open, onClose, url, title = "Sosa", text = "" }: Props) {
   const { toast } = useToast();
   const overlayRef = useRef<HTMLDivElement>(null);
 

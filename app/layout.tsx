@@ -7,21 +7,22 @@ import { ToastProvider } from "@/components/Toast";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://lawsa.replit.app"),
-  title: "LAWSA — Law Student Association",
-  description: "Law Student Association, University of Delta, Agbor — Connect, Share & Grow.",
+  metadataBase: new URL("https://sosa-socials.replit.app"),
+  title: "Sosa — Social Platform",
+  description: "Sosa — Connect, Share & Grow with your community.",
   icons: { icon: "/logo.png", apple: "/logo.png" },
   manifest: "/manifest.json",
   openGraph: {
-    title: "LAWSA — Law Student Association",
-    description: "Law Student Association, University of Delta, Agbor — Connect, Share & Grow.",
-    images: [{ url: "/logo.png", width: 1200, height: 630, alt: "LAWSA" }],
+    title: "Sosa — Social Platform",
+    description: "Sosa — Connect, Share & Grow with your community.",
+    images: [{ url: "/logo.png", width: 1200, height: 630, alt: "Sosa" }],
     type: "website",
+    siteName: "Sosa",
   },
   twitter: {
     card: "summary_large_image",
-    title: "LAWSA — Law Student Association",
-    description: "Law Student Association, University of Delta, Agbor — Connect, Share & Grow.",
+    title: "Sosa — Social Platform",
+    description: "Sosa — Connect, Share & Grow with your community.",
     images: ["/logo.png"],
   },
 };
