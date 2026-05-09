@@ -1,94 +1,45 @@
-# Sosa Socials
+# [Project name]
 
-A full-stack social networking app built with Next.js 14 App Router, Supabase (PostgreSQL), JWT auth, Tailwind CSS, Phosphor Icons, and Framer Motion.
+_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
 
-## Tech Stack
+## Run & Operate
 
-- **Framework**: Next.js 14 (App Router, TypeScript)
-- **Database**: Supabase (PostgreSQL) via `@supabase/supabase-js`
-- **Auth**: JWT tokens in `sosa-token` cookie (bcryptjs, jose)
-- **Styling**: Tailwind CSS, Framer Motion
-- **Icons**: Phosphor Icons
-- **File uploads**: chunked base64 uploads stored in `upload_chunks` table
+- `pnpm --filter @workspace/api-server run dev` — run the API server (port 5000)
+- `pnpm run typecheck` — full typecheck across all packages
+- `pnpm run build` — typecheck + build all packages
+- `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
+- `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
+- Required env: `DATABASE_URL` — Postgres connection string
 
-## Environment Variables (Secrets)
+## Stack
 
-- `SUPABASE_URL` — Supabase project URL
-- `SUPABASE_SERVICE_ROLE_KEY` — Supabase service role key (bypasses RLS)
-- `JWT_SECRET` — JWT signing secret
+- pnpm workspaces, Node.js 24, TypeScript 5.9
+- API: Express 5
+- DB: PostgreSQL + Drizzle ORM
+- Validation: Zod (`zod/v4`), `drizzle-zod`
+- API codegen: Orval (from OpenAPI spec)
+- Build: esbuild (CJS bundle)
 
-## Database Setup
+## Where things live
 
-Run `supabase/schema.sql` in the Supabase SQL Editor to create all tables and indexes.
+_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
 
-## Key Files
+## Architecture decisions
 
-- `lib/db.ts` — Supabase client singleton
-- `lib/queries.ts` — All database operations (Supabase builder API)
-- `lib/auth.ts` — JWT sign/verify helpers
-- `app/api/` — All API routes (REST)
-- `app/dashboard/` — Authenticated dashboard pages
+_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
 
-## Features
+## Product
 
-- User registration / login with hashed passwords
-- Post feed with likes, comments, reactions, reposts, bookmarks
-- Real-time messaging (SSE polling) with typing indicators
-- Follow / unfollow with mutual-follow requirement for messaging
-- Notifications system (follow, like, comment, message)
-- Clans (group chat rooms)
-- Stories (24h expiry)
-- PWA support with S.O.S.S.A logo
+_Describe the high-level user-facing capabilities of this app once they exist._
 
-## Logo
+## User preferences
 
-New logo: `public/logo.png` (S.O.S.S.A — Social Sciences Students' Association)
-Used everywhere via `components/Logo.tsx`.
+_Populate as you build — explicit user instructions worth remembering across sessions._
 
-## Avatar Fallback Pattern
+## Gotchas
 
-Initials-based colored circles when no profile image:
-```ts
-const initials = name.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase()
-const colors = ["bg-blue-600","bg-purple-600","bg-green-600","bg-pink-600","bg-orange-600","bg-teal-600"]
-const color = colors[(name?.charCodeAt(0) || 0) % colors.length]
-```
+_Populate as you build — sharp edges, "always run X before Y" rules._
 
-## Message Flow
+## Pointers
 
-1. POST `/api/messages` — send message (requires mutual follow)
-2. GET `/api/messages/[conversationId]` — fetch messages (marks read)
-3. GET `/api/messages/[conversationId]/stream` — SSE stream (polls every 2s)
-4. POST `/api/messages/[conversationId]/typing` — update typing status
-
-## Architecture Fixes Applied (May 2026)
-
-### Problem 1: N+1 Query Performance Bug (CRITICAL)
-**Root cause**: `getPosts()` in `lib/queries.ts` called `getCommentsByPostId()` for every single post individually. Loading 15 posts = 16 sequential DB round-trips → extremely slow feed loading.
-
-**Fix**: Replaced with a single batch query that fetches all comment counts for all posts at once using an `IN` clause. Now 15 posts = 2 total DB queries. Comment full content loads lazily on-demand when the user opens the comment section.
-
-### Problem 2: Follow Button Resetting to "Follow" After Navigation
-**Root cause A**: `/api/auth/me` was missing `export const dynamic = "force-dynamic"` — Next.js could cache GET responses and return stale data after a follow action.
-
-**Root cause B**: `isFollowing` was derived solely from `meData.following.includes(profileId)`. After navigation, if the cached `/api/auth/me` returned stale `following`, the button reset.
-
-**Fix**:
-- Added `force-dynamic`, `fetchCache = "force-no-store"`, and `revalidate = 0` to `/api/auth/me/route.ts`
-- `isFollowing` now cross-checks BOTH sources: `profileData.followers.includes(myId)` (primary — always fresh since profile is fetched with `no-store`) AND `meData.following.includes(profileId)` (fallback). Either match = following.
-
-### Problem 3: Stale Browser/Next.js Caches
-**Root cause**: Multiple `fetch()` calls throughout client components lacked `cache: "no-store"`, allowing browsers or Next.js fetch deduplication to serve stale responses.
-
-**Fix**: Added `cache: "no-store"` to all client-side `fetch()` calls for user data, posts, and notifications in:
-- `app/dashboard/layout.tsx`
-- `app/dashboard/page.tsx`
-- `app/dashboard/profile/[userId]/page.tsx`
-- `app/dashboard/explore/page.tsx`
-- `app/dashboard/notifications/page.tsx`
-- `app/dashboard/settings/page.tsx`
-
-### Problem 4: Posts Count Showing "0"
-**Root cause**: Profile header displayed `profile.postsCount` from the API, which could be 0 or stale even when the posts array was populated.
-
-**Fix**: Header now displays the actual count of loaded posts (`posts.length`) with a "..." placeholder while posts are loading — always accurate.
+- See the `pnpm-workspace` skill for workspace structure, TypeScript setup, and package details
