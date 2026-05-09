@@ -4,6 +4,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { PaperPlaneTilt, SpinnerGap, ArrowLeft, MagnifyingGlass, X, Checks, Check, DotsThreeVertical, SealCheck, ArrowBendUpLeft, Trash, Plus, Microphone, Stop, Play, Pause, Paperclip, Camera, Smiley } from "@phosphor-icons/react";
 import DiamondBadge from "@/components/DiamondBadge";
 import Linkify from "@/components/Linkify";
+import StickerPicker from "@/components/StickerPicker";
 
 interface Conversation { _id: string; participants: string[]; lastMessage?: string; lastMessageTime?: string; otherUser?: { _id: string; name: string; username: string; profileImage?: string; isVerified?: boolean; isSpecial?: boolean; }; }
 interface Message { _id: string; senderId: string; senderName: string; senderImage?: string; content: string; mediaUrl?: string; mediaType?: string; read?: boolean; edited?: boolean; isDeleted?: boolean; replyToId?: string; replyToContent?: string; replyToSender?: string; reactions?: Record<string,string[]>; createdAt: string; _pending?: boolean; _failed?: boolean; }
@@ -652,55 +653,12 @@ function MessagesPageInner() {
                   <Smiley className="w-6 h-6" />
                 </button>
                 {showEmojiPicker && (
-                  <div className="absolute bottom-14 left-0 rounded-2xl shadow-2xl border z-50 overflow-hidden w-72" style={{ backgroundColor: "#1a1a1a", borderColor: "#2a2a2a" }}>
-                    <div className="flex border-b" style={{ borderColor: "#2a2a2a" }}>
-                      <button type="button" onClick={() => setEmojiTab("emoji")}
-                        className={`flex-1 py-2 text-xs font-semibold transition-colors ${emojiTab === "emoji" ? "text-white border-b-2 border-white" : "text-white/40 hover:text-white/70"}`}>
-                        Emoji
-                      </button>
-                      <button type="button" onClick={() => setEmojiTab("stickers")}
-                        className={`flex-1 py-2 text-xs font-semibold transition-colors ${emojiTab === "stickers" ? "text-white border-b-2 border-white" : "text-white/40 hover:text-white/70"}`}>
-                        Stickers
-                      </button>
-                    </div>
-                    {emojiTab === "emoji" ? (
-                      <div className="grid grid-cols-8 gap-0.5 p-2.5">
-                        {["😀","😂","🤣","😍","🥺","😭","😤","😎","😊","😘","🥰","🤔","😴","🤯","😅","😇","😈","😏","😒","😔","😢","😡","🤬","🥳","🤩","🫡","😬","🙄","😌","😜","❤️","🔥","💯","✨","🎉","👀","💪","👍","🙏","💀","🤝","👏","🎊","💔","🤍","💋","🫶","🫠","🥹","🤭","😶","🤫","🫢","💥","🌟","🎶","😱","🤗","🤡"].map(emoji => (
-                          <button key={emoji} type="button"
-                            onClick={() => { setText(prev => prev + emoji); setShowEmojiPicker(false); }}
-                            className="text-xl p-1.5 rounded-lg hover:bg-white/10 transition-colors text-center leading-none">
-                            {emoji}
-                          </button>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="p-2.5">
-                        <p className="text-white/40 text-[10px] font-semibold uppercase tracking-wider mb-2 px-1">Free</p>
-                        <div className="grid grid-cols-4 gap-1 mb-3">
-                          {["👋 Hey!","🔥 Fire!","❤️ Love","😂 Lol","🤯 Wow","😎 Cool","👊 GG","🎉 Congrats","🙏 Thanks","💪 Strong","😭 NGL...","🧢 Cap!","✅ No cap","🤤 Bussin","🤫 Lowkey","🌊 Vibes"].map(s => (
-                            <button key={s} type="button"
-                              onClick={() => { setText(prev => (prev ? prev + " " : "") + s); setShowEmojiPicker(false); }}
-                              className="flex flex-col items-center gap-0.5 p-2 rounded-xl hover:bg-white/10 transition-colors">
-                              <span className="text-2xl leading-none">{s.split(" ")[0]}</span>
-                              <span className="text-[9px] text-white/50 truncate w-full text-center">{s.split(" ").slice(1).join(" ")}</span>
-                            </button>
-                          ))}
-                        </div>
-                        <p className="text-white/40 text-[10px] font-semibold uppercase tracking-wider mb-2 px-1">Premium</p>
-                        <div className="grid grid-cols-4 gap-1">
-                          {["👑 Royalty","💎 Diamond","🚀 Moon","🏆 Legend","🌌 Galaxy","🐐 GOAT"].map(s => (
-                            <a key={s} href="/dashboard/premium"
-                              className="flex flex-col items-center gap-0.5 p-2 rounded-xl bg-yellow-500/5 border border-yellow-500/20 relative overflow-hidden">
-                              <span className="text-2xl leading-none opacity-40">{s.split(" ")[0]}</span>
-                              <span className="text-[9px] text-white/30 truncate w-full text-center">{s.split(" ").slice(1).join(" ")}</span>
-                              <div className="absolute inset-0 flex items-center justify-center bg-black/30 rounded-xl">
-                                <span className="text-yellow-400 text-[10px]">🔒</span>
-                              </div>
-                            </a>
-                          ))}
-                        </div>
-                      </div>
-                    )}
+                  <div className="absolute bottom-14 left-0 z-50 w-72">
+                    <StickerPicker
+                      onSelectEmoji={(e) => { setText(prev => prev + e); setShowEmojiPicker(false); }}
+                      onSelectSticker={(val) => { setText(prev => prev + val); setShowEmojiPicker(false); }}
+                      onClose={() => setShowEmojiPicker(false)}
+                    />
                   </div>
                 )}
               </div>
