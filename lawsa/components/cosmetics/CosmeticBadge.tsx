@@ -1034,7 +1034,7 @@ function SovereignInline({ size }: { size: number }) {
       title="Sovereign's Herald"
     >
       <img
-        src="/api/admin/badge/sovereign"
+        src="/badge-sovereign.png"
         alt="Sovereign's Herald"
         width={size}
         height={size}

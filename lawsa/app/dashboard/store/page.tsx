@@ -132,7 +132,7 @@ export default function StorePage() {
               }}
             >
               <img
-                src="/api/admin/badge/sovereign"
+                src="/badge-sovereign.png"
                 alt="Sovereign's Herald"
                 style={{
                   width: 220,
@@ -163,7 +163,7 @@ export default function StorePage() {
               }}
             >
               <img
-                src="/api/admin/badge/sovereign"
+                src="/badge-sovereign.png"
                 alt=""
                 aria-hidden
                 style={{
@@ -194,7 +194,7 @@ export default function StorePage() {
                 >
                   <span className="text-gray-400 text-xs">Appears beside your username as</span>
                   <img
-                    src="/api/admin/badge/sovereign"
+                    src="/badge-sovereign.png"
                     alt="badge"
                     style={{ width: 20, height: 20, objectFit: "contain" }}
                   />
@@ -249,7 +249,7 @@ export default function StorePage() {
             {/* Show badge image anyway for visual */}
             <div style={{ position: "relative" }}>
               <img
-                src="/api/admin/badge/sovereign"
+                src="/badge-sovereign.png"
                 alt="Sovereign's Herald"
                 style={{
                   width: 200,
