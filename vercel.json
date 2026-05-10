@@ -1,0 +1,6 @@
+{
+  "framework": "nextjs",
+  "installCommand": "cd .migration-backup && npm install",
+  "buildCommand": "cd .migration-backup && npm run build",
+  "outputDirectory": ".migration-backup/.next"
+}
