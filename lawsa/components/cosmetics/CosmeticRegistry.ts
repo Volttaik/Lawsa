@@ -22,29 +22,11 @@ export const COSMETIC_REGISTRY: Record<string, CosmeticDef> = {
     description: 'The rarest badge on the platform. Animated prismatic diamond.',
     price: 0, isFree: false,
   },
-  badge_crown: {
-    id: 'badge_crown', name: 'Golden Crown', rarity: 'legendary', category: 'badge',
-    effectType: 'badge_crown', previewColor: '#fbbf24',
-    description: 'Animated golden crown with shimmer. Reserved for royalty.',
-    price: 99900, isFree: false,
-  },
-  badge_fire: {
-    id: 'badge_fire', name: 'Inferno Badge', rarity: 'epic', category: 'badge',
-    effectType: 'badge_fire', previewColor: '#f97316',
-    description: 'Flickering flame badge. For the most passionate creators.',
-    price: 49900, isFree: false,
-  },
-  badge_lightning: {
-    id: 'badge_lightning', name: 'Storm Badge', rarity: 'epic', category: 'badge',
-    effectType: 'badge_lightning', previewColor: '#a78bfa',
-    description: 'Electrified lightning bolt that pulses with energy.',
-    price: 49900, isFree: false,
-  },
-  badge_star: {
-    id: 'badge_star', name: 'Supernova', rarity: 'rare', category: 'badge',
-    effectType: 'badge_star', previewColor: '#fde68a',
-    description: 'Spinning star with trailing sparkles.',
-    price: 24900, isFree: false,
+  badge_herald_purple: {
+    id: 'badge_herald_purple', name: "Mystic Herald", rarity: 'legendary', category: 'badge',
+    effectType: 'badge_herald_purple', previewColor: '#a855f7',
+    description: 'The purple-and-gold mystic herald crest. A mark of prestige on LAWSA.',
+    price: 200000, isFree: false,
   },
   badge_verified_plus: {
     id: 'badge_verified_plus', name: 'Verified+', rarity: 'rare', category: 'badge',

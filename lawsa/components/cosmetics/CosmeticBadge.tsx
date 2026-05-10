@@ -1025,6 +1025,7 @@ export default function CosmeticBadge({ effectType, size = 18, className = "" }:
     /* New badges */
     case "badge_lion":         return <LionInline size={size} />;
     case "badge_fist":         return <FistInline size={size} />;
+    case "badge_herald_purple": return <HeraldPurpleInline size={size} />;
     default:                   return null;
   }
 }
@@ -1048,6 +1049,29 @@ function SovereignInline({ size }: { size: number }) {
           objectFit: "contain",
           filter:
             "drop-shadow(0 0 4px rgba(180,100,255,0.9)) drop-shadow(0 0 10px rgba(255,200,50,0.6))",
+        }}
+      />
+    </span>
+  );
+}
+
+function HeraldPurpleInline({ size }: { size: number }) {
+  return (
+    <span
+      className="inline-flex items-center justify-center flex-shrink-0 select-none"
+      style={{ width: size, height: size }}
+      title="Mystic Herald"
+    >
+      <img
+        src="/badge-herald-purple.png"
+        alt="Mystic Herald"
+        width={size}
+        height={size}
+        style={{
+          objectFit: "contain",
+          filter:
+            "drop-shadow(0 0 4px rgba(168,85,247,0.95)) drop-shadow(0 0 10px rgba(251,191,36,0.6))",
+          animation: "cosm-aura-pulse 2.8s ease-in-out infinite",
         }}
       />
     </span>
