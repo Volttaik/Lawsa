@@ -1,0 +1,23 @@
+# Next.js
+.next/
+out/
+
+# dependencies
+node_modules/
+
+# production build
+build/
+dist/
+
+# env files
+.env*.local
+.env
+
+# misc
+.DS_Store
+Thumbs.db
+*.tsbuildinfo
+
+# Replit
+.cache/
+.local/
