@@ -4,6 +4,12 @@ import { saveMediaFile, saveChunk, countChunks, getChunks, deleteChunks } from "
 
 export const dynamic = "force-dynamic";
 
+const VIDEO_TYPES = ["video/mp4", "video/webm", "video/ogg", "video/quicktime", "video/x-msvideo", "video/avi"];
+
+function isVideo(mimeType: string) {
+  return VIDEO_TYPES.includes(mimeType) || mimeType.startsWith("video/");
+}
+
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ path?: string[] }> }
@@ -22,7 +28,14 @@ export async function POST(
       const file = formData.get("file") as File;
       if (!file) return NextResponse.json({ error: "No file" }, { status: 400 });
       const buffer = Buffer.from(await file.arrayBuffer());
-      const fileId = await saveMediaFile({ buffer, mimeType: file.type || "application/octet-stream", filename: file.name, userId: authUser.userId });
+      const mimeType = file.type || "application/octet-stream";
+
+      if (isVideo(mimeType)) {
+        const dataUri = `data:${mimeType};base64,${buffer.toString("base64")}`;
+        return NextResponse.json({ url: dataUri });
+      }
+
+      const fileId = await saveMediaFile({ buffer, mimeType, filename: file.name, userId: authUser.userId });
       return NextResponse.json({ url: `/api/files/${fileId}` });
     } catch (e: any) {
       console.error(e);
@@ -74,8 +87,14 @@ export async function POST(
         return Buffer.from(d);
       });
       const assembled = Buffer.concat(buffers);
-      const fileId = await saveMediaFile({ buffer: assembled, mimeType, filename, userId: authUser.userId });
       await deleteChunks(uploadId);
+
+      if (isVideo(mimeType)) {
+        const dataUri = `data:${mimeType};base64,${assembled.toString("base64")}`;
+        return NextResponse.json({ url: dataUri });
+      }
+
+      const fileId = await saveMediaFile({ buffer: assembled, mimeType, filename, userId: authUser.userId });
       return NextResponse.json({ url: `/api/files/${fileId}` });
     } catch (e: any) {
       console.error(e);
