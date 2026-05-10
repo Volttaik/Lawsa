@@ -98,8 +98,7 @@ function PostCard({ post, me, onLike, onRepost, onDelete }: any) {
   const isSovereign = cosm?.badge === "badge_sovereign";
 
   return (
-    <article className="relative border-b border-[#2f3336] px-4 py-3 hover:bg-white/[0.02] transition-colors">
-      {isSovereign && <div className="fire-line-top" />}
+    <article className={`relative px-4 py-3 transition-colors ${isSovereign ? "post-fire-border my-1 mx-1" : "border-b border-[#2f3336] hover:bg-white/[0.02]"}`}>
       {post.repostedFrom && (
         <div className="flex items-center gap-2 text-gray-500 text-xs mb-2 ml-12">
           <ArrowsClockwise className="w-3.5 h-3.5 text-green-500" />
