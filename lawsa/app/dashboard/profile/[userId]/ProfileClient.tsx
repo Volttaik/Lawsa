@@ -95,9 +95,11 @@ function PostCard({ post, me, onLike, onRepost, onDelete }: any) {
   };
   const badgeAccent = cosm?.badge ? BADGE_ACCENT[cosm.badge] : null;
 
+  const isSovereign = cosm?.badge === "badge_sovereign";
+
   return (
-    <article className="relative border-b border-[#2f3336] px-4 py-3 hover:bg-white/[0.02] transition-colors">
-      {badgeAccent && (
+    <article className={`relative px-4 py-3 transition-colors ${isSovereign ? "post-fire-border my-1 mx-1" : "border-b border-[#2f3336] hover:bg-white/[0.02]"}`}>
+      {!isSovereign && badgeAccent && (
         <div
           className="absolute left-0 top-3 bottom-3 w-[2px] rounded-r-full pointer-events-none"
           style={{ background: `linear-gradient(to bottom, transparent, ${badgeAccent}99, transparent)` }}

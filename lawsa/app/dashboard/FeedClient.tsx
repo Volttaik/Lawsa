@@ -189,12 +189,14 @@ function PostCard({ post, me, onLike, onRepost, onDelete, onEdit, onComment }: a
     ? { boxShadow: `inset 0 0 0 1px ${borderColor}55, 0 0 18px 2px ${borderColor}22`, borderColor: `${borderColor}66` }
     : {};
 
+  const isSovereign = cosm?.badge === "badge_sovereign";
+
   return (
     <article
-      className="relative border-b border-slate-700/50 px-4 py-3 hover:bg-slate-900/40 transition-colors"
-      style={postBgStyle}
+      className={`relative px-4 py-3 transition-colors ${isSovereign ? "post-fire-border my-1 mx-1" : "border-b border-slate-700/50 hover:bg-slate-900/40"}`}
+      style={isSovereign ? {} : postBgStyle}
     >
-      {badgeAccent && (
+      {!isSovereign && badgeAccent && (
         <div
           className="absolute left-0 top-3 bottom-3 w-[2px] rounded-r-full pointer-events-none"
           style={{ background: `linear-gradient(to bottom, transparent, ${badgeAccent}99, transparent)` }}

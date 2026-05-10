@@ -545,3 +545,54 @@ button, a, [role="button"] { touch-action: manipulation; }
 .badge-glow-gold {
   animation: badge-glow-gold-pulse 2.5s ease-in-out infinite;
 }
+
+@keyframes sovereign-fire {
+  0%, 100% {
+    box-shadow:
+      0 0 6px 1px #f97316cc,
+      0 0 18px 4px #ef444466,
+      0 0 38px 10px #f9731633,
+      inset 0 0 12px 0px #f9731611;
+    border-color: #f9731688;
+  }
+  20% {
+    box-shadow:
+      0 0 12px 3px #dc2626cc,
+      0 0 28px 7px #f9731666,
+      0 0 56px 14px #ef444433,
+      inset 0 0 16px 0px #dc262611;
+    border-color: #ef444488;
+  }
+  40% {
+    box-shadow:
+      0 0 5px 1px #fbbf24cc,
+      0 0 14px 3px #f9731666,
+      0 0 30px 8px #fbbf2433,
+      inset 0 0 10px 0px #fbbf2411;
+    border-color: #fbbf2488;
+  }
+  60% {
+    box-shadow:
+      0 0 16px 4px #ef4444cc,
+      0 0 34px 8px #dc262666,
+      0 0 60px 15px #f9731633,
+      inset 0 0 18px 0px #ef444411;
+    border-color: #dc262688;
+  }
+  80% {
+    box-shadow:
+      0 0 9px 2px #f97316cc,
+      0 0 22px 5px #fbbf2466,
+      0 0 44px 11px #f9731633,
+      inset 0 0 14px 0px #f9731611;
+    border-color: #f9731688;
+  }
+}
+
+.post-fire-border {
+  border: 1px solid #f9731688 !important;
+  border-radius: 6px !important;
+  background: rgba(249, 115, 22, 0.03) !important;
+  animation: sovereign-fire 2.8s ease-in-out infinite;
+  transition: none !important;
+}
