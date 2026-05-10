@@ -58,6 +58,26 @@ export const COSMETIC_REGISTRY: Record<string, CosmeticDef> = {
     description: 'Refracting crystal with iridescent light.',
     price: 24900, isFree: false,
   },
+  badge_sovereign: {
+    id: 'badge_sovereign', name: "Sovereign's Herald", rarity: 'legendary', category: 'badge',
+    effectType: 'badge_sovereign', previewColor: '#a855f7',
+    description: 'The rarest mark on LAWSA — a hand-crafted animated heraldic crest.',
+    price: 1000000, isFree: false,
+  },
+  badge_lion: {
+    id: 'badge_lion', name: 'Lion of LAWSA', rarity: 'legendary', category: 'badge',
+    effectType: 'badge_lion', previewColor: '#fbbf24',
+    description: 'The golden lion — a mark of power and prestige on LAWSA.',
+    price: 100000, isFree: false,
+  },
+  badge_fist: {
+    id: 'badge_fist', name: 'Iron Fist', rarity: 'common', category: 'badge',
+    effectType: 'badge_fist', previewColor: '#b45309',
+    description: 'Earned by loyalty. Awarded to those who reach 10 followers.',
+    price: 0, isFree: true,
+    unlockCondition: 'followers',
+    unlockThreshold: 10,
+  },
 
   avatar_ring_gold: {
     id: 'avatar_ring_gold', name: 'Gold Ring', rarity: 'rare', category: 'avatar',

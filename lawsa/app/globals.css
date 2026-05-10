@@ -510,3 +510,38 @@ button, a, [role="button"] { touch-action: manipulation; }
   0%, 100% { filter: drop-shadow(0 0 6px currentColor);  }
   50%       { filter: drop-shadow(0 0 14px currentColor) drop-shadow(0 0 28px currentColor); }
 }
+
+/* ─── Badge post card glow effects ─── */
+@keyframes badge-glow-fire-pulse {
+  0%, 100% {
+    box-shadow: inset 0 0 0 1px rgba(249,115,22,0.35),
+                0 0 14px 2px rgba(249,115,22,0.18),
+                0 0 30px 4px rgba(220,38,38,0.10);
+    border-color: rgba(249,115,22,0.45);
+  }
+  50% {
+    box-shadow: inset 0 0 0 1px rgba(251,191,36,0.5),
+                0 0 24px 6px rgba(249,115,22,0.28),
+                0 0 50px 8px rgba(220,38,38,0.15);
+    border-color: rgba(251,191,36,0.6);
+  }
+}
+.badge-glow-fire {
+  animation: badge-glow-fire-pulse 2s ease-in-out infinite;
+}
+
+@keyframes badge-glow-gold-pulse {
+  0%, 100% {
+    box-shadow: inset 0 0 0 1px rgba(251,191,36,0.3),
+                0 0 14px 2px rgba(251,191,36,0.15);
+    border-color: rgba(251,191,36,0.4);
+  }
+  50% {
+    box-shadow: inset 0 0 0 1px rgba(251,191,36,0.5),
+                0 0 22px 4px rgba(251,191,36,0.25);
+    border-color: rgba(251,191,36,0.6);
+  }
+}
+.badge-glow-gold {
+  animation: badge-glow-gold-pulse 2.5s ease-in-out infinite;
+}

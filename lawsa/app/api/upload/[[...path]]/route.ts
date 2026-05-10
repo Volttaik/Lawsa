@@ -30,11 +30,6 @@ export async function POST(
       const buffer = Buffer.from(await file.arrayBuffer());
       const mimeType = file.type || "application/octet-stream";
 
-      if (isVideo(mimeType)) {
-        const dataUri = `data:${mimeType};base64,${buffer.toString("base64")}`;
-        return NextResponse.json({ url: dataUri });
-      }
-
       const fileId = await saveMediaFile({ buffer, mimeType, filename: file.name, userId: authUser.userId });
       return NextResponse.json({ url: `/api/files/${fileId}` });
     } catch (e: any) {
@@ -88,11 +83,6 @@ export async function POST(
       });
       const assembled = Buffer.concat(buffers);
       await deleteChunks(uploadId);
-
-      if (isVideo(mimeType)) {
-        const dataUri = `data:${mimeType};base64,${assembled.toString("base64")}`;
-        return NextResponse.json({ url: dataUri });
-      }
 
       const fileId = await saveMediaFile({ buffer: assembled, mimeType, filename, userId: authUser.userId });
       return NextResponse.json({ url: `/api/files/${fileId}` });

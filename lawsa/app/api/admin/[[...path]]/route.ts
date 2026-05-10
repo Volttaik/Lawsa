@@ -185,18 +185,22 @@ export async function POST(
   // POST /api/admin/seed-store
   if (seg0 === "seed-store") {
     if (!requireAdminKey(request)) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    const BADGES = [{ effectType: "badge_sovereign", name: "Sovereign's Herald", description: "The rarest mark on LAWSA — a hand-crafted purple-and-gold heraldic crest. Displays beside your username everywhere you appear.", price: 200000, previewColor: "#a855f7" }];
+    const BADGES = [
+      { effectType: "badge_sovereign", name: "Sovereign's Herald", description: "The rarest mark on LAWSA — a hand-crafted animated heraldic crest. Displays beside your username everywhere you appear.", price: 1000000, isFree: false, unlockCondition: "always", unlockThreshold: 0, previewColor: "#a855f7" },
+      { effectType: "badge_lion", name: "Lion of LAWSA", description: "The golden lion — a mark of power and prestige on LAWSA.", price: 100000, isFree: false, unlockCondition: "always", unlockThreshold: 0, previewColor: "#fbbf24" },
+      { effectType: "badge_fist", name: "Iron Fist", description: "Earned by loyalty. Awarded to those who reach 10 followers.", price: 0, isFree: true, unlockCondition: "followers", unlockThreshold: 10, previewColor: "#b45309" },
+    ];
     const pool = getPool();
-    const report = { inserted: 0, skipped: 0, errors: 0, deleted: 0 };
-    try {
-      const del = await pool.query(`DELETE FROM store_items WHERE effect_type != 'badge_sovereign'`);
-      report.deleted = del.rowCount ?? 0;
-    } catch (e: any) { console.error("[seed-store] Delete failed:", e.message); }
+    const report = { inserted: 0, skipped: 0, errors: 0, updated: 0 };
     for (const badge of BADGES) {
       try {
         const existing = await pool.query(`SELECT id FROM store_items WHERE effect_type = $1`, [badge.effectType]);
-        if (existing.rows.length > 0) { report.skipped++; continue; }
-        await pool.query(`INSERT INTO store_items (id, name, description, category, effect_type, effect_data, price, is_free, unlock_condition, unlock_threshold, preview_color, icon) VALUES ($1, $2, $3, 'badge', $4, '{}', $5, false, 'always', 0, $6, 'badge')`, [randomUUID(), badge.name, badge.description, badge.effectType, badge.price, badge.previewColor]);
+        if (existing.rows.length > 0) {
+          await pool.query(`UPDATE store_items SET price = $1, is_free = $2, unlock_condition = $3, unlock_threshold = $4 WHERE effect_type = $5`, [badge.price, badge.isFree, badge.unlockCondition, badge.unlockThreshold, badge.effectType]);
+          report.updated++;
+          continue;
+        }
+        await pool.query(`INSERT INTO store_items (id, name, description, category, effect_type, effect_data, price, is_free, unlock_condition, unlock_threshold, preview_color, icon) VALUES ($1, $2, $3, 'badge', $4, '{}', $5, $6, $7, $8, $9, 'badge')`, [randomUUID(), badge.name, badge.description, badge.effectType, badge.price, badge.isFree, badge.unlockCondition, badge.unlockThreshold, badge.previewColor]);
         report.inserted++;
       } catch (e: any) { console.error(`[seed-store] Failed to insert ${badge.effectType}:`, e.message); report.errors++; }
     }

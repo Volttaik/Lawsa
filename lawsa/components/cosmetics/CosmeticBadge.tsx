@@ -1022,6 +1022,9 @@ export default function CosmeticBadge({ effectType, size = 18, className = "" }:
     case "badge_crystal_herald": return <CrystalHeraldInline size={size} />;
     /* Sovereign */
     case "badge_sovereign":    return <SovereignInline size={size} />;
+    /* New badges */
+    case "badge_lion":         return <LionInline size={size} />;
+    case "badge_fist":         return <FistInline size={size} />;
     default:                   return null;
   }
 }
@@ -1042,6 +1045,53 @@ function SovereignInline({ size }: { size: number }) {
           objectFit: "contain",
           filter:
             "drop-shadow(0 0 3px rgba(180,100,255,0.9)) drop-shadow(0 0 7px rgba(255,200,50,0.5))",
+          animation: "cosm-aura-pulse 3s ease-in-out infinite",
+        }}
+      />
+    </span>
+  );
+}
+
+function LionInline({ size }: { size: number }) {
+  return (
+    <span
+      className="inline-flex items-center justify-center flex-shrink-0 select-none"
+      style={{ width: size, height: size }}
+      title="Lion of LAWSA"
+    >
+      <img
+        src="/badge-lion.jpg"
+        alt="Lion of LAWSA"
+        width={size}
+        height={size}
+        style={{
+          objectFit: "contain",
+          borderRadius: "50%",
+          filter:
+            "drop-shadow(0 0 3px rgba(251,191,36,0.9)) drop-shadow(0 0 7px rgba(251,191,36,0.5))",
+          animation: "cosm-crown-shimmer 2.5s ease-in-out infinite",
+        }}
+      />
+    </span>
+  );
+}
+
+function FistInline({ size }: { size: number }) {
+  return (
+    <span
+      className="inline-flex items-center justify-center flex-shrink-0 select-none"
+      style={{ width: size, height: size }}
+      title="Iron Fist"
+    >
+      <img
+        src="/badge-fist.png"
+        alt="Iron Fist"
+        width={size}
+        height={size}
+        style={{
+          objectFit: "contain",
+          filter:
+            "drop-shadow(0 0 2px rgba(180,83,9,0.8)) drop-shadow(0 0 5px rgba(180,83,9,0.4))",
           animation: "cosm-aura-pulse 3s ease-in-out infinite",
         }}
       />

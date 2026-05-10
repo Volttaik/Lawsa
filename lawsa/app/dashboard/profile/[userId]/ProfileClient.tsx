@@ -68,8 +68,25 @@ function PostCard({ post, me, onLike, onRepost, onDelete }: any) {
     ? `${window.location.origin}/post/${post._id}`
     : `/post/${post._id}`;
 
+  const cosm = (post as any).authorCosmetics;
+  const BADGE_GLOW: Record<string, { style?: React.CSSProperties; className?: string }> = {
+    badge_sovereign: { className: "badge-glow-fire" },
+    badge_lion:      { className: "badge-glow-gold" },
+    badge_fist:      { style: { boxShadow: "inset 0 0 0 1px rgba(180,83,9,0.35), 0 0 12px 2px rgba(180,83,9,0.15)", borderColor: "rgba(180,83,9,0.45)" } },
+    badge_crown:     { style: { boxShadow: "inset 0 0 0 1px rgba(251,191,36,0.35), 0 0 14px 2px rgba(251,191,36,0.18)", borderColor: "rgba(251,191,36,0.5)" } },
+    badge_diamond:   { style: { boxShadow: "inset 0 0 0 1px rgba(103,232,249,0.35), 0 0 14px 2px rgba(103,232,249,0.18)", borderColor: "rgba(103,232,249,0.5)" } },
+    badge_fire:      { style: { boxShadow: "inset 0 0 0 1px rgba(249,115,22,0.35), 0 0 14px 2px rgba(249,115,22,0.18)", borderColor: "rgba(249,115,22,0.5)" } },
+    badge_lightning: { style: { boxShadow: "inset 0 0 0 1px rgba(167,139,250,0.35), 0 0 14px 2px rgba(167,139,250,0.18)", borderColor: "rgba(167,139,250,0.5)" } },
+    badge_star:      { style: { boxShadow: "inset 0 0 0 1px rgba(250,204,21,0.35), 0 0 14px 2px rgba(250,204,21,0.18)", borderColor: "rgba(250,204,21,0.5)" } },
+    badge_crystal:   { style: { boxShadow: "inset 0 0 0 1px rgba(56,189,248,0.35), 0 0 14px 2px rgba(56,189,248,0.18)", borderColor: "rgba(56,189,248,0.5)" } },
+    badge_verified_plus: { style: { boxShadow: "inset 0 0 0 1px rgba(59,130,246,0.35), 0 0 14px 2px rgba(59,130,246,0.18)", borderColor: "rgba(59,130,246,0.5)" } },
+  };
+  const badgeGlow = cosm?.badge ? BADGE_GLOW[cosm.badge] : null;
+  const postExtraClass = badgeGlow?.className || "";
+  const postStyle: React.CSSProperties = badgeGlow?.style || {};
+
   return (
-    <article className="border-b border-[#2f3336] px-4 py-3 hover:bg-white/[0.02] transition-colors">
+    <article className={`border-b border-[#2f3336] px-4 py-3 hover:bg-white/[0.02] transition-colors ${postExtraClass}`} style={postStyle}>
       {post.repostedFrom && (
         <div className="flex items-center gap-2 text-gray-500 text-xs mb-2 ml-12">
           <ArrowsClockwise className="w-3.5 h-3.5 text-green-500" />
