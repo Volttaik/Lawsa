@@ -9,7 +9,7 @@ export default function SovereignBadge({ size = 64 }: BadgeProps) {
       title="Sovereign's Herald"
     >
       <img
-        src="/api/badge/sovereign"
+        src="/api/admin/badge/sovereign"
         alt="Sovereign's Herald"
         width={size}
         height={size}

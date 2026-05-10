@@ -21,7 +21,7 @@ async function sendSignal(body: {
   type: string;
   payload?: object;
 }) {
-  await fetch("/api/calls/signal", {
+  await fetch("/api/messages/calls/signal", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
@@ -31,7 +31,7 @@ async function sendSignal(body: {
 
 async function pollSignals(sessionId: string, since: string, types: string): Promise<any[]> {
   const p = new URLSearchParams({ sessionId, since, types });
-  const res = await fetch(`/api/calls/signal?${p}`, {
+  const res = await fetch(`/api/messages/calls/signal?${p}`, {
     credentials: "include",
   }).catch(() => null);
   if (!res?.ok) return [];

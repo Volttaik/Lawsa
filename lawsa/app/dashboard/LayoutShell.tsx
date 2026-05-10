@@ -89,7 +89,7 @@ export default function LayoutShell({ user: initialUser, children }: { user: She
   const checkIncomingCalls = useCallback(async () => {
     if (!isLoggedIn) return;
     try {
-      const res = await fetch("/api/calls/incoming", { credentials: "include" });
+      const res = await fetch("/api/messages/calls/incoming", { credentials: "include" });
       const data = await res.json();
       if (data.call && !dismissedSessionsRef.current.has(data.call.sessionId)) {
         setIncomingCall(data.call);
@@ -258,7 +258,7 @@ export default function LayoutShell({ user: initialUser, children }: { user: She
   const declineCall = async () => {
     if (!incomingCall) return;
     dismissedSessionsRef.current.add(incomingCall.sessionId);
-    fetch("/api/calls/signal", {
+    fetch("/api/messages/calls/signal", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
