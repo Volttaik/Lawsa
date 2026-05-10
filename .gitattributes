@@ -1,4 +1,0 @@
-artifacts/sosa/.next/cache/webpack/client-production/0.pack filter=lfs diff=lfs merge=lfs -text
-artifacts/sosa/.next/cache/webpack/client-production/index.pack filter=lfs diff=lfs merge=lfs -text
-artifacts/sosa/.next/cache/webpack/client-production/index.pack.old filter=lfs diff=lfs merge=lfs -text
-artifacts/sosa/.next/cache/webpack/server-production/0.pack filter=lfs diff=lfs merge=lfs -text
