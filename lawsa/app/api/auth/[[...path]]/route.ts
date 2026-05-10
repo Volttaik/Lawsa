@@ -95,7 +95,7 @@ export async function POST(
           .catch((err) => console.error("[login] Failed to resend verification email:", err.message));
         return NextResponse.json({ error: "Please verify your email before signing in. A new verification link has been sent to your inbox.", requiresVerification: true }, { status: 403 });
       }
-      const jwtToken = await signToken({ userId: user.id, email: user.email, username: user.username, name: user.name, profileImage: user.profileImage || "" });
+      const jwtToken = await signToken({ userId: user.id, email: user.email, username: user.username, name: user.name });
       const { password: _pw, ...safeUser } = user;
       const response = NextResponse.json({ message: "Login successful", token: jwtToken, user: safeUser });
       response.cookies.set("lawsa-token", jwtToken, { httpOnly: true, secure: true, sameSite: "none", maxAge: 60 * 60 * 24 * 30, path: "/" });
@@ -120,7 +120,7 @@ export async function POST(
       const hashedPassword = await bcrypt.hash(password, 12);
       const user = await createUser({ name, username, email, password: hashedPassword, phone, dateOfBirth, profileImage, emailVerified: false });
       if (!user) return NextResponse.json({ error: "Failed to create user profile" }, { status: 500 });
-      const jwtToken = await signToken({ userId: user.id, email: user.email, username: user.username, name: user.name, profileImage: user.profileImage || "" });
+      const jwtToken = await signToken({ userId: user.id, email: user.email, username: user.username, name: user.name });
       const verificationToken = randomUUID();
       const baseUrl = getBaseUrl(request);
       updateUser(user.id, { emailVerificationToken: verificationToken })
@@ -285,7 +285,7 @@ export async function POST(
         return NextResponse.json({ error: "Incorrect code. Please check your email and try again." }, { status: 400 });
       }
       await updateUser(user.id, { emailVerified: true, emailVerificationCode: "", emailVerificationCodeExpires: null });
-      const jwtToken = await signToken({ userId: user.id, email: user.email, username: user.username, name: user.name, profileImage: user.profileImage || "" });
+      const jwtToken = await signToken({ userId: user.id, email: user.email, username: user.username, name: user.name });
       const { password: _pw, ...safeUser } = user;
       const response = NextResponse.json({ message: "Email verified and login successful", token: jwtToken, user: safeUser });
       response.cookies.set("lawsa-token", jwtToken, { httpOnly: true, secure: true, sameSite: "none", maxAge: 60 * 60 * 24 * 30, path: "/" });

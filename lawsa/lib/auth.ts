@@ -10,7 +10,6 @@ export interface JWTPayload {
     email: string;
     username: string;
     name: string;
-    profileImage?: string;
 }
 
 export async function signToken(payload: JWTPayload): Promise<string> {

@@ -15,6 +15,9 @@ export async function POST(
     try {
       const authUser = await getUserFromRequest(request);
       if (!authUser) return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+      const contentType = request.headers.get("content-type") || "";
+      if (!contentType.includes("multipart/form-data") && !contentType.includes("application/x-www-form-urlencoded"))
+        return NextResponse.json({ error: "Expected multipart/form-data" }, { status: 400 });
       const formData = await request.formData();
       const file = formData.get("file") as File;
       if (!file) return NextResponse.json({ error: "No file" }, { status: 400 });
@@ -31,6 +34,9 @@ export async function POST(
     try {
       const authUser = await getUserFromRequest(request);
       if (!authUser) return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+      const contentType = request.headers.get("content-type") || "";
+      if (!contentType.includes("multipart/form-data") && !contentType.includes("application/x-www-form-urlencoded"))
+        return NextResponse.json({ error: "Expected multipart/form-data" }, { status: 400 });
       const formData = await request.formData();
       const chunk = formData.get("chunk") as File;
       const uploadId = formData.get("uploadId") as string;
