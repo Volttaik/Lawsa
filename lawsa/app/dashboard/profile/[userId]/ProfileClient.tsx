@@ -70,8 +70,9 @@ function PostCard({ post, me, onLike, onRepost, onDelete }: any) {
 
   const cosm = (post as any).authorCosmetics;
   const BADGE_GLOW: Record<string, { style?: React.CSSProperties; className?: string }> = {
-    badge_sovereign: { className: "badge-glow-fire" },
-    badge_lion:      { className: "badge-glow-gold" },
+    badge_sovereign:     { className: "badge-glow-fire" },
+    badge_herald_purple: { style: { boxShadow: "inset 0 0 0 1px rgba(168,85,247,0.45), 0 0 18px 3px rgba(168,85,247,0.25)", borderColor: "rgba(168,85,247,0.5)" } },
+    badge_lion:          { className: "badge-glow-gold" },
     badge_fist:      { style: { boxShadow: "inset 0 0 0 1px rgba(180,83,9,0.35), 0 0 12px 2px rgba(180,83,9,0.15)", borderColor: "rgba(180,83,9,0.45)" } },
     badge_crown:     { style: { boxShadow: "inset 0 0 0 1px rgba(251,191,36,0.35), 0 0 14px 2px rgba(251,191,36,0.18)", borderColor: "rgba(251,191,36,0.5)" } },
     badge_diamond:   { style: { boxShadow: "inset 0 0 0 1px rgba(103,232,249,0.35), 0 0 14px 2px rgba(103,232,249,0.18)", borderColor: "rgba(103,232,249,0.5)" } },

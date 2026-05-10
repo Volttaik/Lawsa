@@ -186,8 +186,8 @@ export async function POST(
   if (seg0 === "seed-store") {
     if (!requireAdminKey(request)) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     const BADGES = [
-      { effectType: "badge_sovereign", name: "Sovereign's Herald", description: "The rarest animated mark on LAWSA — an exclusive animated heraldic crest.", price: 1000000, isFree: false, unlockCondition: "always", unlockThreshold: 0, previewColor: "#a855f7" },
-      { effectType: "badge_herald_purple", name: "Mystic Herald", description: "The purple-and-gold mystic herald crest. A mark of prestige on LAWSA.", price: 200000, isFree: false, unlockCondition: "always", unlockThreshold: 0, previewColor: "#a855f7" },
+      { effectType: "badge_sovereign", name: "Sovereign Flame", description: "The rarest animated badge on LAWSA — an exclusive animated flame crest.", price: 1000000, isFree: false, unlockCondition: "always", unlockThreshold: 0, previewColor: "#f97316" },
+      { effectType: "badge_herald_purple", name: "Sovereign's Herald", description: "The purple-and-gold sovereign herald crest. A mark of prestige on LAWSA.", price: 200000, isFree: false, unlockCondition: "always", unlockThreshold: 0, previewColor: "#a855f7" },
       { effectType: "badge_lion", name: "Lion of LAWSA", description: "The golden lion — a mark of power and prestige on LAWSA.", price: 100000, isFree: false, unlockCondition: "always", unlockThreshold: 0, previewColor: "#fbbf24" },
       { effectType: "badge_fist", name: "Iron Fist", description: "Earned by loyalty. Awarded to those who reach 10 followers.", price: 0, isFree: true, unlockCondition: "followers", unlockThreshold: 10, previewColor: "#b45309" },
     ];

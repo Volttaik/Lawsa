@@ -12,9 +12,10 @@ interface StoreItem {
 }
 
 const BADGE_CONFIG: Record<string, { label: string; color: string; glow: string }> = {
-  badge_sovereign: { label: "Animated", color: "#a855f7", glow: "rgba(168,85,247,0.5)" },
-  badge_lion:      { label: "Legendary", color: "#fbbf24", glow: "rgba(251,191,36,0.5)" },
-  badge_fist:      { label: "Free", color: "#b45309", glow: "rgba(180,83,9,0.4)" },
+  badge_sovereign:      { label: "Animated", color: "#f97316", glow: "rgba(249,115,22,0.5)" },
+  badge_herald_purple:  { label: "Legendary", color: "#a855f7", glow: "rgba(168,85,247,0.5)" },
+  badge_lion:           { label: "Legendary", color: "#fbbf24", glow: "rgba(251,191,36,0.5)" },
+  badge_fist:           { label: "Free", color: "#b45309", glow: "rgba(180,83,9,0.4)" },
 };
 
 function BadgeCard({ item, onPurchase, purchasing }: { item: StoreItem; onPurchase: (item: StoreItem) => void; purchasing: boolean }) {
@@ -105,9 +106,9 @@ export default function StorePage() {
       const res  = await fetch("/api/store", { credentials: "include" });
       const data = await res.json();
       const badges = (data.items ?? []).filter((i: StoreItem) =>
-        ["badge_sovereign", "badge_lion", "badge_fist"].includes(i.effectType)
+        ["badge_sovereign", "badge_herald_purple", "badge_lion", "badge_fist"].includes(i.effectType)
       );
-      const ORDER = ["badge_sovereign", "badge_lion", "badge_fist"];
+      const ORDER = ["badge_sovereign", "badge_herald_purple", "badge_lion", "badge_fist"];
       badges.sort((a: StoreItem, b: StoreItem) => ORDER.indexOf(a.effectType) - ORDER.indexOf(b.effectType));
       setItems(badges);
     } catch {}

@@ -23,9 +23,9 @@ export const COSMETIC_REGISTRY: Record<string, CosmeticDef> = {
     price: 0, isFree: false,
   },
   badge_herald_purple: {
-    id: 'badge_herald_purple', name: "Mystic Herald", rarity: 'legendary', category: 'badge',
+    id: 'badge_herald_purple', name: "Sovereign's Herald", rarity: 'legendary', category: 'badge',
     effectType: 'badge_herald_purple', previewColor: '#a855f7',
-    description: 'The purple-and-gold mystic herald crest. A mark of prestige on LAWSA.',
+    description: 'The purple-and-gold sovereign herald crest. A mark of prestige on LAWSA.',
     price: 200000, isFree: false,
   },
   badge_verified_plus: {
@@ -41,8 +41,8 @@ export const COSMETIC_REGISTRY: Record<string, CosmeticDef> = {
     price: 24900, isFree: false,
   },
   badge_sovereign: {
-    id: 'badge_sovereign', name: "Sovereign's Herald", rarity: 'legendary', category: 'badge',
-    effectType: 'badge_sovereign', previewColor: '#a855f7',
+    id: 'badge_sovereign', name: "Sovereign Flame", rarity: 'legendary', category: 'badge',
+    effectType: 'badge_sovereign', previewColor: '#f97316',
     description: 'The rarest mark on LAWSA — a hand-crafted animated heraldic crest.',
     price: 1000000, isFree: false,
   },
