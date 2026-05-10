@@ -1060,15 +1060,14 @@ function LionInline({ size }: { size: number }) {
       title="Lion of LAWSA"
     >
       <img
-        src="/badge-lion.jpg"
+        src="/badge-lion.png"
         alt="Lion of LAWSA"
         width={size}
         height={size}
         style={{
           objectFit: "contain",
-          borderRadius: "50%",
           filter:
-            "drop-shadow(0 0 3px rgba(251,191,36,0.9)) drop-shadow(0 0 7px rgba(251,191,36,0.5))",
+            "drop-shadow(0 0 4px rgba(251,191,36,0.95)) drop-shadow(0 0 10px rgba(251,191,36,0.6))",
           animation: "cosm-crown-shimmer 2.5s ease-in-out infinite",
         }}
       />
