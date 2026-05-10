@@ -125,7 +125,7 @@ function PostCard({ post, me, onLike, onRepost, onDelete }: any) {
               <span className="font-bold text-white text-[15px]">
                 {post.repostedFrom ? post.repostedFrom.authorName : post.authorName}
               </span>
-              {cosm?.badge && <CosmeticBadge effectType={cosm.badge} size={22} />}
+              {cosm?.badge && <CosmeticBadge effectType={cosm.badge} size={36} />}
               {!(post as any).authorIsSpecial && post.isVerified && <SealCheck className="w-[18px] h-[18px] text-blue-400 flex-shrink-0" weight="fill" />}
               {(post as any).authorIsSpecial && <DiamondBadge size={17} />}
               {(post as any).authorIsSpecial && post.isVerified && <SealCheck className="w-[18px] h-[18px] text-amber-400 flex-shrink-0" weight="fill" />}

@@ -226,7 +226,7 @@ function PostCard({ post, me, onLike, onRepost, onDelete, onEdit, onComment }: a
                   {post.repostedFrom ? post.repostedFrom.authorName : post.authorName}
                 </UsernameCosmetic>
               </Link>
-              {cosm?.badge && <CosmeticBadge effectType={cosm.badge} size={22} />}
+              {cosm?.badge && <CosmeticBadge effectType={cosm.badge} size={36} />}
               {!post.authorIsSpecial && post.authorIsVerified && <SealCheck className="w-4 h-4 text-yellow-400 flex-shrink-0" weight="fill" />}
               {!post.authorIsSpecial && !post.authorIsVerified && post.authorEmailVerified && <SealCheck className="w-4 h-4 text-amber-700 flex-shrink-0" weight="fill" />}
               {post.authorIsSpecial && <DiamondBadge size={16} />}
