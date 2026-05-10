@@ -1020,6 +1020,31 @@ export default function CosmeticBadge({ effectType, size = 18, className = "" }:
     case "badge_wind":         return <WindInline size={size} />;
     case "badge_cosmic":       return <CosmicInline size={size} />;
     case "badge_crystal_herald": return <CrystalHeraldInline size={size} />;
+    /* Sovereign */
+    case "badge_sovereign":    return <SovereignInline size={size} />;
     default:                   return null;
   }
+}
+
+function SovereignInline({ size }: { size: number }) {
+  return (
+    <span
+      className="inline-flex items-center justify-center flex-shrink-0 select-none"
+      style={{ width: size, height: size }}
+      title="Sovereign's Herald"
+    >
+      <img
+        src="/badge-herald.jpg"
+        alt="Sovereign's Herald"
+        width={size}
+        height={size}
+        style={{
+          objectFit: "contain",
+          filter:
+            "drop-shadow(0 0 3px rgba(180,100,255,0.9)) drop-shadow(0 0 7px rgba(255,200,50,0.5))",
+          animation: "cosm-aura-pulse 3s ease-in-out infinite",
+        }}
+      />
+    </span>
+  );
 }

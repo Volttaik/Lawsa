@@ -8,7 +8,7 @@ interface Props {
   linkClass?: string;
 }
 
-const STICKER_RE = /\[s:([a-z_]+)\]/g;
+const STICKER_RE = /\[s:([0-9A-Fa-f-]+)\]/g;
 
 function parseSegments(text: string) {
   const segments: Array<{ type: "text"; value: string } | { type: "sticker"; id: string }> = [];
@@ -46,14 +46,13 @@ export default function StickerRenderer({ content, className = "", linkClass = "
   const stickerCount = segments.filter(s => s.type === "sticker").length;
   const textCount    = segments.filter(s => s.type === "text" && s.value.trim()).length;
 
-  const stickerSize = stickerCount === 1 && textCount === 0 ? 120 : 48;
+  const stickerSize = stickerCount === 1 && textCount === 0 ? 120 : 56;
 
   return (
     <span className={`whitespace-pre-wrap break-words inline-flex flex-wrap items-end gap-1 ${className}`}>
       {segments.map((seg, i) => {
         if (seg.type === "sticker") {
-          const known = isStickerKnown(seg.id);
-          if (!known) {
+          if (!isStickerKnown(seg.id)) {
             return <span key={i}>[sticker]</span>;
           }
           return <Sticker key={i} id={seg.id} size={stickerSize} />;
