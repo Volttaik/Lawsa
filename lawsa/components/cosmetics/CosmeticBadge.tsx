@@ -1036,16 +1036,18 @@ function SovereignInline({ size }: { size: number }) {
       style={{ width: size, height: size }}
       title="Sovereign's Herald"
     >
-      <img
-        src="/badge-sovereign.png"
-        alt="Sovereign's Herald"
+      <video
+        src="/badge-animated.mp4"
         width={size}
         height={size}
+        autoPlay
+        loop
+        muted
+        playsInline
         style={{
           objectFit: "contain",
           filter:
-            "drop-shadow(0 0 3px rgba(180,100,255,0.9)) drop-shadow(0 0 7px rgba(255,200,50,0.5))",
-          animation: "cosm-aura-pulse 3s ease-in-out infinite",
+            "drop-shadow(0 0 4px rgba(180,100,255,0.9)) drop-shadow(0 0 10px rgba(255,200,50,0.6))",
         }}
       />
     </span>
