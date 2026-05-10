@@ -513,8 +513,8 @@ export default function ProfileClient({
         open={shareOpen}
         onClose={() => setShareOpen(false)}
         url={profileUrl}
-        title={`${profile.name}'s profile on Sosa`}
-        text={profile.bio || `Check out ${profile.name} on Sosa`}
+        title={`${profile.name}'s profile on LAWSA`}
+        text={profile.bio || `Check out ${profile.name} on LAWSA`}
       />
     </div>
   );

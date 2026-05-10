@@ -1,4 +1,4 @@
-const CACHE = "sosa-v2";
+const CACHE = "lawsa-v2";
 const PRECACHE = ["/", "/logo.png", "/manifest.json"];
 
 self.addEventListener("install", (e) => {
