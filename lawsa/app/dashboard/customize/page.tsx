@@ -66,13 +66,20 @@ export default function CustomizePage() {
       });
       const data = await res.json();
       if (data.success) {
-        setItems(prev => prev.map(i => i.id === item.id ? { ...i, equipped: data.equipped } : i));
+        setItems(prev => prev.map(i => {
+          if (i.id === item.id) return { ...i, equipped: data.equipped };
+          if (data.equipped && i.category === item.category) return { ...i, equipped: false };
+          return i;
+        }));
       }
     } catch {}
     setEquipping(null);
   };
 
-  const grouped = items.reduce<Record<string, StoreItem[]>>((acc, item) => {
+  const deduped = items.filter((item, idx, arr) =>
+    arr.findIndex(x => x.effectType === item.effectType) === idx
+  );
+  const grouped = deduped.reduce<Record<string, StoreItem[]>>((acc, item) => {
     const cat = item.category;
     if (!acc[cat]) acc[cat] = [];
     acc[cat].push(item);
@@ -123,20 +130,20 @@ export default function CustomizePage() {
                 <h2 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-3">
                   {CATEGORY_LABELS[cat] || cat}
                 </h2>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                <div className={`grid gap-4 ${catItems.some(i => i.effectType.startsWith("badge_")) ? "grid-cols-2" : "grid-cols-2 sm:grid-cols-3"}`}>
                   {catItems.map(item => (
                     <div key={item.id}
-                      className={`relative rounded-2xl border p-4 flex flex-col transition-all ${item.equipped ? "border-white/30 bg-white/5" : "border-white/10 bg-[#111]"}`}>
+                      className={`relative rounded-2xl border p-5 flex flex-col items-center transition-all ${item.equipped ? "border-white/30 bg-white/5" : "border-white/10 bg-[#111]"}`}>
                       {item.equipped && (
                         <div className="absolute top-2 right-2">
                           <span className="text-[9px] font-bold bg-white text-black px-1.5 py-0.5 rounded-full">EQUIPPED</span>
                         </div>
                       )}
-                      <div className="mb-3">
-                        <CosmeticPreview effectType={item.effectType} previewColor={item.previewColor} size={44} />
+                      <div className="mb-4 flex items-center justify-center">
+                        <CosmeticPreview effectType={item.effectType} previewColor={item.previewColor} size={item.effectType.startsWith("badge_") ? 72 : 52} />
                       </div>
-                      <h3 className="text-white font-bold text-sm mb-1 pr-12">{item.name}</h3>
-                      <p className="text-gray-500 text-[11px] leading-snug flex-1 mb-3">{item.description}</p>
+                      <h3 className="text-white font-bold text-sm mb-1 text-center w-full pr-0">{item.name}</h3>
+                      <p className="text-gray-500 text-[11px] leading-snug flex-1 mb-3 text-center">{item.description}</p>
                       <button onClick={() => toggleEquip(item)} disabled={equipping === item.id}
                         className={`w-full py-2 rounded-xl text-xs font-bold transition-all disabled:opacity-50 flex items-center justify-center gap-1 ${item.equipped ? "bg-white/10 text-white hover:bg-white/20" : "bg-white text-black hover:bg-gray-200"}`}>
                         {equipping === item.id ? <SpinnerGap size={12} className="animate-spin" /> : item.equipped ? "Unequip" : "Equip"}

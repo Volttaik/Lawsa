@@ -13,12 +13,7 @@ export default function SovereignBadge({ size = 64 }: BadgeProps) {
         alt="Sovereign's Herald"
         width={size}
         height={size}
-        style={{
-          objectFit: "contain",
-          filter:
-            "drop-shadow(0 0 6px rgba(180,100,255,0.85)) drop-shadow(0 0 16px rgba(255,200,50,0.45))",
-          animation: "cosm-aura-pulse 3s ease-in-out infinite",
-        }}
+        style={{ objectFit: "contain" }}
       />
     </span>
   );

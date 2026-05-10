@@ -69,25 +69,40 @@ function PostCard({ post, me, onLike, onRepost, onDelete }: any) {
     : `/post/${post._id}`;
 
   const cosm = (post as any).authorCosmetics;
-  const BADGE_GLOW: Record<string, { style?: React.CSSProperties; className?: string }> = {
-    badge_sovereign:     { className: "badge-glow-fire" },
-    badge_herald_purple: { style: { boxShadow: "inset 0 0 0 1px rgba(168,85,247,0.45), 0 0 18px 3px rgba(168,85,247,0.25)", borderColor: "rgba(168,85,247,0.5)" } },
-    badge_lion:          { className: "badge-glow-gold" },
-    badge_fist:      { style: { boxShadow: "inset 0 0 0 1px rgba(180,83,9,0.35), 0 0 12px 2px rgba(180,83,9,0.15)", borderColor: "rgba(180,83,9,0.45)" } },
-    badge_crown:     { style: { boxShadow: "inset 0 0 0 1px rgba(251,191,36,0.35), 0 0 14px 2px rgba(251,191,36,0.18)", borderColor: "rgba(251,191,36,0.5)" } },
-    badge_diamond:   { style: { boxShadow: "inset 0 0 0 1px rgba(103,232,249,0.35), 0 0 14px 2px rgba(103,232,249,0.18)", borderColor: "rgba(103,232,249,0.5)" } },
-    badge_fire:      { style: { boxShadow: "inset 0 0 0 1px rgba(249,115,22,0.35), 0 0 14px 2px rgba(249,115,22,0.18)", borderColor: "rgba(249,115,22,0.5)" } },
-    badge_lightning: { style: { boxShadow: "inset 0 0 0 1px rgba(167,139,250,0.35), 0 0 14px 2px rgba(167,139,250,0.18)", borderColor: "rgba(167,139,250,0.5)" } },
-    badge_star:      { style: { boxShadow: "inset 0 0 0 1px rgba(250,204,21,0.35), 0 0 14px 2px rgba(250,204,21,0.18)", borderColor: "rgba(250,204,21,0.5)" } },
-    badge_crystal:   { style: { boxShadow: "inset 0 0 0 1px rgba(56,189,248,0.35), 0 0 14px 2px rgba(56,189,248,0.18)", borderColor: "rgba(56,189,248,0.5)" } },
-    badge_verified_plus: { style: { boxShadow: "inset 0 0 0 1px rgba(59,130,246,0.35), 0 0 14px 2px rgba(59,130,246,0.18)", borderColor: "rgba(59,130,246,0.5)" } },
+
+  const BADGE_ACCENT: Record<string, string> = {
+    badge_sovereign: "#f97316", badge_herald_purple: "#a855f7",
+    badge_lion: "#fbbf24", badge_fist: "#b45309",
+    badge_crown: "#fbbf24", badge_diamond: "#67e8f9",
+    badge_fire: "#f97316", badge_lightning: "#a78bfa",
+    badge_star: "#facc15", badge_crystal: "#38bdf8",
+    badge_verified_plus: "#3b82f6", badge_amethyst: "#a855f7",
+    badge_phoenix: "#f97316", badge_dragon: "#e879f9",
+    badge_royal: "#8b5cf6", badge_warrior: "#ef4444",
+    badge_azure: "#38bdf8", badge_inferno: "#fb923c",
+    badge_frost: "#7dd3fc", badge_storm: "#a78bfa",
+    badge_tidal: "#0ea5e9", badge_earth: "#22c55e",
+    badge_galaxy: "#818cf8", badge_nova: "#fb923c",
+    badge_solar: "#fbbf24", badge_lunar: "#e2e8f0",
+    badge_void: "#7c3aed", badge_shadow: "#64748b",
+    badge_demon: "#dc2626", badge_skull: "#94a3b8",
+    badge_angel: "#fde68a", badge_divine: "#fbbf24",
+    badge_tech: "#22d3ee", badge_neon: "#22d3ee",
+    badge_matrix: "#22c55e", badge_gold: "#fbbf24",
+    badge_ruby: "#f87171", badge_obsidian: "#7c3aed",
+    badge_wind: "#34d399", badge_cosmic: "#818cf8",
+    badge_crystal_herald: "#7dd3fc",
   };
-  const badgeGlow = cosm?.badge ? BADGE_GLOW[cosm.badge] : null;
-  const postExtraClass = badgeGlow?.className || "";
-  const postStyle: React.CSSProperties = badgeGlow?.style || {};
+  const badgeAccent = cosm?.badge ? BADGE_ACCENT[cosm.badge] : null;
 
   return (
-    <article className={`border-b border-[#2f3336] px-4 py-3 hover:bg-white/[0.02] transition-colors ${postExtraClass}`} style={postStyle}>
+    <article className="relative border-b border-[#2f3336] px-4 py-3 hover:bg-white/[0.02] transition-colors">
+      {badgeAccent && (
+        <div
+          className="absolute left-0 top-3 bottom-3 w-[2px] rounded-r-full pointer-events-none"
+          style={{ background: `linear-gradient(to bottom, transparent, ${badgeAccent}99, transparent)` }}
+        />
+      )}
       {post.repostedFrom && (
         <div className="flex items-center gap-2 text-gray-500 text-xs mb-2 ml-12">
           <ArrowsClockwise className="w-3.5 h-3.5 text-green-500" />
@@ -110,7 +125,7 @@ function PostCard({ post, me, onLike, onRepost, onDelete }: any) {
               <span className="font-bold text-white text-[15px]">
                 {post.repostedFrom ? post.repostedFrom.authorName : post.authorName}
               </span>
-              {(post as any).authorCosmetics?.badge && <CosmeticBadge effectType={(post as any).authorCosmetics.badge} size={16} />}
+              {cosm?.badge && <CosmeticBadge effectType={cosm.badge} size={22} />}
               {!(post as any).authorIsSpecial && post.isVerified && <SealCheck className="w-[18px] h-[18px] text-blue-400 flex-shrink-0" weight="fill" />}
               {(post as any).authorIsSpecial && <DiamondBadge size={17} />}
               {(post as any).authorIsSpecial && post.isVerified && <SealCheck className="w-[18px] h-[18px] text-amber-400 flex-shrink-0" weight="fill" />}

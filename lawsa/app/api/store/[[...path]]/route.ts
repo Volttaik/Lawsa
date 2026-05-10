@@ -74,6 +74,20 @@ export async function POST(
       if (!itemId) return NextResponse.json({ error: "Item ID required" }, { status: 400 });
       const userItem = await dbQueryOne(`SELECT * FROM user_store_items WHERE user_id = $1 AND item_id = $2`, [authUser.userId, itemId]);
       if (!userItem) return NextResponse.json({ error: "Item not owned" }, { status: 403 });
+      if (!!equipped) {
+        const storeItem = await dbQueryOne(`SELECT category FROM store_items WHERE id = $1`, [itemId]);
+        if (storeItem?.category) {
+          await dbQuery(
+            `UPDATE user_store_items SET equipped = false
+             WHERE user_id = $1
+               AND item_id != $2
+               AND item_id IN (
+                 SELECT id FROM store_items WHERE category = $3
+               )`,
+            [authUser.userId, itemId, storeItem.category]
+          );
+        }
+      }
       await dbQuery(`UPDATE user_store_items SET equipped = $1 WHERE user_id = $2 AND item_id = $3`, [!!equipped, authUser.userId, itemId]);
       return NextResponse.json({ success: true, equipped: !!equipped });
     } catch (e) {

@@ -8,14 +8,14 @@ interface Props {
 }
 
 /* ── Shared inline badge wrapper ── */
-function B({ size, title, children, anim, filter }: {
+function B({ size, title, children, anim, filter: _filter }: {
   size: number; title: string; children: React.ReactNode;
   anim?: string; filter?: string;
 }) {
   return (
     <span className="inline-flex items-center justify-center flex-shrink-0 select-none" style={{ width: size, height: size }} title={title}>
       <svg width={size} height={size} viewBox="0 0 24 24" fill="none"
-        style={{ overflow: "visible", animation: anim, filter }}>
+        style={{ overflow: "visible", animation: anim }}>
         {children}
       </svg>
     </span>
@@ -1045,11 +1045,7 @@ function SovereignInline({ size }: { size: number }) {
         loop
         muted
         playsInline
-        style={{
-          objectFit: "contain",
-          filter:
-            "drop-shadow(0 0 4px rgba(180,100,255,0.9)) drop-shadow(0 0 10px rgba(255,200,50,0.6))",
-        }}
+        style={{ objectFit: "contain" }}
       />
     </span>
   );
@@ -1067,12 +1063,7 @@ function HeraldPurpleInline({ size }: { size: number }) {
         alt="Mystic Herald"
         width={size}
         height={size}
-        style={{
-          objectFit: "contain",
-          filter:
-            "drop-shadow(0 0 4px rgba(168,85,247,0.95)) drop-shadow(0 0 10px rgba(251,191,36,0.6))",
-          animation: "cosm-aura-pulse 2.8s ease-in-out infinite",
-        }}
+        style={{ objectFit: "contain" }}
       />
     </span>
   );
@@ -1090,12 +1081,7 @@ function LionInline({ size }: { size: number }) {
         alt="Lion of LAWSA"
         width={size}
         height={size}
-        style={{
-          objectFit: "contain",
-          filter:
-            "drop-shadow(0 0 4px rgba(251,191,36,0.95)) drop-shadow(0 0 10px rgba(251,191,36,0.6))",
-          animation: "cosm-crown-shimmer 2.5s ease-in-out infinite",
-        }}
+        style={{ objectFit: "contain" }}
       />
     </span>
   );
@@ -1113,12 +1099,7 @@ function FistInline({ size }: { size: number }) {
         alt="Iron Fist"
         width={size}
         height={size}
-        style={{
-          objectFit: "contain",
-          filter:
-            "drop-shadow(0 0 2px rgba(180,83,9,0.8)) drop-shadow(0 0 5px rgba(180,83,9,0.4))",
-          animation: "cosm-aura-pulse 3s ease-in-out infinite",
-        }}
+        style={{ objectFit: "contain" }}
       />
     </span>
   );

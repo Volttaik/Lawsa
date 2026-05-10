@@ -43,27 +43,16 @@ const CHAT_COLOR: Record<string, string> = {
 export default function CosmeticPreview({ effectType, previewColor, size = 44 }: Props) {
   const wrap: React.CSSProperties = {
     width: size, height: size, borderRadius: 12,
-    backgroundColor: `${previewColor}22`,
-    border: `1px solid ${previewColor}44`,
+    backgroundColor: "transparent",
     display: "flex", alignItems: "center", justifyContent: "center",
-    flexShrink: 0, overflow: "hidden", position: "relative",
+    flexShrink: 0, overflow: "visible", position: "relative",
   };
 
-  /* ── Large heraldic badge preview from resources/badges/ ── */
-  if (effectType in BADGE_REGISTRY) {
-    const Comp = BADGE_REGISTRY[effectType];
-    return (
-      <div style={wrap}>
-        <Comp size={Math.floor(size * 0.9)} />
-      </div>
-    );
-  }
-
-  /* ── Badges handled by CosmeticBadge (diamond, crown, fire, etc.) ── */
+  /* ── All badges use CosmeticBadge for consistency with the store ── */
   if (effectType.startsWith("badge_")) {
     return (
       <div style={wrap}>
-        <CosmeticBadge effectType={effectType} size={Math.floor(size * 0.62)} />
+        <CosmeticBadge effectType={effectType} size={size} />
       </div>
     );
   }
