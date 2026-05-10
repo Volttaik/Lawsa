@@ -34,7 +34,6 @@ export function mapUser(r: any) {
     followersCount: typeof r.followers_count === 'number' ? r.followers_count : followers.length,
     followingCount: typeof r.following_count === 'number' ? r.following_count : following.length,
     postsCount: typeof r.posts_count === 'number' ? r.posts_count : 0,
-    clanId: r.clan_id || '', clanName: r.clan_name || '', clanLogo: r.clan_logo || '',
     isSpecial: r.email?.toLowerCase() === 'onyeaghorlouis@gmail.com',
     isVerified: r.email?.toLowerCase() === 'onyeaghorlouis@gmail.com' ? true : !!r.is_verified,
     isBoosted: !!r.is_boosted, premiumTheme: !!r.premium_theme,
@@ -125,24 +124,6 @@ export function mapStory(r: any) {
     content: r.content || '', image: r.image || '',
     expiresAt: r.expires_at,
     createdAt: r.created_at, updatedAt: r.updated_at,
-  }
-}
-
-export function mapClan(r: any) {
-  if (!r) return null
-  return {
-    _id: r.id, id: r.id, name: r.name, slug: r.slug, logo: r.logo || '',
-    description: r.description || '', ownerId: r.owner_id, ownerName: r.owner_name,
-    members: r.members || [], createdAt: r.created_at, updatedAt: r.updated_at,
-  }
-}
-
-export function mapWorldChat(r: any) {
-  if (!r) return null
-  return {
-    _id: r.id, id: r.id, clanId: r.clan_id, senderId: r.sender_id,
-    senderName: r.sender_name, senderUsername: r.sender_username,
-    senderImage: r.sender_image || '', content: r.content, createdAt: r.created_at,
   }
 }
 
@@ -243,7 +224,6 @@ export async function updateUser(id: string, updates: any) {
   const scalarMap: Record<string, string> = {
     name: 'name', bio: 'bio', headline: 'headline', website: 'website', location: 'location',
     profileImage: 'profile_image', bannerImage: 'banner_image',
-    clanId: 'clan_id', clanName: 'clan_name', clanLogo: 'clan_logo',
     lastOnline: 'last_online', phone: 'phone',
     isVerified: 'is_verified', isBoosted: 'is_boosted', premiumTheme: 'premium_theme',
     emailVerified: 'email_verified', emailVerificationToken: 'email_verification_token',
@@ -883,77 +863,6 @@ export async function createStory(data: any) {
   )
   const r = await queryOne('SELECT * FROM stories WHERE id = $1', [id])
   return mapStory(r)
-}
-
-// ── CLANS ─────────────────────────────────────────────────────────────────────
-export async function getClans() {
-  const rows = await query('SELECT * FROM clans ORDER BY created_at DESC', [])
-  return rows.map(mapClan)
-}
-
-export async function getClanById(id: string) {
-  const r = await queryOne('SELECT * FROM clans WHERE id = $1', [id])
-  return mapClan(r)
-}
-
-export async function getClanBySlug(slug: string) {
-  const r = await queryOne('SELECT * FROM clans WHERE slug = $1', [slug])
-  return mapClan(r)
-}
-
-export async function createClan(data: any) {
-  const id = randomUUID()
-  await query(
-    `INSERT INTO clans (id, name, slug, logo, description, owner_id, owner_name, members)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`,
-    [id, data.name, data.slug, data.logo || '', data.description || '',
-     data.ownerId, data.ownerName, JSON.stringify([data.ownerId])]
-  )
-  const r = await queryOne('SELECT * FROM clans WHERE id = $1', [id])
-  return mapClan(r)
-}
-
-export async function updateClan(id: string, updates: any) {
-  const setClauses: string[] = ['updated_at = NOW()']
-  const values: any[] = []
-  let idx = 1
-  if (updates.members !== undefined) { setClauses.push(`members = $${idx++}`); values.push(JSON.stringify(updates.members)) }
-  if (updates.logo !== undefined) { setClauses.push(`logo = $${idx++}`); values.push(updates.logo) }
-  if (updates.description !== undefined) { setClauses.push(`description = $${idx++}`); values.push(updates.description) }
-  if (values.length === 0) return getClanById(id)
-  values.push(id)
-  await query(`UPDATE clans SET ${setClauses.join(', ')} WHERE id = $${idx}`, values)
-  return getClanById(id)
-}
-
-export async function deleteClan(id: string) {
-  await query('DELETE FROM clans WHERE id = $1', [id])
-}
-
-export async function getWorldChatMessages(clanId: string, since?: string) {
-  if (since) {
-    const rows = await query(
-      'SELECT * FROM world_chat_messages WHERE clan_id = $1 AND created_at > $2 ORDER BY created_at ASC LIMIT 100',
-      [clanId, since]
-    )
-    return rows.map(mapWorldChat)
-  }
-  const rows = await query(
-    'SELECT * FROM world_chat_messages WHERE clan_id = $1 ORDER BY created_at ASC LIMIT 100',
-    [clanId]
-  )
-  return rows.map(mapWorldChat)
-}
-
-export async function createWorldChatMessage(data: any) {
-  const id = randomUUID()
-  await query(
-    `INSERT INTO world_chat_messages (id, clan_id, sender_id, sender_name, sender_username, sender_image, content)
-     VALUES ($1,$2,$3,$4,$5,$6,$7)`,
-    [id, data.clanId, data.senderId, data.senderName, data.senderUsername, data.senderImage || '', data.content]
-  )
-  const r = await queryOne('SELECT * FROM world_chat_messages WHERE id = $1', [id])
-  return mapWorldChat(r)
 }
 
 // ── UPLOAD CHUNKS ─────────────────────────────────────────────────────────────

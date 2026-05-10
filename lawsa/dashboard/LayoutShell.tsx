@@ -3,7 +3,7 @@ import { useEffect, useState, useCallback, useRef } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import {
-  House, MagnifyingGlass, Bell, Envelope, User, UsersThree,
+  House, MagnifyingGlass, Bell, Envelope, User,
   Star, List, X, SignOut, SealCheck, Gear, Broadcast, Phone,
   PhoneDisconnect, VideoCamera, Globe, PencilSimpleLine, ShoppingBag, Sparkle,
 } from "@phosphor-icons/react";
@@ -48,7 +48,6 @@ const NAV = [
   { href: "/dashboard/explore",       icon: MagnifyingGlass, label: "Explore"       },
   { href: "/dashboard/notifications", icon: Bell,            label: "Notifications", authRequired: true },
   { href: "/dashboard/messages",      icon: Envelope,        label: "Messages",      authRequired: true },
-  { href: "/dashboard/clans",         icon: UsersThree,      label: "Clans"         },
   { href: "/dashboard/live",          icon: Broadcast,       label: "Live"          },
   { href: "/dashboard/store",         icon: ShoppingBag,     label: "Store"         },
   { href: "/dashboard/premium",       icon: Star,            label: "Premium",       authRequired: true },

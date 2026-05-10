@@ -53,20 +53,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: true, type: "store_item", itemId: metadata.itemId });
     }
 
-    if (metadata.type === "sticker_pack") {
-      const existing = await queryOne(
-        `SELECT user_id FROM user_sticker_packs WHERE user_id = $1 AND pack_id = $2`,
-        [authUser.userId, metadata.packId]
-      );
-      if (!existing) {
-        await query(
-          `INSERT INTO user_sticker_packs (user_id, pack_id) VALUES ($1, $2)`,
-          [authUser.userId, metadata.packId]
-        );
-      }
-      return NextResponse.json({ success: true, type: "sticker_pack", packId: metadata.packId });
-    }
-
     return NextResponse.json({ error: "Unknown payment type" }, { status: 400 });
   } catch (e) {
     console.error("[store/verify-payment]", e);

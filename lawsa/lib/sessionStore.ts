@@ -27,9 +27,6 @@ export interface SessionUser {
   followersCount: number;
   followingCount: number;
   postsCount: number;
-  clanId: string;
-  clanName: string;
-  clanLogo: string;
   isVerified: boolean;
   isBoosted: boolean;
   premiumTheme: boolean;

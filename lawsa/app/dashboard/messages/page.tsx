@@ -4,7 +4,6 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { PaperPlaneTilt, SpinnerGap, ArrowLeft, MagnifyingGlass, X, Checks, Check, DotsThreeVertical, SealCheck, ArrowBendUpLeft, Trash, Plus, Microphone, Stop, Play, Pause, Paperclip, Camera, Smiley } from "@phosphor-icons/react";
 import DiamondBadge from "@/components/DiamondBadge";
 import Linkify from "@/components/Linkify";
-import StickerPicker from "@/components/StickerPicker";
 import { uploadFile } from "@/lib/uploadClient";
 
 interface Conversation { _id: string; participants: string[]; lastMessage?: string; lastMessageTime?: string; otherUser?: { _id: string; name: string; username: string; profileImage?: string; isVerified?: boolean; isSpecial?: boolean; }; }
@@ -112,7 +111,6 @@ function MessagesPageInner() {
   const [videoUploadProgress, setVideoUploadProgress] = useState(0);
   const [showChatMenu, setShowChatMenu] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
-  const [emojiTab, setEmojiTab] = useState<"emoji" | "stickers">("emoji");
 
   const bottomRef = useRef<HTMLDivElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -696,12 +694,17 @@ function MessagesPageInner() {
                   <Smiley className="w-6 h-6" />
                 </button>
                 {showEmojiPicker && (
-                  <div className="absolute bottom-14 left-0 z-50 w-72">
-                    <StickerPicker
-                      onSelectEmoji={(e) => { setText(prev => prev + e); setShowEmojiPicker(false); }}
-                      onSelectSticker={(val) => { setText(prev => prev + val); setShowEmojiPicker(false); }}
-                      onClose={() => setShowEmojiPicker(false)}
-                    />
+                  <div className="absolute bottom-14 left-0 z-50 w-72 rounded-2xl overflow-hidden border border-white/10" style={{ backgroundColor: "#111", maxHeight: 280 }}>
+                    <div className="p-2 overflow-y-auto" style={{ maxHeight: 280 }}>
+                      <div className="grid grid-cols-8 gap-0.5">
+                        {["😀","😂","🤣","😊","😍","🥰","😎","🤩","😭","😅","🤔","😤","🥺","😳","🤯","🤫","👋","🔥","❤️","💯","✅","👊","🎉","🙏","💪","👑","💎","⚡","🌊","🎯","🚀","🌟","😈","👀","💀","🫡","🥶","🤗","😴","🤤","😏","😋","🤑","🫢","😬","🙄","😡","🤬"].map(e => (
+                          <button key={e} onClick={() => { setText(prev => prev + e); setShowEmojiPicker(false); }}
+                            className="text-xl p-1.5 rounded-lg hover:bg-white/10 transition-colors leading-none aspect-square flex items-center justify-center">
+                            {e}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
                   </div>
                 )}
               </div>
