@@ -41,6 +41,7 @@ export function mapUser(r: any) {
     emailVerificationToken: r.email_verification_token || '',
     passwordResetToken: r.password_reset_token || '',
     lastOnline: r.last_online, createdAt: r.created_at, updatedAt: r.updated_at,
+    badge: r.equipped_badge ?? null,
   }
 }
 
@@ -260,17 +261,19 @@ export async function updateUserLastOnline(id: string) {
   await query('UPDATE users SET last_online = NOW() WHERE id = $1', [id])
 }
 
+const BADGE_SUBQUERY = `(SELECT si.effect_type FROM user_store_items usi JOIN store_items si ON usi.item_id = si.id WHERE usi.user_id = u.id AND usi.equipped = true AND si.effect_type LIKE 'badge_%' LIMIT 1) AS equipped_badge`
+
 export async function findUsers(search: string, page: number, limit: number, excludeId: string) {
   const skip = (page - 1) * limit
   if (search) {
     return (await query(
-      `SELECT * FROM users WHERE id != $1 AND (name ILIKE $2 OR username ILIKE $2)
+      `SELECT u.*, ${BADGE_SUBQUERY} FROM users u WHERE u.id != $1 AND (u.name ILIKE $2 OR u.username ILIKE $2)
        LIMIT $3 OFFSET $4`,
       [excludeId, `%${search}%`, limit, skip]
     )).map(mapUser)
   }
   return (await query(
-    'SELECT * FROM users WHERE id != $1 LIMIT $2 OFFSET $3',
+    `SELECT u.*, ${BADGE_SUBQUERY} FROM users u WHERE u.id != $1 LIMIT $2 OFFSET $3`,
     [excludeId, limit, skip]
   )).map(mapUser)
 }
@@ -279,7 +282,7 @@ export async function getUserRecommendations(userId: string, following: string[]
   const exclude = [userId, ...following]
   const placeholders = exclude.map((_, i) => `$${i + 1}`).join(',')
   const rows = await query(
-    `SELECT * FROM users WHERE id NOT IN (${placeholders}) ORDER BY created_at DESC LIMIT $${exclude.length + 1}`,
+    `SELECT u.*, ${BADGE_SUBQUERY} FROM users u WHERE u.id NOT IN (${placeholders}) ORDER BY u.created_at DESC LIMIT $${exclude.length + 1}`,
     [...exclude, limit + 5]
   )
   return rows.map(mapUser)

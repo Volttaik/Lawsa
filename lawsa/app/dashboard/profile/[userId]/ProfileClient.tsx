@@ -92,6 +92,7 @@ function PostCard({ post, me, onLike, onRepost, onDelete }: any) {
               <span className="font-bold text-white text-[15px]">
                 {post.repostedFrom ? post.repostedFrom.authorName : post.authorName}
               </span>
+              {(post as any).authorCosmetics?.badge && <CosmeticBadge effectType={(post as any).authorCosmetics.badge} size={16} />}
               {!(post as any).authorIsSpecial && post.isVerified && <SealCheck className="w-[18px] h-[18px] text-blue-400 flex-shrink-0" weight="fill" />}
               {(post as any).authorIsSpecial && <DiamondBadge size={17} />}
               {(post as any).authorIsSpecial && post.isVerified && <SealCheck className="w-[18px] h-[18px] text-amber-400 flex-shrink-0" weight="fill" />}
@@ -335,6 +336,7 @@ export default function ProfileClient({
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1">
             <h1 className="text-xl font-bold text-white truncate">{profile.name}</h1>
+            {profileCosmetics?.badge && <CosmeticBadge effectType={profileCosmetics.badge} size={18} />}
             {!(profile as any).isSpecial && profile.isVerified && <SealCheck className="w-5 h-5 text-blue-400 flex-shrink-0" weight="fill" />}
             {(profile as any).isSpecial && <DiamondBadge size={20} />}
             {(profile as any).isSpecial && profile.isVerified && <SealCheck className="w-5 h-5 text-amber-400 flex-shrink-0" weight="fill" />}

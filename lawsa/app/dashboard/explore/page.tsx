@@ -2,10 +2,11 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { MagnifyingGlass, TrendUp, Users, Hash, X, SealCheck } from "@phosphor-icons/react";
 import DiamondBadge from "@/components/DiamondBadge";
+import CosmeticBadge from "@/components/cosmetics/CosmeticBadge";
 import Link from "next/link";
 import ReactTimeago from "react-timeago";
 
-interface UserResult { _id: string; id?: string; name: string; username: string; profileImage?: string; bio?: string; isVerified?: boolean; followers?: string[]; following?: string[]; }
+interface UserResult { _id: string; id?: string; name: string; username: string; profileImage?: string; bio?: string; isVerified?: boolean; followers?: string[]; following?: string[]; badge?: string | null; }
 interface PostResult { _id: string; authorId: string; authorName: string; authorUsername: string; authorImage?: string; content: string; images?: string[]; likes?: string[]; createdAt: string; }
 
 function Avatar({ src, name, size = 40 }: { src?: string; name: string; size?: number }) {
@@ -143,6 +144,7 @@ export default function ExplorePage() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-1">
                         <Link href={`/dashboard/profile/${id}`} className="font-bold text-white text-sm hover:underline truncate">{u.name}</Link>
+                        {u.badge && <CosmeticBadge effectType={u.badge} size={15} />}
                         {!(u as any).isSpecial && u.isVerified && <SealCheck className="w-4 h-4 text-blue-400 flex-shrink-0" weight="fill" />}
                         {(u as any).isSpecial && <DiamondBadge size={15} />}
                         {(u as any).isSpecial && u.isVerified && <SealCheck className="w-4 h-4 text-amber-400 flex-shrink-0" weight="fill" />}
@@ -174,7 +176,7 @@ export default function ExplorePage() {
                     <Link href={`/dashboard/profile/${u._id}`}><Avatar src={u.profileImage} name={u.name} size={44} /></Link>
                     <div className="flex-1 min-w-0">
                       <Link href={`/dashboard/profile/${u._id}`}>
-                        <div className="flex items-center gap-1"><p className="text-white font-bold text-sm hover:underline truncate">{u.name}</p>{!(u as any).isSpecial && u.isVerified && <SealCheck className="w-4 h-4 text-blue-400 flex-shrink-0" weight="fill" />}{(u as any).isSpecial && <DiamondBadge size={15} />}{(u as any).isSpecial && u.isVerified && <SealCheck className="w-4 h-4 text-amber-400 flex-shrink-0" weight="fill" />}</div>
+                        <div className="flex items-center gap-1"><p className="text-white font-bold text-sm hover:underline truncate">{u.name}</p>{u.badge && <CosmeticBadge effectType={u.badge} size={15} />}{!(u as any).isSpecial && u.isVerified && <SealCheck className="w-4 h-4 text-blue-400 flex-shrink-0" weight="fill" />}{(u as any).isSpecial && <DiamondBadge size={15} />}{(u as any).isSpecial && u.isVerified && <SealCheck className="w-4 h-4 text-amber-400 flex-shrink-0" weight="fill" />}</div>
                         <p className="text-gray-500 text-xs">@{u.username}</p>
                       </Link>
                       {u.bio && <p className="text-gray-400 text-xs mt-0.5 truncate">{u.bio}</p>}

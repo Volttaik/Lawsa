@@ -3,6 +3,7 @@ import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { UserPlus, UserCheck, Search, Loader2, Users, SearchX } from "lucide-react";
+import CosmeticBadge from "@/components/cosmetics/CosmeticBadge";
 import Link from "next/link";
 
 interface UserCard {
@@ -14,6 +15,7 @@ interface UserCard {
   followers?: string[];
   following?: string[];
   skills?: string[];
+  badge?: string | null;
 }
 
 interface CurrentUser {
@@ -233,9 +235,12 @@ function ConnectPageContent() {
                       isLoading={followLoading.has(user._id)}
                       onFollow={() => handleFollow(user._id)}
                       badge={
-                        <span className="text-[10px] bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border border-blue-100 dark:border-blue-800 px-2 py-0.5 rounded-full font-medium">
-                          Follows you
-                        </span>
+                        <>
+                          {user.badge && <CosmeticBadge effectType={user.badge} size={16} />}
+                          <span className="text-[10px] bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border border-blue-100 dark:border-blue-800 px-2 py-0.5 rounded-full font-medium">
+                            Follows you
+                          </span>
+                        </>
                       }
                     />
                   ))}
@@ -279,10 +284,15 @@ function ConnectPageContent() {
                       isLoading={followLoading.has(user._id)}
                       onFollow={() => handleFollow(user._id)}
                       badge={
-                        myFollowers.has(user._id) ? (
-                          <span className="text-[10px] bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 px-2 py-0.5 rounded-full font-medium">
-                            Follows you
-                          </span>
+                        (user.badge || myFollowers.has(user._id)) ? (
+                          <>
+                            {user.badge && <CosmeticBadge effectType={user.badge} size={16} />}
+                            {myFollowers.has(user._id) && (
+                              <span className="text-[10px] bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 px-2 py-0.5 rounded-full font-medium">
+                                Follows you
+                              </span>
+                            )}
+                          </>
                         ) : undefined
                       }
                     />
