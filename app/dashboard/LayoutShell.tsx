@@ -270,7 +270,7 @@ export default function LayoutShell({ user: initialUser, children }: { user: She
 
   return (
     <div className="min-h-screen bg-black text-white flex">
-      <aside className="hidden md:flex flex-col w-[72px] xl:w-[260px] border-r border-[#222] fixed top-0 left-0 h-screen z-30 overflow-y-auto">
+      <aside className="hidden md:flex flex-col w-[72px] xl:w-[260px] border-r border-[#222] fixed top-0 left-0 h-screen z-30 overflow-y-auto hide-scrollbar">
         <Sidebar compact />
       </aside>
 
