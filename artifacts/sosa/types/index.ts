@@ -1,5 +1,12 @@
 // Shared type definitions between server and client components
 
+export interface AuthorCosmetics {
+  badge?: string;
+  avatarRing?: string;
+  usernameEffect?: string;
+  postBorder?: string;
+}
+
 export interface Post {
   _id: string;
   id: string;
@@ -10,6 +17,7 @@ export interface Post {
   authorIsVerified?: boolean;
   authorEmailVerified?: boolean;
   authorIsSpecial?: boolean;
+  authorCosmetics?: AuthorCosmetics;
   content: string;
   images?: string[];
   videos?: string[];

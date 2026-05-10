@@ -47,6 +47,13 @@ export function mapUser(r: any) {
 
 export function mapPost(r: any) {
   if (!r) return null
+  const effects: string[] = r.author_equipped_effects || []
+  const authorCosmetics = {
+    badge:          effects.find((e: string) => e.startsWith('badge_')),
+    avatarRing:     effects.find((e: string) => e.startsWith('avatar_ring_') || e.startsWith('avatar_aura_')),
+    usernameEffect: effects.find((e: string) => e.startsWith('username_')),
+    postBorder:     effects.find((e: string) => e.startsWith('post_border_') || e.startsWith('post_glow_')),
+  }
   return {
     _id: r.id, id: r.id, authorId: r.author_id, authorName: r.author_name,
     authorUsername: r.author_username, authorImage: r.author_image || '',
@@ -60,6 +67,7 @@ export function mapPost(r: any) {
     repostedFrom: r.reposted_from || null, poll: r.poll || null,
     views: r.views || 0, comments: [] as any[],
     createdAt: r.created_at, updatedAt: r.updated_at,
+    authorCosmetics,
   }
 }
 
@@ -429,7 +437,8 @@ export async function getRecentActivityForUser(userId: string, limit = 20) {
 export async function getPostById(id: string) {
   const r = await queryOne(
     `SELECT p.*, u.is_verified as author_is_verified, u.email_verified as author_email_verified, u.email as author_email,
-     COALESCE(NULLIF(p.author_image,''), u.profile_image, '') as author_image
+     COALESCE(NULLIF(p.author_image,''), u.profile_image, '') as author_image,
+     (SELECT json_agg(si.effect_type) FROM user_store_items usi JOIN store_items si ON usi.item_id = si.id WHERE usi.user_id = p.author_id AND usi.equipped = true) as author_equipped_effects
      FROM posts p LEFT JOIN users u ON p.author_id = u.id WHERE p.id = $1`,
     [id]
   )
@@ -442,7 +451,8 @@ export async function getPostById(id: string) {
 
 export async function getPosts(filter: any = {}, skip = 0, limit = 10) {
   let sql = `SELECT p.*, u.is_verified as author_is_verified, u.email_verified as author_email_verified, u.email as author_email,
-    COALESCE(NULLIF(p.author_image,''), u.profile_image, '') as author_image
+    COALESCE(NULLIF(p.author_image,''), u.profile_image, '') as author_image,
+    (SELECT json_agg(si.effect_type) FROM user_store_items usi JOIN store_items si ON usi.item_id = si.id WHERE usi.user_id = p.author_id AND usi.equipped = true) as author_equipped_effects
     FROM posts p LEFT JOIN users u ON p.author_id = u.id`
   const params: any[] = []
   const where: string[] = []

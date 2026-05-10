@@ -1,5 +1,5 @@
 "use client";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
@@ -8,6 +8,9 @@ import {
   ShareNetwork, DotsThree, Trash, Camera, VideoCamera, Phone,
 } from "@phosphor-icons/react";
 import DiamondBadge from "@/components/DiamondBadge";
+import AvatarRing from "@/components/cosmetics/AvatarRing";
+import UsernameCosmetic from "@/components/cosmetics/UsernameCosmetic";
+import CosmeticBadge from "@/components/cosmetics/CosmeticBadge";
 import ReactTimeago from "react-timeago";
 import Linkify from "@/components/Linkify";
 import ProgressiveImage from "@/components/ProgressiveImage";
@@ -209,6 +212,14 @@ export default function ProfileClient({
   const initialIsFollowing = !!(myId && (profile.followers ?? []).includes(myId));
   const [isFollowing, setIsFollowing] = useState(initialIsFollowing);
   const [followLoading, setFollowLoading] = useState(false);
+  const [profileCosmetics, setProfileCosmetics] = useState<any>({});
+
+  useEffect(() => {
+    fetch(`/api/users/${profile._id}/cosmetics`)
+      .then(r => r.ok ? r.json() : {})
+      .then(d => setProfileCosmetics(d))
+      .catch(() => {});
+  }, [profile._id]);
 
   const profileUrl = typeof window !== "undefined"
     ? `${window.location.origin}/dashboard/profile/${profile._id}`
@@ -361,7 +372,9 @@ export default function ProfileClient({
       <div className="px-4 pb-2">
         <div className="flex justify-between items-start">
           <div className="-mt-[67px] relative z-10 group/avatar">
-            <Avatar src={profile.profileImage} name={profile.name} size={134} />
+            <AvatarRing effectType={profileCosmetics.avatarRing || ""} size={134}>
+              <Avatar src={profile.profileImage} name={profile.name} size={134} />
+            </AvatarRing>
             {isOwnProfile && (
               <>
                 <input ref={profileImageFileRef} type="file" accept="image/*" className="hidden" onChange={handleProfileImageUpload} />
@@ -432,8 +445,13 @@ export default function ProfileClient({
         </div>
 
         <div className="mt-3">
-          <div className="flex items-center gap-1">
-            <h2 className="text-xl font-bold text-white">{profile.name}</h2>
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <h2 className="text-xl font-bold text-white">
+              <UsernameCosmetic effectType={profileCosmetics.usernameEffect || ""} className="text-xl font-bold">
+                {profile.name}
+              </UsernameCosmetic>
+            </h2>
+            {profileCosmetics.badge && <CosmeticBadge effectType={profileCosmetics.badge} size={20} />}
             {!(profile as any).isSpecial && profile.isVerified && <SealCheck className="w-5 h-5 text-blue-400" weight="fill" />}
             {(profile as any).isSpecial && <DiamondBadge size={20} />}
             {(profile as any).isSpecial && profile.isVerified && <SealCheck className="w-5 h-5 text-amber-400 flex-shrink-0" weight="fill" />}

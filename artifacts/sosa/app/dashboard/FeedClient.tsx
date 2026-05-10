@@ -7,6 +7,9 @@ import {
   CaretLeft, CaretRight,
 } from "@phosphor-icons/react";
 import DiamondBadge from "@/components/DiamondBadge";
+import AvatarRing from "@/components/cosmetics/AvatarRing";
+import UsernameCosmetic from "@/components/cosmetics/UsernameCosmetic";
+import CosmeticBadge from "@/components/cosmetics/CosmeticBadge";
 import ReactTimeago from "react-timeago";
 import Linkify from "@/components/Linkify";
 import ProgressiveImage from "@/components/ProgressiveImage";
@@ -85,6 +88,12 @@ function PostCard({ post, me, onLike, onRepost, onDelete, onEdit, onComment }: a
   const content = post.repostedFrom ? post.repostedFrom.content : post.content;
   const isAuthor = myId && myId === post.authorId;
   const isLoggedIn = !!me;
+  const cosm = post.repostedFrom ? undefined : (post.authorCosmetics as any);
+
+  const POST_BORDER_COLOR: Record<string, string> = {
+    post_border_gold: "#fbbf24", post_border_neon: "#22d3ee",
+    post_border_rainbow: "#818cf8", post_glow_elite: "#f59e0b",
+  };
 
   useEffect(() => {
     if (!showMenu) return;
@@ -149,8 +158,16 @@ function PostCard({ post, me, onLike, onRepost, onDelete, onEdit, onComment }: a
     onRepost(post._id);
   };
 
+  const borderColor = cosm?.postBorder ? POST_BORDER_COLOR[cosm.postBorder] : null;
+
   return (
-    <article className="border-b border-slate-700/50 px-4 py-3 hover:bg-slate-900/40 transition-colors">
+    <article
+      className="border-b border-slate-700/50 px-4 py-3 hover:bg-slate-900/40 transition-colors"
+      style={borderColor ? {
+        boxShadow: `inset 0 0 0 1px ${borderColor}55, 0 0 18px 2px ${borderColor}22`,
+        borderColor: `${borderColor}66`,
+      } : undefined}
+    >
       {post.repostedFrom && (
         <div className="flex items-center gap-2 text-gray-500 text-xs mb-2 ml-12">
           <ArrowsClockwise className="w-3.5 h-3.5 text-green-500" />
@@ -160,19 +177,24 @@ function PostCard({ post, me, onLike, onRepost, onDelete, onEdit, onComment }: a
 
       <div className="flex gap-3">
         <Link href={`/dashboard/profile/${post.repostedFrom ? post.repostedFrom.authorId || post.authorId : post.authorId}`} className="flex-shrink-0">
-          <Avatar
-            src={post.repostedFrom ? post.repostedFrom.authorImage : post.authorImage}
-            name={post.repostedFrom ? post.repostedFrom.authorName : post.authorName}
-            size={40}
-          />
+          <AvatarRing effectType={cosm?.avatarRing || ""} size={40}>
+            <Avatar
+              src={post.repostedFrom ? post.repostedFrom.authorImage : post.authorImage}
+              name={post.repostedFrom ? post.repostedFrom.authorName : post.authorName}
+              size={40}
+            />
+          </AvatarRing>
         </Link>
 
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-2">
             <div className="flex items-center gap-1 flex-wrap min-w-0">
               <Link href={`/dashboard/profile/${post.authorId}`} className="font-bold text-white hover:underline text-[15px] truncate">
-                {post.repostedFrom ? post.repostedFrom.authorName : post.authorName}
+                <UsernameCosmetic effectType={cosm?.usernameEffect || ""} className="font-bold text-[15px]">
+                  {post.repostedFrom ? post.repostedFrom.authorName : post.authorName}
+                </UsernameCosmetic>
               </Link>
+              {cosm?.badge && <CosmeticBadge effectType={cosm.badge} size={16} />}
               {!post.authorIsSpecial && post.authorIsVerified && <SealCheck className="w-4 h-4 text-yellow-400 flex-shrink-0" weight="fill" />}
               {!post.authorIsSpecial && !post.authorIsVerified && post.authorEmailVerified && <SealCheck className="w-4 h-4 text-amber-700 flex-shrink-0" weight="fill" />}
               {post.authorIsSpecial && <DiamondBadge size={16} />}
