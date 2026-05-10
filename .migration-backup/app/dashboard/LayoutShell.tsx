@@ -277,8 +277,8 @@ export default function LayoutShell({ user: initialUser, children }: { user: She
       {mobileMenu && (
         <div className="fixed inset-0 z-50 md:hidden">
           <div className="absolute inset-0 bg-black/60" onClick={() => setMobileMenu(false)} />
-          <div className="absolute left-0 top-0 bottom-0 w-72 bg-[#0a0a0a] border-r border-[#222]">
-            <button onClick={() => setMobileMenu(false)} className="absolute top-4 right-4 p-2">
+          <div className="absolute left-0 top-0 bottom-0 w-72 bg-[#0a0a0a] border-r border-[#222] overflow-y-auto">
+            <button onClick={() => setMobileMenu(false)} className="absolute top-4 right-4 p-2 z-10">
               <X className="w-5 h-5 text-gray-400" />
             </button>
             <Sidebar />
