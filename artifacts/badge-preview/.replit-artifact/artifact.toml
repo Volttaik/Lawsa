@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/badge-preview/"
+title = "LAWSA Badge Preview"
+version = "1.0.0"
+id = "artifacts/badge-preview"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/badge-preview/" ]
+localPort = 22977
+
+[services.development]
+run = "pnpm --filter @workspace/badge-preview run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/badge-preview", "run", "build" ]
+publicDir = "artifacts/badge-preview/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "22977"
+BASE_PATH = "/badge-preview/"
