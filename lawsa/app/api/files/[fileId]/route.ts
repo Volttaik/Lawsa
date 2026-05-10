@@ -1,14 +1,24 @@
 import { NextRequest, NextResponse } from "next/server";
-import path from "path";
-import { readFile } from "fs/promises";
+import { getMediaFile } from "@/lib/queries";
 export const dynamic = "force-dynamic";
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ fileId: string }> }) {
   try {
     const { fileId } = await params;
-    const filePath = path.join(process.cwd(), "public", "uploads", fileId);
-    const buffer = await readFile(filePath);
-    const ext = fileId.split(".").pop()?.toLowerCase() || "";
-    const mime: Record<string,string> = { jpg:"image/jpeg",jpeg:"image/jpeg",png:"image/png",gif:"image/gif",webp:"image/webp",mp4:"video/mp4",webm:"video/webm",mp3:"audio/mpeg",wav:"audio/wav",ogg:"audio/ogg",pdf:"application/pdf" };
-    return new NextResponse(buffer, { headers: { "Content-Type": mime[ext] || "application/octet-stream", "Cache-Control": "public, max-age=31536000" } });
-  } catch { return NextResponse.json({ error: "File not found" }, { status: 404 }); }
+    const file = await getMediaFile(fileId);
+    if (!file) return NextResponse.json({ error: "File not found" }, { status: 404 });
+    const buffer = Buffer.from(file.data, 'base64');
+    const mime: Record<string, string> = {
+      "image/jpeg": "image/jpeg", "image/png": "image/png", "image/gif": "image/gif",
+      "image/webp": "image/webp", "video/mp4": "video/mp4", "video/webm": "video/webm",
+      "audio/mpeg": "audio/mpeg", "audio/wav": "audio/wav", "audio/ogg": "audio/ogg",
+    };
+    const contentType = mime[file.mime_type] || file.mime_type || "application/octet-stream";
+    return new NextResponse(buffer, {
+      headers: {
+        "Content-Type": contentType,
+        "Content-Length": String(buffer.length),
+        "Cache-Control": "public, max-age=31536000",
+      },
+    });
+  } catch (e: any) { console.error(e); return NextResponse.json({ error: "File not found" }, { status: 404 }); }
 }

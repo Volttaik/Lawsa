@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getUserFromRequest } from "@/lib/auth";
-import { getChunks, deleteChunks } from "@/lib/queries";
-import { uploadBufferToStorage } from "@/lib/upload";
-import { v4 as uuidv4 } from "uuid";
+import { getChunks, deleteChunks, saveMediaFile } from "@/lib/queries";
 export const dynamic = "force-dynamic";
 export async function POST(request: NextRequest) {
   try {
@@ -20,10 +18,8 @@ export async function POST(request: NextRequest) {
       return Buffer.from(d);
     });
     const assembled = Buffer.concat(buffers);
-    const ext = filename.split('.').pop() || mimeType.split('/')[1] || 'bin';
-    const savedFilename = `${uuidv4()}.${ext}`;
-    const url = await uploadBufferToStorage(assembled, savedFilename, mimeType, subfolder || 'videos');
+    const fileId = await saveMediaFile({ buffer: assembled, mimeType, filename, userId: authUser.userId });
     await deleteChunks(uploadId);
-    return NextResponse.json({ url });
+    return NextResponse.json({ url: `/api/files/${fileId}` });
   } catch (e: any) { console.error(e); return NextResponse.json({ error: e.message || "Assembly failed" }, { status: 500 }); }
 }

@@ -981,6 +981,20 @@ export async function deleteChunks(uploadId: string) {
   await query('DELETE FROM upload_chunks WHERE upload_id = $1', [uploadId])
 }
 
+// ── MEDIA FILES ───────────────────────────────────────────────────────────────
+export async function saveMediaFile(data: { buffer: Buffer; mimeType: string; filename: string; userId: string }): Promise<string> {
+  const id = randomUUID()
+  await query(
+    `INSERT INTO media_files (id, filename, mime_type, data, user_id) VALUES ($1,$2,$3,$4,$5)`,
+    [id, data.filename, data.mimeType, data.buffer.toString('base64'), data.userId]
+  )
+  return id
+}
+
+export async function getMediaFile(id: string) {
+  return await queryOne('SELECT * FROM media_files WHERE id = $1', [id])
+}
+
 // ── PAYMENTS ──────────────────────────────────────────────────────────────────
 export async function savePayment(data: any) {
   const id = randomUUID()

@@ -67,6 +67,18 @@ export async function POST(request: NextRequest) {
     `);
     results.push("user_store_items table: OK");
 
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS media_files (
+        id          TEXT PRIMARY KEY,
+        filename    TEXT        NOT NULL,
+        mime_type   TEXT        NOT NULL,
+        data        TEXT        NOT NULL,
+        user_id     TEXT        NOT NULL,
+        created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      )
+    `);
+    results.push("media_files table: OK");
+
     return NextResponse.json({ ok: true, results });
   } catch (e: any) {
     return NextResponse.json({ error: e.message, results }, { status: 500 });
